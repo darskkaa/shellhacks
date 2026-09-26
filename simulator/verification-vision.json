@@ -1,0 +1,120 @@
+{
+  "scope": "One fixed rendered scene; functional validation, not detection accuracy or real walking",
+  "python": "3.11.14",
+  "firmware_sha256": "3c4d012d2f050b3621d37d408eb08bfc72aedde86459e4953d9dad7b63c3977e",
+  "generic_model_sha256": "9b09cc8bf347f0fc8a5f7657480587f25db09b34bf33b0652110fb03a8ad4fef",
+  "confidence_threshold": 0.35,
+  "assets": {
+    "person": {
+      "source": "Soldier.glb",
+      "sha256": "dfb230fc1f942f259dd00281a1186953ad602fc5d69067ce63e24b2aa439736b",
+      "bounds_m": [
+        [
+          -0.20591789430721244,
+          -0.8573034748297167,
+          0.0
+        ],
+        [
+          0.20591789430721244,
+          0.8573034748297167,
+          1.7
+        ]
+      ],
+      "vertices": 7434,
+      "notes": "Static bind pose; no skeletal animation"
+    },
+    "car": {
+      "source": "ToyCar.glb",
+      "sha256": "01a60862de55cd4b9f3acfab0b0def86451800f9c42467fcd61052c16cb9838c",
+      "bounds_m": [
+        [
+          -0.7311545324666063,
+          -1.5,
+          0.0
+        ],
+        [
+          0.7311545324666062,
+          1.5,
+          0.908627566802232
+        ]
+      ],
+      "vertices": 68470,
+      "notes": "Fabric backdrop removed; PBR simplified"
+    }
+  },
+  "approach": {
+    "reached": true,
+    "frames": 31,
+    "person_detected_every_frame": true,
+    "initial_depth_m": 3.656,
+    "final_depth_m": 1.496,
+    "final_pose_xy_yaw": [
+      2.1600000000000263,
+      0.0,
+      0.0
+    ],
+    "final_command": {
+      "stride": 0,
+      "angle": 0,
+      "reason": "reached",
+      "distance_m": 1.496
+    },
+    "car_detection_frames": [
+      10
+    ],
+    "airplane_false_positive_frames": [
+      15,
+      16,
+      18,
+      19
+    ]
+  },
+  "person_absent": {
+    "frames": 3,
+    "all_commands_zero": true,
+    "final_pose_xy_yaw": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "expected_exit_code": 1
+  },
+  "custom_onnx": {
+    "sha256": "6547aee411dd9eccb6cc458bc0cc81e5c55e79157b6ad0f6f7a839e7edfe2d8c",
+    "has_individual_person_class": false,
+    "predictions": [
+      {
+        "class": "staircase_steps",
+        "confidence": 0.9819017052650452,
+        "box": [
+          0.0,
+          254.157470703125,
+          334.14202880859375,
+          319.6103515625
+        ]
+      },
+      {
+        "class": "staircase_steps",
+        "confidence": 0.9373549818992615,
+        "box": [
+          397.1768493652344,
+          256.22467041015625,
+          640.0,
+          321.24554443359375
+        ]
+      },
+      {
+        "class": "staircase_steps",
+        "confidence": 0.7267652750015259,
+        "box": [
+          495.73065185546875,
+          255.66864013671875,
+          639.9525756835938,
+          321.29931640625
+        ]
+      }
+    ],
+    "interpretation": "false positive staircase detections; not suitable for individual-person following"
+  },
+  "controller_tests": "2 unittest methods passed, covering depth/loss and both steering directions"
+}

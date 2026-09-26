@@ -30,6 +30,8 @@ Full docs, data sources and the demo script are in [`saferoute/README.md`](safer
 
 ## Hardware
 
+For a verified local physics sandbox, see [simulator setup](simulator/README.md).
+
 - Hiwonder MechDog (ESP32 main controller, 8 servos, IMU, ultrasonic sonar with RGB LEDs, buzzer). Our unit has **no** onboard camera module.
 - Logitech Brio 105 USB webcam on the laptop for vision.
 - USB serial to the dog shows up as a CH340 port (was `COM3` for us), 115200 baud.
