@@ -1,0 +1,3 @@
+__pycache__/
+*.pyc
+robot_dump/config.py

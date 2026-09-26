@@ -1,0 +1,173 @@
+#### MODULE HW_MechDog
+   MechDog : function
+   _thread : module
+   json : module
+   sleep_ms : function
+#### MODULE MechDog
+   PS2_KEY_MASK : dict
+   dog_init : function
+   leg_ik : function
+   leg_set_ik : function
+   leg_set_ik_offset : function
+   leg_set_theta : function
+   leg_theta_to_pulsewidth : function
+   move : function
+   read_angleoffset : function
+   save_angleoffset : function
+   set_angleoffset : function
+   set_default_pose : function
+   set_gait_params : function
+   set_pose : function
+   transform : function
+#### MODULE Hiwonder
+  class ADC : ['read', 'ATTN_0DB', 'ATTN_11DB', 'ATTN_2_5DB', 'ATTN_6DB', 'WIDTH_10BIT', 'WIDTH_11BIT', 'WIDTH_12BIT', 'WIDTH_9BIT', 'atten', 'block', 'init', 'read_u16', 'read_uv', 'width']
+   FLAG_SAVE : module
+  class I2C : ['readinto', 'start', 'stop', 'write', 'init', 'readfrom', 'readfrom_into', 'readfrom_mem', 'readfrom_mem_into', 'scan', 'writeto', 'writeto_mem', 'writevto']
+  class Pin : ['value', 'DRIVE_0', 'DRIVE_1', 'DRIVE_2', 'DRIVE_3', 'IN', 'IRQ_FALLING', 'IRQ_RISING', 'OPEN_DRAIN', 'OUT', 'PULL_DOWN', 'PULL_UP', 'WAKE_HIGH', 'WAKE_LOW', 'board', 'init', 'irq', 'off', 'on']
+  class UART : ['rec_buffer', 'send_data', 'has_data', 'contains_data', 'read_buffer', 'read_uart_cmd', 'parse_uart_cmd', 'clear_buffer']
+   _thread : module
+  class Digitaltube : ['clear', '_send_cmd', '_start', '_stop', '_send', '_send_dat', 'showNum', 'setBrightness', 'setLedOnOff', 'drawBitMap', 'drawStr']
+  class WonderCam : ['read_from_mem', 'getFwVersion', 'setLed', 'cur_func', 'switchFunc', 'updateResult', 'is_face_detected', 'get_face', 'isAnyFaceDetected', 'numOfDetectedFaces', 'isAnyLearnedFaceRec', 'numOfLearnedFaceRec', 'isAnyUnlearnedFaceDetected', 'getUnlearnedFaceOfIndex', 'isFaceOfIdRec', 'getFaceOfId', 'is_object_detected', 'get_object', 'isAnyObjDetected', 'isObjOfIdDetected', 'numOfObjOfIdDetected', 'getObjOfId', 'most_likely_id', 'max_conf', 'conf_of_id', 'getClMaxProbId', 'getClMaxProb', 'getClProbOfId', 'getFLMaxProbId', 'getFLMaxProb', 'getFLProbOfId', 'is_color_blob_detected', 'get_color_blob', 'isAnyColorDetected', 'numOfColorDetected', 'isColorOfIdDetected', 'getColorOfId', 'is_line_detected', 'get_line', 'isAnyLineDetected', 'numOfLineDetected', 'isLineOfIdDetected', 'getLineOfId', 'is_tag_detected', 'num_of_tag_detected', 'get_tag', 'isAnyTagDetected', 'numOfTagDetected', 'isTagOfIdDetected', 'numOfTagIdDetected', 'getDataOfTagIdIndex', 'isAnyQrCodeDetected', 'isAnyBarCodeDetected', 'len_of_code', 'lenOfQrCodeData', 'lenOfBarCode', 'getStrFromQrCode', 'string_from_code', 'getStrFromBarCode', 'getBytesFromCode', 'bytes_from_code', 'getBytesFromBarCode', 'update_code_content', 'getNumMaxProbOfId', 'getNumMaxProb', 'getNumProbOfId', 'getLandmarkMaxProbId', 'getLandmarkMaxProb', 'getLandmarkProbOfId']
+  class LightSensor : ['read']
+  class SoilSensor : ['read']
+  class RaindropSensor : ['read']
+  class Knob : ['read']
+  class Slider : ['read']
+  class Button : ['read', 'Clicked', 'Longpressed']
+  class LED : ['off', 'on']
+   startMain : function
+   Battery_power : function
+   disableLowPowerAlarm : function
+   Buzzer : function
+   bz : __bz
+#### MODULE Hiwonder_IIC
+   _thread : module
+   asin : function
+   atan2 : function
+   sqrt : function
+   IIC : function
+   MPU : function
+  class WonderCam : ['read_from_mem', 'getFwVersion', 'setLed', 'cur_func', 'switchFunc', 'updateResult', 'is_face_detected', 'get_face', 'isAnyFaceDetected', 'numOfDetectedFaces', 'isAnyLearnedFaceRec', 'numOfLearnedFaceRec', 'isAnyUnlearnedFaceDetected', 'getUnlearnedFaceOfIndex', 'isFaceOfIdRec', 'getFaceOfId', 'is_object_detected', 'get_object', 'isAnyObjDetected', 'isObjOfIdDetected', 'numOfObjOfIdDetected', 'getObjOfId', 'most_likely_id', 'max_conf', 'conf_of_id', 'getClMaxProbId', 'getClMaxProb', 'getClProbOfId', 'getFLMaxProbId', 'getFLMaxProb', 'getFLProbOfId', 'is_color_blob_detected', 'get_color_blob', 'isAnyColorDetected', 'numOfColorDetected', 'isColorOfIdDetected', 'getColorOfId', 'is_line_detected', 'get_line', 'isAnyLineDetected', 'numOfLineDetected', 'isLineOfIdDetected', 'getLineOfId', 'is_tag_detected', 'num_of_tag_detected', 'get_tag', 'isAnyTagDetected', 'numOfTagDetected', 'isTagOfIdDetected', 'numOfTagIdDetected', 'getDataOfTagIdIndex', 'isAnyQrCodeDetected', 'isAnyBarCodeDetected', 'len_of_code', 'lenOfQrCodeData', 'lenOfBarCode', 'getStrFromQrCode', 'string_from_code', 'getStrFromBarCode', 'getBytesFromCode', 'bytes_from_code', 'getBytesFromBarCode', 'update_code_content', 'getNumMaxProbOfId', 'getNumMaxProb', 'getNumProbOfId', 'getLandmarkMaxProbId', 'getLandmarkMaxProb', 'getLandmarkProbOfId']
+  class ESP32S3Cam : ['face_recognition', 'color_recognition', 'color_follow', 'line_follow', 'RED', 'YELLOW', 'GREEN', 'BLUE', 'BLACK']
+  class I2CSonar : ['getDistance', 'setRGBMode', 'setRGB', 'setBreathingCycle', 'setRGBBreathingValue', 'startSymphony', '_SONAR_ADDRESS']
+  class QMI8658 : ['read_angle', 'read_accel_data', 'read_gyro_data', 'WhoAmI', 'Read_Revision', 'Config_apply', '_read_byte', '_read_block', '_read_u16', '_write_byte', '_offset_config', 'read_sensor_data', 'Read_Raw_XYZ', 'Read_XYZ']
+  class asr_module : ['getResult', 'address', 'ASR_RESULT_ADDR', 'speak', 'ASR_SPEAK_ADDR', 'ASR_CMDMAND', 'ASR_ANNOUNCER']
+  class ASR : ['getResult', 'address', 'ASR_RESULT_ADDR', 'addWord', 'ASR_ADD_WORDS_ADDR', 'erase', 'ASR_WORDS_ERASE_ADDR', 'setMode', 'ASR_MODE_ADDR']
+  class MP3 : ['next', 'pause', 'MP3_ADDRESS', 'MP3_PAUSE_ADDR', 'prev', 'MP3_PREV_ADDR', 'MP3_NEXT_ADDR', 'loop_on', 'MP3_SINGLE_LOOP_ON_ADDR', 'loop_off', 'MP3_SINGLE_LOOP_OFF_ADDR', 'play', 'MP3_PLAY_ADDR', 'MP3_PLAY_NUM_ADDR', 'volume', 'MP3_VOL_VALUE_ADDR']
+  class ESP32Cam : ['read_face', 'read_color']
+   signedIntFromBytes : function
+#### MODULE WonderCam
+   const : function
+   gc : module
+   struct : module
+   time : module
+  class WonderCam : ['read_from_mem', 'getFwVersion', 'setLed', 'cur_func', 'switchFunc', 'updateResult', 'is_face_detected', 'get_face', 'isAnyFaceDetected', 'numOfDetectedFaces', 'isAnyLearnedFaceRec', 'numOfLearnedFaceRec', 'isAnyUnlearnedFaceDetected', 'getUnlearnedFaceOfIndex', 'isFaceOfIdRec', 'getFaceOfId', 'is_object_detected', 'get_object', 'isAnyObjDetected', 'isObjOfIdDetected', 'numOfObjOfIdDetected', 'getObjOfId', 'most_likely_id', 'max_conf', 'conf_of_id', 'getClMaxProbId', 'getClMaxProb', 'getClProbOfId', 'getFLMaxProbId', 'getFLMaxProb', 'getFLProbOfId', 'is_color_blob_detected', 'get_color_blob', 'isAnyColorDetected', 'numOfColorDetected', 'isColorOfIdDetected', 'getColorOfId', 'is_line_detected', 'get_line', 'isAnyLineDetected', 'numOfLineDetected', 'isLineOfIdDetected', 'getLineOfId', 'is_tag_detected', 'num_of_tag_detected', 'get_tag', 'isAnyTagDetected', 'numOfTagDetected', 'isTagOfIdDetected', 'numOfTagIdDetected', 'getDataOfTagIdIndex', 'isAnyQrCodeDetected', 'isAnyBarCodeDetected', 'len_of_code', 'lenOfQrCodeData', 'lenOfBarCode', 'getStrFromQrCode', 'string_from_code', 'getStrFromBarCode', 'getBytesFromCode', 'bytes_from_code', 'getBytesFromBarCode', 'update_code_content', 'getNumMaxProbOfId', 'getNumMaxProb', 'getNumProbOfId', 'getLandmarkMaxProbId', 'getLandmarkMaxProb', 'getLandmarkProbOfId']
+   get_addr_bytes : function
+#### MODULE Hiwonder_WIFI
+   machine : module
+   network : module
+   socket : module
+   time : module
+  class WIFI_CL : ['read_uart_cmd', 'parse_uart_cmd', 'connect_wifi', 'wait_connect', 'read_data', 'disconnect_wifi', 'send_ID']
+#### MODULE Hiwonder_BLE
+  class BLE : ['register', 'connected_callback', 'disconnected_callback', 'ble_irq', 'advertiser', 'rec_buffer', 'send_data', 'is_connected', 'has_data', 'contains_data', 'read_buffer', 'read_uart_cmd', 'parse_uart_cmd', 'clear_buffer', 'get_mac', 'MODE_BLE_SLAVE', 'MODE_BLE_MASTER', 'MODE_BROADCAST_SLAVE', 'MODE_BROADCAST_MASTER']
+#### MODULE Hiwonder_ADC
+   gc : module
+  class LightSensor : ['read']
+  class SoilSensor : ['read']
+  class RaindropSensor : ['read']
+  class Knob : ['read']
+  class Slider : ['read']
+#### MODULE Algo
+   begin : function
+   getPitch : function
+   getRoll : function
+   updateIMU : function
+#### MODULE PWMServo
+   offset : function
+   position : function
+   pwm_servo_deinit : function
+   restore_offset : function
+   save_offset : function
+#### MODULE uart_ctl
+   _thread : module
+  class _UART_4 : ['rec_buffer', 'send_data', 'has_data', 'contains_data', 'read_buffer', 'read_uart_cmd', 'parse_uart_cmd', 'clear_buffer']
+#### MODULE ledMatrix
+   const : function
+   sleep_ms : function
+   sleep_us : function
+   DELAY : int
+  class Digitaltube : ['clear', '_send_cmd', '_start', '_stop', '_send', '_send_dat', 'showNum', 'setBrightness', 'setLedOnOff', 'drawBitMap', 'drawStr']
+   WRITE_DATA_MODE_Z : int
+   WRITE_DATA_MODE_G : int
+   DISPLAY_EN : int
+   DISPLAY_DIS : int
+   _SEGMENTS : bytearray
+   _LIGHT : bytearray
+   _speechless : bytearray
+   _smile : bytearray
+   point : list
+   _number_5x8 : list
+   Character_font_6x8 : dict
+   char : str
+   font : list
+   reversed_font : list
+#### MODULE __action
+#### MODULE _boot_robot
+   gc : module
+   os : module
+   flash_ls : list
+#### MODULE FLAG_SAVE
+   read : function
+   write : function
+   init : function
+#### MODULE slaveiic
+   begin : function
+   get_change : function
+   get_reg_value : function
+   is_change : function
+   set_Sonar_distance : function
+   set_power_value : function
+[0;31mE (26930) mcpwm: mcpwm_comparator_set_compare_value(127): invalid argument[0m
+[0;31mE (26930) mcpwm: mcpwm_comparator_set_compare_value(127): invalid argument[0m
+[0;31mE (26930) mcpwm: mcpwm_comparator_set_compare_value(127): invalid argument[0m
+[0;31mE (26940) mcpwm: mcpwm_comparator_set_compare_value(127): invalid argument[0m
+[0;31mE (26950) mcpwm: mcpwm_comparator_set_compare_value(127): invalid argument[0m
+[0;31mE (26950) mcpwm: mcpwm_comparator_set_compare_value(127): invalid argument[0m
+[0;31mE (26960) mcpwm: mcpwm_comparator_set_compare_value(127): invalid argument[0m
+[0;31mE (26970) mcpwm: mcpwm_comparator_set_compare_value(127): invalid argument[0m
+Guru Meditation Error: Core  1 panic'ed (StoreProhibited). Exception was unhandled.
+
+Core  1 register dump:
+PC      : 0x400dcad9  PS      : 0x00060630  A0      : 0x80101f62  A1      : 0x3ffcfc10  
+A2      : 0x00000000  A3      : 0x3ffcfc70  A4      : 0x000005dc  A5      : 0x00000000  
+A6      : 0x019af934  A7      : 0x00000096  A8      : 0x0000001e  A9      : 0x3ffcfc20  
+A10     : 0x00000001  A11     : 0x3ffcfc40  A12     : 0x3ffcfca0  A13     : 0x00000003  
+A14     : 0x00000000  A15     : 0xfffffffc  SAR     : 0x00000004  EXCCAUSE: 0x0000001d  
+EXCVADDR: 0x000000b4  LBEG    : 0x400834c1  LEND    : 0x400834ce  LCOUNT  : 0x00000028  
+
+
+Backtrace: 0x400dcad6:0x3ffcfc10 0x40101f5f:0x3ffcfc70 0x400e197a:0x3ffcfcd0 0x400e8f3d:0x3ffcfcf0 0x400e9001:0x3ffcfd10 0x40085521:0x3ffcfd30 0x400e1a64:0x3ffcfdd0 0x400e8f3d:0x3ffcfe00 0x400e8f52:0x3ffcfe20 0x40107c57:0x3ffcfe40 0x40107c9d:0x3ffcfe70 0x4010801e:0x3ffcfea0 0x400e1ad3:0x3ffcff90 0x400e8f3d:0x3ffcffc0 0x40085471:0x3ffcffe0 0x400e1a64:0x3ffd0080 0x400e8f3d:0x3ffd00b0 0x400e8f52:0x3ffd00d0 0x400f701f:0x3ffd00f0 0x400f71bc:0x3ffd0180 0x400d7db2:0x3ffd01d0
+
+
+
+
+ELF file SHA256: 9836d007e414f2b4
+
+Rebooting...
+ets Jun  8 2016 00:22:57
+
+rst:0xc (SW_CPU_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:2
+load:0x3fff0030,len:4728
+load:0x40078000,len:14876
+ho 0 tail 12 room 4
+load:0x40080400,len:3368
+entry 0x400805cc
+UU7  mechdog robot _boot.py
+MPU6050 init.
+HAL caps: {'height': 'transform', 'posture': 'transform', 'imu_angle': True, 'rgb': True, 'move': True, 'sonar': True, 'buzzer': True, 'imu_raw': None, 'battery': 'Battery_power', 'sonar_unit': 'cm', 'gait': 'set_gait_params', 'action': 'action_run'}
+AP up: ('192.168.4.1', '255.255.255.0', '192.168.4.1', '0.0.0.0')
+bridge listening on 5005
