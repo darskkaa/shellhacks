@@ -22,26 +22,31 @@ do not transfer these motor targets to hardware.
 ## Current custom firmware compatibility
 
 `bridge.py` loads this checkout's **unchanged `robot_dump/main.py`** and runs its
-actual `Bridge` command handlers, sensor filter and safety checks. A PyBullet
-hardware adapter replaces `DogHAL`; small host adapters provide MicroPython's
-clock and socket-poll conventions. It loads `config.example.py`, changes only
+actual `Bridge` command handlers, sensor filter, safety checks, and `DogHAL`.
+PyBullet devices supply the SDK interfaces used by `DogHAL`: movement, sonar,
+IMU angles, and battery millivolts. The original capability probing, sensor
+conversions and IMU fallback execute unchanged. Small host adapters provide
+MicroPython's clock and socket-poll conventions. It loads `config.example.py`, changes only
 the listening port, and restricts binding to localhost. It never reads the real
 `config.py`, connects to robot WiFi, or accesses USB.
 
-The smoke test passed **19 checks over real TCP**, including the existing
+The smoke test passed **29 checks**, including real TCP and the existing
 `tools/dog_panel.py` `WifiDog` client: connection, telemetry, move/stop, clamping,
 invalid JSON, heartbeat, watchdog, link loss, low battery, fall/recovery, and
-obstacle stopping using a real PyBullet ray cast and collision object.
+obstacle stopping using a real PyBullet ray cast and collision object. Additional
+checks cover the original `DogHAL` class, millivolt conversion, unavailable
+battery readings, invalid sonar readings, derived IMU data, capability flags,
+fragmented/batched TCP commands, reset, and rejection of unsupported commands.
 
 That verifies the tested bridge behavior against simulated hardware. It does
-not execute the ESP32 firmware image, WiFi stack, original `DogHAL`, or Hiwonder's
+not execute the ESP32 firmware image, WiFi stack, or Hiwonder's
 frozen motion library. It also does not verify the settings currently flashed
 on the robot, MicroPython clock wraparound, or real hardware timing.
 
 | Capability | Simulator behavior |
 | --- | --- |
 | `move`, `stop`, `hb`, `ping`, `sub` | Actual bridge logic; movement maps to small motor excursions, not calibrated travel/steering |
-| Sonar, IMU | Physics ray cast and body orientation; raw IMU unavailable |
+| Sonar, IMU | Physics ray cast and body orientation through original `DogHAL`; its fallback derives angular rates and supplies synthetic acceleration (0, 0, 1), with raw-IMU capability disabled |
 | Battery | Explicit 7.4 V constant; test can inject low voltage |
 | `reset` | Stops motion; requested height/gait restoration unsupported |
 | `action`, `height`, `gait`, `posture` | Unsupported; capability flags disabled, handlers return unsuccessful ACKs |
@@ -72,6 +77,17 @@ web server or hardware discovery. Linux is required for the host poll adapter.
 records the verified run. Its firmware SHA-256 matched both this worktree and
 the original checkout on 2026-09-26. Rerun the test after firmware changes;
 this result applies only to the recorded source and template configuration.
+
+The hello message adds `caps.simulation: true`; clients can distinguish this
+adapter from hardware. Other flags come from the original `DogHAL` probes.
+The battery capability names the simulated `Battery_power` SDK function; the
+normal 7.4 V reading is a constant, not a battery discharge model.
+
+For simulator code, `create_runtime()` exposes `runtime.hal` as the original
+firmware `DogHAL`, and `runtime.hardware` as the PyBullet devices. Scene IDs,
+motor state, `distance_cm_override` and `battery_v_override` live on
+`runtime.hardware`. Set the distance override to `None` for ray-cast readings;
+set the battery override to `None` to simulate an unavailable battery reading.
 
 ## Install
 

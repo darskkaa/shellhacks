@@ -2,6 +2,7 @@
 
 import importlib.util
 import json
+import math
 import socket
 import sys
 import threading
@@ -57,8 +58,77 @@ def main() -> None:
         )
 
     try:
+        expect(
+            "original_doghal",
+            type(runtime.hal) is runtime.firmware.DogHAL
+            and runtime.bridge.hal is runtime.hal,
+        )
+        runtime.hardware.battery_v_override = 8.23
+        expect("battery_millivolt_conversion", runtime.hal.battery_v() == 8.23)
+        runtime.hardware.battery_v_override = None
+        expect("unavailable_battery", runtime.hal.battery_v() is None)
+        runtime.hardware.battery_v_override = 7.4
+        runtime.hardware.distance_cm_override = -1
+        expect("negative_sonar_rejected", runtime.hal.dist_cm() is None)
+        runtime.hardware.distance_cm_override = None
+        raw, angles = runtime.hal.imu_read()
+        expect(
+            "imu_fallback",
+            raw is not None
+            and set(raw) == {"ax", "ay", "az", "gx", "gy", "gz"}
+            and all(math.isfinite(value) for value in raw.values())
+            and angles is not None
+            and len(angles) == 3,
+        )
         pump(0.15)
         expect("hello", received("hello", proto=1, name="MechDog"))
+        caps = next(
+            message["caps"] for message in messages if message.get("t") == "hello"
+        )
+        expect(
+            "honest_capabilities",
+            caps["simulation"] is True
+            and caps["move"] is True
+            and caps["imu_angle"] is True
+            and not any(
+                caps[name]
+                for name in (
+                    "action",
+                    "gait",
+                    "height",
+                    "posture",
+                    "rgb",
+                    "buzzer",
+                    "imu_raw",
+                )
+            ),
+        )
+        client.sendall(b'{"t":"ping","id":')
+        pump(0.05)
+        expect("partial_line_waits", not received("pong"))
+        client.sendall(b'101}\n{"t":"ping","id":102}\n')
+        pump(0.15)
+        expect(
+            "fragmented_and_batched_commands",
+            received("pong", id=101) and received("pong", id=102),
+        )
+        for command in ("height", "gait", "posture", "action"):
+            send({"t": command, "id": 3})
+        pump(0.15)
+        expect(
+            "unsupported_commands_rejected",
+            all(
+                received("ack", **{"for": command, "ok": False})
+                for command in ("height", "gait", "posture", "action")
+            ),
+        )
+        send({"t": "reset"})
+        pump(0.1)
+        expect(
+            "reset_stops",
+            runtime.bridge.mode == "idle"
+            and runtime.hardware.stride == runtime.hardware.angle == 0,
+        )
         send({"t": "sub", "hz": 20})
         pump(0.2)
         expect("telemetry", received("tel") and received("ack", hz=20, ok=True))
@@ -71,13 +141,19 @@ def main() -> None:
         expect(
             "command_clamping",
             received("ack", clamped=True, ok=True)
-            and (runtime.hal.stride, runtime.hal.angle) == (100, -30),
+            and (runtime.hardware.stride, runtime.hardware.angle) == (100, -30),
         )
 
-        before = [s[0] for s in p.getJointStates(runtime.hal.robot, runtime.hal.motors)]
+        before = [
+            s[0]
+            for s in p.getJointStates(runtime.hardware.robot, runtime.hardware.motors)
+        ]
         send({"t": "move", "stride": 60, "angle": 0})
         pump(0.25)
-        after = [s[0] for s in p.getJointStates(runtime.hal.robot, runtime.hal.motors)]
+        after = [
+            s[0]
+            for s in p.getJointStates(runtime.hardware.robot, runtime.hardware.motors)
+        ]
         expect(
             "move_reaches_physics",
             max(abs(a - b) for a, b in zip(after, before)) > 0.01,
@@ -88,7 +164,7 @@ def main() -> None:
         expect("heartbeat_keeps_command", runtime.bridge.mode == "walk")
         send({"t": "stop"})
         pump(0.05)
-        expect("stop", runtime.hal.stride == runtime.hal.angle == 0)
+        expect("stop", runtime.hardware.stride == runtime.hardware.angle == 0)
 
         messages.clear()
         send({"t": "move", "stride": 60, "angle": 0})
@@ -96,11 +172,11 @@ def main() -> None:
         expect(
             "watchdog_stop",
             received("event", name="watchdog_stop", reason="watchdog")
-            and runtime.hal.stride == runtime.hal.angle == 0,
+            and runtime.hardware.stride == runtime.hardware.angle == 0,
         )
 
         messages.clear()
-        position, orientation = p.getBasePositionAndOrientation(runtime.hal.robot)
+        position, orientation = p.getBasePositionAndOrientation(runtime.hardware.robot)
         obstacle_position, _ = p.multiplyTransforms(
             position, orientation, [0.4, 0, 0.03], [0, 0, 0, 1]
         )
@@ -114,21 +190,21 @@ def main() -> None:
         pump(0.5)
         expect(
             "obstacle_stop",
-            received("event", name="obstacle_stop") and runtime.hal.stride == 0,
+            received("event", name="obstacle_stop") and runtime.hardware.stride == 0,
         )
         p.removeBody(obstacle)
-        runtime.hal.distance_cm_override = 200.0
-        runtime.hal.battery_v_override = 6.0
+        runtime.hardware.distance_cm_override = 200.0
+        runtime.hardware.battery_v_override = 6.0
         pump(0.4)
         send({"t": "move", "stride": 60, "angle": 0})
         pump(0.1)
         expect("low_battery_rejects_move", received("ack", ok=False, msg="low_battery"))
 
         messages.clear()
-        runtime.hal.battery_v_override = 7.4
-        position, _ = p.getBasePositionAndOrientation(runtime.hal.robot)
+        runtime.hardware.battery_v_override = 7.4
+        position, _ = p.getBasePositionAndOrientation(runtime.hardware.robot)
         p.resetBasePositionAndOrientation(
-            runtime.hal.robot, position, p.getQuaternionFromEuler([1.2, 0, 0])
+            runtime.hardware.robot, position, p.getQuaternionFromEuler([1.2, 0, 0])
         )
         runtime.bridge.poll_sensors()
         pump(0.02)
@@ -139,8 +215,10 @@ def main() -> None:
             received("event", name="fall") and received("ack", ok=False, msg="fallen"),
         )
 
-        p.resetBasePositionAndOrientation(runtime.hal.robot, [0, 0, 0.2], [0, 0, 0, 1])
-        p.resetBaseVelocity(runtime.hal.robot, [0, 0, 0], [0, 0, 0])
+        p.resetBasePositionAndOrientation(
+            runtime.hardware.robot, [0, 0, 0.2], [0, 0, 0, 1]
+        )
+        p.resetBaseVelocity(runtime.hardware.robot, [0, 0, 0], [0, 0, 0])
         runtime.bridge.poll_sensors()
         pump(0.15)
         expect("upright_event", received("event", name="upright"))
@@ -151,7 +229,7 @@ def main() -> None:
         pump(0.1)
         expect(
             "disconnect_stops",
-            runtime.bridge.mode == "safe" and runtime.hal.stride == 0,
+            runtime.bridge.mode == "safe" and runtime.hardware.stride == 0,
         )
 
         panel_path = Path(__file__).resolve().parents[1] / "tools" / "dog_panel.py"
@@ -184,20 +262,22 @@ def main() -> None:
         expect("panel_reads_telemetry", dog.sensors() == (200.0, 7.4))
         dog.move(40, 10)
         pump(0.1)
-        expect("panel_move", (runtime.hal.stride, runtime.hal.angle) == (40, 10))
+        expect(
+            "panel_move", (runtime.hardware.stride, runtime.hardware.angle) == (40, 10)
+        )
         dog.stop()
         pump(0.1)
-        expect("panel_stop", runtime.hal.stride == runtime.hal.angle == 0)
+        expect("panel_stop", runtime.hardware.stride == runtime.hardware.angle == 0)
     finally:
         client.close()
         for dog in panel_dogs:
             dog.close()
         runtime.close()
         report = {
-            "scope": "Unmodified Bridge logic on CPython with surrogate hardware; not ESP32 firmware emulation",
+            "scope": "Unmodified Bridge and DogHAL on CPython with simulated SDK devices; not ESP32 firmware emulation",
             "firmware_sha256": runtime.firmware_sha256,
             "checks": checks,
-            "passed": len(checks) == 19 and all(checks.values()),
+            "passed": len(checks) == 29 and all(checks.values()),
         }
         output = Path(__file__).parent / "artifacts" / "bridge-report.json"
         output.parent.mkdir(parents=True, exist_ok=True)

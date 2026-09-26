@@ -1,4 +1,4 @@
-"""Run the unchanged ESP32 Bridge with a local, uncalibrated PyBullet HAL."""
+"""Run unchanged Bridge and DogHAL code with local PyBullet SDK devices."""
 
 import argparse
 import hashlib
@@ -88,7 +88,7 @@ def load_firmware(port: int) -> tuple[Any, str]:
     return firmware, hashlib.sha256((folder / "main.py").read_bytes()).hexdigest()
 
 
-class BulletHAL:
+class BulletHardware:
     def __init__(self) -> None:
         self.robot, self.motors, self.directions = load_robot()
         self.stride = 0
@@ -96,39 +96,10 @@ class BulletHAL:
         self.elapsed = 0.0
         self.distance_cm_override: float | None = None
         self.battery_v_override: float | None = 7.4
-        self.caps = {
-            "move": True,
-            "action": None,
-            "gait": None,
-            "height": None,
-            "posture": None,
-            "imu_raw": None,
-            "imu_angle": True,
-            "sonar": True,
-            "rgb": False,
-            "buzzer": False,
-            "battery": "surrogate_constant_7.4V",
-            "sonar_unit": "cm",
-        }
 
     def move(self, stride: int, angle: int) -> None:
         self.stride = max(-100, min(100, int(stride)))
         self.angle = max(-30, min(30, int(angle)))
-
-    def stop(self) -> None:
-        self.move(0, 0)
-
-    @staticmethod
-    def unsupported(*args: Any) -> bool:
-        return False
-
-    action = unsupported
-    gait = unsupported
-    height = unsupported
-    posture = unsupported
-    # The unchanged firmware ACKs these commands unconditionally despite false caps.
-    rgb = unsupported
-    beep = unsupported
 
     def dist_cm(self) -> float | None:
         if self.distance_cm_override is not None:
@@ -143,14 +114,13 @@ class BulletHAL:
         hit = p.rayTest(start, end)[0]
         return round(hit[2] * 300, 1) if hit[0] >= 0 else None
 
-    def imu_read(self) -> tuple[None, list[float]]:
+    def read_angle(self) -> list[float]:
         _, orientation = p.getBasePositionAndOrientation(self.robot)
-        return None, [
-            math.degrees(value) for value in p.getEulerFromQuaternion(orientation)
-        ]
+        return [math.degrees(value) for value in p.getEulerFromQuaternion(orientation)]
 
-    def battery_v(self) -> float | None:
-        return self.battery_v_override
+    def battery_mv(self) -> float | None:
+        value = self.battery_v_override
+        return None if value is None else value * 1000
 
     def apply_motors(self) -> None:
         # These gentle joint excursions exercise commands, not calibrated walking.
@@ -191,7 +161,21 @@ class Runtime:
             p.setTimeStep(TIME_STEP)
             p.setPhysicsEngineParameter(numSolverIterations=100)
             p.loadURDF("plane.urdf")
-            self.hal = BulletHAL()
+            self.hardware = BulletHardware()
+            # Keep the real DogHAL's probing, conversions and IMU fallback in the path.
+            # Only the unavailable frozen SDK/device interfaces are substituted.
+            self.firmware.HW_AVAILABLE = True
+            self.firmware.MechDog = lambda: SimpleNamespace(move=self.hardware.move)
+            self.firmware.Hiwonder = SimpleNamespace(
+                Battery_power=self.hardware.battery_mv
+            )
+            self.firmware.Hiwonder_IIC = SimpleNamespace(
+                IIC=lambda bus: bus,
+                I2CSonar=lambda bus: SimpleNamespace(getDistance=self.hardware.dist_cm),
+                MPU=lambda: SimpleNamespace(read_angle=self.hardware.read_angle),
+            )
+            self.hal = self.firmware.DogHAL()
+            self.hal.caps["simulation"] = True
             self.bridge = self.firmware.Bridge(self.hal)
             p.resetDebugVisualizerCamera(1.1, 45, -25, [0, 0, 0.15])
         except BaseException:
@@ -210,7 +194,7 @@ class Runtime:
             else:
                 self.bridge.drop(sock)
         self.bridge.tick()
-        self.hal.apply_motors()
+        self.hardware.apply_motors()
         p.stepSimulation()
 
     def close(self) -> None:
