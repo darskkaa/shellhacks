@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node --env-file=.env server.mjs",
+    "start": "node --env-file=../.env server.mjs",
     "check": "node check-geo.mjs && node scripts/check-page.mjs",
     "fetch-data": "node scripts/fetch-data.mjs",
-    "load-mongo": "node --env-file=.env scripts/load-mongo.mjs",
+    "load-mongo": "node --env-file=../.env scripts/load-mongo.mjs",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write ."
   },
