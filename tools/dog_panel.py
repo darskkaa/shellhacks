@@ -402,8 +402,13 @@ input[type=range]{width:180px}
 </style></head><body><div class="grid">
 <h1>MechDog Control</h1>
 <div id="conn" class="card" style="font-weight:600">connecting...</div>
-<div class="card"><img id="cam" src="http://localhost:8001/stream.mjpg" alt="live camera with YOLO detections"
- style="width:100%;border-radius:10px;background:#000;display:block" onerror="this.alt='vision stream offline: run tools/vision_stream.py'">
+<div class="card" id="xw" style="display:none">
+ <div class="row"><div id="xwstate" style="flex:1;font:700 30px system-ui;padding:10px;border-radius:10px;text-align:center;background:#333">...</div>
+ <button id="xwend" style="background:var(--stop);font:700 22px system-ui;padding:16px 26px">END</button></div>
+ <div id="xwheld" style="color:#ffd166;font-weight:600;min-height:20px;margin-top:6px"></div>
+ <div id="xwd" class="muted"></div></div>
+<div class="card"><img id="cam" src="http://127.0.0.1:8002/stream" alt="live camera with detections"
+ style="width:100%;border-radius:10px;background:#000;display:block">
  <div id="seen" class="muted" style="margin-top:8px">vision: waiting...</div></div>
 <div class="card row">
  <div class="stat"><span>Distance ahead</span><b id="dist">–</b></div>
@@ -455,7 +460,20 @@ async function poll(){try{const s=await (await fetch("/status")).json();
  conn.textContent=(s.connected?"● ":"○ ")+s.conn;conn.style.color=s.connected?"var(--ok)":"var(--stop)";
  state.textContent=!s.connected?"offline":s.walking?"walking":"idle";if(s.event){event.textContent="⚠ "+s.event;setTimeout(()=>event.textContent="",3000);halt(false)}}
  catch(e){state.textContent="offline";conn.textContent="○ panel server not running";conn.style.color="var(--stop)"}setTimeout(poll,400)}poll();
-async function vision(){try{const v=await (await fetch("http://localhost:8001/detections")).json();
+// Camera source: the crosswalk checker (tools/walk_check.py, :8002) when it runs, else the plain YOLO stream (:8001).
+const XW="http://127.0.0.1:8002",XC={"WAIT":"#e67e22","READY TO WALK":"#2ecc71","CROSSING":"#3498db","ARRIVED":"#9b59b6"};
+let xwUp=null;const cam=document.getElementById("cam");
+function useSrc(up){if(up===xwUp)return;xwUp=up;xw.style.display=up?"":"none";
+ cam.src=up?XW+"/stream?"+Date.now():"http://localhost:8001/stream.mjpg?"+Date.now()}
+cam.onerror=()=>{cam.alt=xwUp?"crosswalk stream reconnecting...":"no camera stream: run tools/walk_check.py or tools/vision_stream.py"};
+xwend.onclick=()=>fetch(XW+"/end",{method:"POST"}).catch(()=>{});
+async function crosswalk(){try{const j=await (await fetch(XW+"/state")).json();useSrc(true);
+ xwstate.textContent="Crosswalk: "+(j.state||"...");xwstate.style.background=XC[j.state]||"#333";
+ xwheld.textContent=j.held?"HELD: signal out of view, assuming the light stays":(j.why?"stopped: "+j.why:"");
+ xwd.textContent=`walk ${j.walk} · don't walk ${j.stop} · conflict ${j.conflict} · streak ${j.streak} · ${j.ms} ms · drive ${j.drive?"ON":"off"}`;
+ seen.textContent="camera: crosswalk checker (blind-escort model)"}
+ catch(e){useSrc(false)}setTimeout(crosswalk,250)}crosswalk();
+async function vision(){if(xwUp){setTimeout(vision,400);return}try{const v=await (await fetch("http://localhost:8001/detections")).json();
  seen.textContent="vision "+v.fps.toFixed(1)+" fps · "+(v.dets.length?v.dets.map(o=>o.label+" "+Math.round(o.conf*100)+"%").join(", "):"nothing detected")}
  catch(e){seen.textContent="vision stream offline (run tools/vision_stream.py)"}setTimeout(vision,400)}vision();
 </script></body></html>"""
