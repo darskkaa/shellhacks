@@ -12,7 +12,6 @@ The scene contains real textured triangle meshes rendered by PyBullet. It uses n
 From the repository root, fetch the two data files into the ignored cache. These commands have timeouts and 12 MB response limits; neither executes downloaded code. Downloads are approximately 2.05 MB and 5.17 MB. Do not retry a throttled request in a loop.
 
 ```sh
-uv pip install --python .venv/bin/python --only-binary=:all: -r simulator/requirements.txt trimesh==5.1.0
 mkdir -p simulator/artifacts/assets
 curl --fail --location --connect-timeout 10 --max-time 60 --max-filesize 12000000 \
   -o simulator/artifacts/assets/Soldier.glb \
@@ -34,4 +33,4 @@ Outputs: `person/model.obj`, `car/model.obj`, their material/texture files, and 
 
 `load_scene(asset_dir: Path) -> dict[str, int]` loads the models into the current PyBullet connection and returns `person` and `car` body IDs. Missing converted files trigger local preparation; missing GLBs produce an actionable error. Existing converted files are treated as a local trusted cache. Delete their directories or rerun preparation after changing conversion code.
 
-Rendering validation used PyBullet DIRECT/TinyRenderer, with both meshes visible from camera `(0.2, 0, 0.8)` looking along +X. The person receives a further 180° Z rotation at load time to face the camera. Detection remains sensitive to viewpoint and asset appearance; no accuracy or generalization claim follows from this scene.
+Rendering validation used PyBullet DIRECT/TinyRenderer, with both meshes visible from camera `(0.2, 0, 0.8)` looking along +X. The person receives a further 180° Z rotation at load time to face the camera. See [VISION.md](VISION.md) and `verification-vision.json` for actual detector results. Detection remains sensitive to viewpoint and asset appearance; no accuracy or generalization claim follows from this scene.
