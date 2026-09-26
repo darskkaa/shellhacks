@@ -13,6 +13,20 @@ ShellHacks 2026 project: driving a **Hiwonder MechDog** (ESP32 quadruped robot) 
 | `models/` | `yolo26n.pt` weights and sample camera snapshots. |
 | `hiwonder_mechdog_sdk/` | Vendored copy of Hiwonder's official SDK and examples ([Hiwonder/MechDog](https://github.com/Hiwonder/MechDog)). |
 | `docs/` | Hardware research, the SDK/device reference (**read `mechdog-sdk-reference.md` first**), and ShellHacks event notes. |
+| `saferoute/` | **SafeRoute Miami** (Waymo track): a separate Node web app that ranks and reroutes Miami drives around crashes, flooding, construction and hurricane surge. See [`saferoute/README.md`](saferoute/README.md). |
+
+## SafeRoute Miami
+
+A second ShellHacks 2026 project in this repo, independent of the MechDog code. Quick start:
+
+```bash
+cd saferoute
+cp -n .env.example .env        # add GOOGLE_MAPS_API_KEY, GEMINI_API_KEY, MONGODB_URI
+npm install
+npm start                      # http://localhost:3000
+```
+
+Full docs, data sources and the demo script are in [`saferoute/README.md`](saferoute/README.md) and [`saferoute/docs/`](saferoute/docs/).
 
 ## Hardware
 

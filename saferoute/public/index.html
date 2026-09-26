@@ -1,0 +1,1904 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SafeRoute Miami</title>
+    <meta
+      name="description"
+      content="Pick the safest drive in Miami: routes ranked by crash history, flooding, construction, live crashes, and hurricane surge."
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><rect width=%2232%22 height=%2232%22 rx=%229%22 fill=%22%2300b3a4%22/><path d=%22M16 7l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9v-6z%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222.4%22/><path d=%22M12.5 16l2.5 2.5 4.5-5%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222.4%22 stroke-linecap=%22round%22/></svg>"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@500;600&display=swap"
+      onload="
+        this.onload = null;
+        this.rel = 'stylesheet';
+      "
+    />
+    <noscript
+      ><link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@500;600&display=swap"
+    /></noscript>
+    <style>
+      :root {
+        --bg: #eef1f5;
+        --panel: #ffffff;
+        --card: #f6f8fb;
+        --fg: #0d1117;
+        --muted: #5a6472;
+        --line: #e1e5eb;
+        --accent: #007f75;
+        --accent-2: #2f6bff;
+        --accent-fg: #fff;
+        --safe: #0f9d58;
+        --mid: #e6a100;
+        --risk: #e5383b;
+        --water: #1e88e5;
+        --work: #f57c00;
+        --live: #b5179e;
+        --zone-a: #d00000;
+        --zone-b: #e85d04;
+        --zone-c: #f48c06;
+        --zone-d: #faa307;
+        --zone-e: #ffba08;
+        --risk-text: #b3121c;
+        --live-text: #8e0f7a;
+        --safe-text: #0b6e3b;
+        --badge-bg: #0b6e3b;
+        --badge-fg: #fff;
+        --shadow: 0 1px 2px rgba(13, 17, 23, 0.06), 0 12px 32px rgba(13, 17, 23, 0.1);
+        --radius: 14px;
+        --ground: #c9d1db;
+        --ground-line: #8d99a8;
+        --water-text: #0b5cad;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+          --bg: #070a0f;
+          --panel: #0e131a;
+          --card: #141b24;
+          --fg: #eef2f7;
+          --muted: #95a0ae;
+          --line: #212a36;
+          --accent: #2ee6d6;
+          --accent-2: #5b8cff;
+          --accent-fg: #04201d;
+          --safe: #34d399;
+          --mid: #fbbf24;
+          --risk: #ff5a5f;
+          --water: #4fa8ff;
+          --work: #ffa040;
+          --live: #f15bb5;
+          --zone-a: #ff4d4d;
+          --zone-b: #ff7b29;
+          --zone-c: #ff9f1c;
+          --zone-d: #ffbf47;
+          --zone-e: #ffd166;
+          --risk-text: #ff8a8d;
+          --live-text: #f78fd0;
+          --safe-text: #5eead4;
+          --badge-bg: #34d399;
+          --badge-fg: #04201d;
+          --shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 16px 40px rgba(0, 0, 0, 0.45);
+          --ground: #27313d;
+          --ground-line: #5c6878;
+          --water-text: #7cc0ff;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+      }
+      body {
+        font:
+          15px/1.45 Geist,
+          system-ui,
+          sans-serif;
+        background: var(--bg);
+        color: var(--fg);
+        -webkit-font-smoothing: antialiased;
+      }
+      .mono,
+      .stat b,
+      .time,
+      .cond .v,
+      .verdict .big {
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-variant-numeric: tabular-nums;
+      }
+      .i {
+        width: 16px;
+        height: 16px;
+        flex: none;
+        vertical-align: -3px;
+      }
+      .skip {
+        position: absolute;
+        left: -9999px;
+      }
+      .skip:focus {
+        left: 16px;
+        top: 16px;
+        z-index: 20;
+        background: var(--panel);
+        padding: 8px 12px;
+        border-radius: 8px;
+      }
+
+      /* Layout: full-bleed map with a floating panel (solid fill, no backdrop-filter over the live map). */
+      main {
+        position: fixed;
+        inset: 0;
+      }
+      #map {
+        position: absolute;
+        inset: 0;
+      }
+      aside {
+        position: fixed;
+        z-index: 5;
+        top: 16px;
+        left: 16px;
+        bottom: 16px;
+        width: 440px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        box-shadow: var(--shadow);
+        overflow-y: auto;
+        padding: 22px 22px 28px;
+        scrollbar-width: thin;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .logo {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        background: linear-gradient(135deg, #00b3a4, #2f6bff);
+        box-shadow: 0 6px 18px rgba(0, 179, 164, 0.35);
+      }
+      .logo .i {
+        width: 22px;
+        height: 22px;
+      }
+      h1 {
+        margin: 0;
+        font-size: 22px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        background: linear-gradient(90deg, var(--fg) 40%, var(--accent));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font:
+          600 11px/1 "Geist Mono",
+          monospace;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .pulse {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--safe);
+        box-shadow: 0 0 0 0 var(--safe);
+      }
+      .tagline {
+        color: var(--muted);
+        margin: 12px 0 18px;
+      }
+      .tagline strong {
+        color: var(--fg);
+      }
+
+      form {
+        display: grid;
+        gap: 10px;
+      }
+      .trip {
+        position: relative;
+        display: grid;
+        gap: 8px;
+      }
+      .field {
+        display: grid;
+        gap: 4px;
+      }
+      label {
+        font:
+          600 11px/1 "Geist Mono",
+          monospace;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      .input {
+        position: relative;
+      }
+      .input .i {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--muted);
+        pointer-events: none;
+      }
+      select,
+      input[type="text"] {
+        width: 100%;
+        padding: 12px 12px 12px 38px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--card);
+        color: var(--fg);
+        font: inherit;
+      }
+      select {
+        padding-left: 38px;
+        appearance: none;
+        background-image:
+          linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+          linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+        background-position:
+          calc(100% - 18px) 55%,
+          calc(100% - 13px) 55%;
+        background-size: 5px 5px;
+        background-repeat: no-repeat;
+      }
+      select:focus-visible,
+      input[type="text"]:focus-visible,
+      button:focus-visible,
+      .route:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .chip {
+        border: 1px solid var(--line);
+        background: var(--card);
+        color: var(--fg);
+        padding: 6px 11px;
+        border-radius: 999px;
+        font:
+          500 13px/1.2 Geist,
+          sans-serif;
+        cursor: pointer;
+      }
+      .chip:hover {
+        border-color: var(--accent);
+      }
+
+      /* Shimmer button: gradient sweep while scoring (pattern popularized by Magic UI's ShimmerButton, written from scratch). */
+      .go {
+        position: relative;
+        overflow: hidden;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 13px;
+        border: 0;
+        border-radius: 12px;
+        color: var(--accent-fg);
+        font:
+          700 15px/1 Geist,
+          sans-serif;
+        cursor: pointer;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      }
+      .go::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        transform: translateX(-100%);
+        background: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, 0.45) 50%, transparent 80%);
+      }
+      .go:disabled {
+        cursor: progress;
+        opacity: 0.85;
+      }
+      #status {
+        margin: 12px 0 0;
+        min-height: 1.2em;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      #status.error {
+        color: var(--risk-text);
+      }
+      #results:focus {
+        outline: none;
+      }
+      #results.stale {
+        opacity: 0.4;
+        pointer-events: none;
+      }
+      .section {
+        margin-top: 16px;
+      }
+
+      /* Verdict: the one number the demo is about. */
+      .verdict {
+        position: relative;
+        border-radius: var(--radius);
+        padding: 16px 18px;
+        overflow: hidden;
+        background: linear-gradient(135deg, color-mix(in srgb, var(--safe) 16%, var(--card)), var(--card) 70%);
+        border: 1px solid color-mix(in srgb, var(--safe) 35%, var(--line));
+      }
+      .verdict .k {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font:
+          600 11px/1 "Geist Mono",
+          monospace;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--safe-text);
+      }
+      .verdict .big {
+        font-size: 28px;
+        font-weight: 600;
+        letter-spacing: -0.03em;
+        margin: 8px 0 2px;
+        color: var(--fg);
+      }
+      .verdict .sub {
+        color: var(--muted);
+      }
+      .verdict .sub b {
+        color: var(--fg);
+      }
+
+      .conditions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 10px;
+      }
+      details.cond-wrap {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 12px 14px;
+      }
+      details.cond-wrap summary {
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        list-style: none;
+      }
+      details.cond-wrap summary::-webkit-details-marker {
+        display: none;
+      }
+      details.cond-wrap summary .i:last-child {
+        margin-left: auto;
+        transition: transform 0.2s;
+      }
+      details.cond-wrap[open] summary .i:last-child {
+        transform: rotate(90deg);
+      }
+      .pill {
+        font:
+          600 11px/1 "Geist Mono",
+          monospace;
+        padding: 4px 7px;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--risk) 14%, transparent);
+        color: var(--risk-text);
+      }
+      details.more summary {
+        cursor: pointer;
+        margin-top: 10px;
+        color: var(--accent);
+        font-weight: 600;
+        font-size: 13.5px;
+      }
+      .rerouted {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        margin-top: 10px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        font-size: 13.5px;
+        background: color-mix(in srgb, var(--water) 12%, var(--card));
+        border: 1px solid color-mix(in srgb, var(--water) 45%, var(--line));
+      }
+      .rerouted .i {
+        color: var(--water-text);
+        margin-top: 2px;
+      }
+      .rerouted b {
+        color: var(--fg);
+      }
+      .reroute-btn {
+        margin-top: 10px;
+        width: 100%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px;
+        border-radius: 10px;
+        border: 1px solid var(--water);
+        background: color-mix(in srgb, var(--water) 12%, var(--card));
+        color: var(--water-text);
+        font:
+          600 14px/1 Geist,
+          sans-serif;
+        cursor: pointer;
+      }
+      .reroute-btn:hover {
+        background: color-mix(in srgb, var(--water) 20%, var(--card));
+      }
+      .cond {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 10px 12px;
+        min-width: 0;
+      }
+      .cond .i {
+        margin-top: 2px;
+        color: var(--muted);
+      }
+      .cond .k {
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .cond .v {
+        font-size: 13px;
+        font-weight: 600;
+        overflow-wrap: anywhere;
+      }
+      .cond.alert {
+        border-color: color-mix(in srgb, var(--risk) 55%, var(--line));
+        background: color-mix(in srgb, var(--risk) 7%, var(--card));
+      }
+      .cond.alert .i,
+      .cond.alert .v {
+        color: var(--risk-text);
+      }
+
+      .why {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 14px;
+        white-space: pre-wrap;
+      }
+      .muted-line {
+        color: var(--muted);
+      }
+      .why .k {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font:
+          600 11px/1 "Geist Mono",
+          monospace;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin-bottom: 8px;
+      }
+
+      .route {
+        position: relative;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 14px;
+        margin-top: 10px;
+        cursor: pointer;
+      }
+      .route:hover {
+        border-color: color-mix(in srgb, var(--accent) 50%, var(--line));
+      }
+      .route.selected {
+        border-color: var(--accent);
+        box-shadow: var(--shadow);
+      }
+      /* Border beam on the safest card: a conic gradient masked to the border (Magic UI BorderBeam idea, CSS only). */
+      @property --beam {
+        syntax: "<angle>";
+        initial-value: 0deg;
+        inherits: false;
+      }
+      .route.safest::before {
+        content: "";
+        position: absolute;
+        inset: -1px;
+        border-radius: inherit;
+        padding: 1.5px;
+        pointer-events: none;
+        background: conic-gradient(
+          from var(--beam),
+          transparent 0 70%,
+          var(--safe) 85%,
+          var(--accent) 92%,
+          transparent 100%
+        );
+        -webkit-mask:
+          linear-gradient(#000 0 0) content-box,
+          linear-gradient(#000 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+      }
+      .route .top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .route h2 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .swatch {
+        width: 10px;
+        height: 22px;
+        border-radius: 4px;
+        flex: none;
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font:
+          700 10px/1 "Geist Mono",
+          monospace;
+        padding: 4px 8px;
+        border-radius: 999px;
+        color: var(--badge-fg);
+        background: var(--badge-bg);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      .badge .i {
+        width: 12px;
+        height: 12px;
+      }
+      .time {
+        font-weight: 600;
+        white-space: nowrap;
+        font-size: 15px;
+      }
+      .time small {
+        color: var(--muted);
+        font-weight: 500;
+        font-size: 12px;
+      }
+      .via {
+        color: var(--muted);
+        font-size: 13px;
+        margin: 4px 0 10px;
+      }
+      .bar {
+        display: flex;
+        height: 6px;
+        border-radius: 3px;
+        overflow: hidden;
+        background: var(--line);
+      }
+      .bar span {
+        display: block;
+        height: 100%;
+      }
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 4px;
+        margin-top: 12px;
+      }
+      .stat {
+        text-align: center;
+      }
+      .stat b {
+        display: block;
+        font-size: 17px;
+        font-weight: 600;
+      }
+      .stat span {
+        font-size: 10.5px;
+        color: var(--muted);
+      }
+      .flag {
+        display: flex;
+        gap: 8px;
+        align-items: flex-start;
+        margin-top: 8px;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .flag .i {
+        margin-top: 1px;
+      }
+      .flag.surge {
+        color: var(--risk-text);
+      }
+      .flag.live {
+        color: var(--live-text);
+      }
+      .flag.work {
+        color: var(--muted);
+        font-weight: 500;
+        font-size: 12px;
+      }
+
+      /* Flood simulator: slider + elevation profile with animated water surface. */
+      .flood {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 14px;
+      }
+      .flood-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .flood-head .k {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font:
+          600 11px/1 "Geist Mono",
+          monospace;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--water-text);
+      }
+      .flood-head output {
+        font:
+          600 20px/1 "Geist Mono",
+          monospace;
+        color: var(--fg);
+      }
+      .flood p {
+        margin: 6px 0 10px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .flood input[type="range"] {
+        width: 100%;
+        accent-color: var(--water);
+        height: 28px;
+        cursor: ew-resize;
+      }
+      .ticks {
+        display: flex;
+        justify-content: space-between;
+        font:
+          500 10.5px/1 "Geist Mono",
+          monospace;
+        color: var(--muted);
+        margin-top: -2px;
+      }
+      .profile {
+        display: block;
+        width: 100%;
+        height: auto;
+        margin-top: 12px;
+        touch-action: none;
+      }
+      .profile .ground {
+        fill: var(--ground);
+        stroke: var(--ground-line);
+        stroke-width: 1;
+      }
+      .profile .water {
+        fill: var(--water);
+        opacity: 0.55;
+      }
+      .profile .surface {
+        fill: none;
+        stroke: var(--water);
+        stroke-width: 2;
+      }
+      .profile .axis {
+        font:
+          500 9px "Geist Mono",
+          monospace;
+        fill: var(--muted);
+      }
+      .profile .cursor line {
+        stroke: var(--fg);
+        stroke-width: 1;
+        stroke-dasharray: 3 3;
+      }
+      .profile .cursor text {
+        font:
+          600 10px "Geist Mono",
+          monospace;
+        fill: var(--fg);
+      }
+      .flood .readout {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 8px;
+        font-size: 12.5px;
+      }
+      .flood .readout b {
+        font-family: "Geist Mono", monospace;
+      }
+      /* Pointer spotlight on cards (technique from React Bits SpotlightCard, github.com/DavidHDev/react-bits, MIT + Commons Clause). */
+      .spot {
+        --mx: 50%;
+        --my: 50%;
+      }
+      .spot::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        pointer-events: none;
+        opacity: 0;
+        background: radial-gradient(
+          260px circle at var(--mx) var(--my),
+          color-mix(in srgb, var(--accent) 14%, transparent),
+          transparent 70%
+        );
+      }
+      .spot:hover::after {
+        opacity: 1;
+      }
+      /* Liquid gauge for "% under water" (idea from React Bits SloshGauge, calmed to a CSS transition, no physics loop). */
+      .gauge {
+        position: relative;
+        width: 58px;
+        height: 58px;
+        border-radius: 50%;
+        overflow: hidden;
+        flex: none;
+        border: 2px solid color-mix(in srgb, var(--water) 60%, var(--line));
+        background: var(--panel);
+      }
+      .gauge .liquid {
+        position: absolute;
+        left: -50%;
+        width: 200%;
+        height: 100%;
+        top: calc(100% - var(--level, 0%));
+        background: var(--water);
+        opacity: 0.75;
+      }
+      .gauge .liquid::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: -6px;
+        width: 100%;
+        height: 12px;
+        border-radius: 45%;
+        background: radial-gradient(12px 7px at 12px 6px, var(--water) 98%, transparent) 0 0 / 24px 12px repeat-x;
+      }
+      .gauge span {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        font:
+          700 13px/1 "Geist Mono",
+          monospace;
+        color: var(--fg);
+        text-shadow: 0 0 4px var(--panel);
+      }
+      .flood-top {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .flood-top > div:first-child {
+        flex: 1;
+      }
+      .stat.uw b {
+        color: var(--water-text);
+      }
+      .skeleton {
+        height: 118px;
+        border-radius: var(--radius);
+        margin-top: 10px;
+        background: linear-gradient(90deg, var(--card) 25%, var(--line) 50%, var(--card) 75%);
+        background-size: 200% 100%;
+      }
+      .empty {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .sources {
+        display: grid;
+        gap: 8px;
+        margin: 10px 0 0;
+        padding: 0;
+        list-style: none;
+      }
+      .sources li {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+      }
+      .sources .i {
+        margin-top: 2px;
+        color: var(--accent);
+      }
+
+      .legend {
+        position: absolute;
+        z-index: 4;
+        right: 16px;
+        bottom: 28px;
+        background: var(--panel);
+        color: var(--fg);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 10px 12px;
+        box-shadow: var(--shadow);
+        font-size: 12.5px;
+        display: grid;
+        gap: 5px;
+      }
+      .legend i {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-right: 8px;
+        vertical-align: middle;
+      }
+      footer {
+        margin-top: 20px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      @media (prefers-reduced-motion: no-preference) {
+        .route,
+        .chip {
+          transition:
+            border-color 0.15s,
+            box-shadow 0.15s;
+        }
+        .pulse {
+          animation: pulse 2s infinite;
+        }
+        .go:disabled::after {
+          animation: sweep 1.2s infinite;
+        }
+        .route.safest::before {
+          animation: beam 4s linear infinite;
+        }
+        .skeleton {
+          animation: shimmer 1.2s linear infinite;
+        }
+        .profile .wave {
+          animation: wave 3s linear infinite;
+        }
+        .spot::after {
+          transition: opacity 0.2s;
+        }
+        .gauge .liquid {
+          transition: top 0.45s cubic-bezier(0.3, 1.4, 0.5, 1);
+        }
+        .gauge .liquid::before {
+          animation: drift 2.4s linear infinite;
+        }
+      }
+      @keyframes pulse {
+        0% {
+          box-shadow: 0 0 0 0 color-mix(in srgb, var(--safe) 70%, transparent);
+        }
+        70% {
+          box-shadow: 0 0 0 8px transparent;
+        }
+        100% {
+          box-shadow: 0 0 0 0 transparent;
+        }
+      }
+      @keyframes sweep {
+        to {
+          transform: translateX(100%);
+        }
+      }
+      @keyframes beam {
+        to {
+          --beam: 360deg;
+        }
+      }
+      @keyframes drift {
+        to {
+          background-position: 24px 0;
+        }
+      }
+      @keyframes wave {
+        to {
+          transform: translateX(-40px);
+        }
+      }
+      @keyframes shimmer {
+        to {
+          background-position: -200% 0;
+        }
+      }
+
+      @media (max-width: 820px) {
+        html,
+        body {
+          height: auto;
+        }
+        aside {
+          position: static;
+          width: auto;
+          margin: 0;
+          border-radius: 0;
+          border: 0;
+          border-bottom: 1px solid var(--line);
+          box-shadow: none;
+          padding: 18px 16px;
+          overflow: visible;
+        }
+        main {
+          position: relative;
+          height: 72vh;
+        }
+        .legend {
+          left: 12px;
+          right: auto;
+          bottom: 24px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip" href="#results">Skip to results</a>
+    <aside>
+      <div class="brand">
+        <div class="logo" aria-hidden="true">
+          <svg class="i"><use href="icons.svg#shield-check" /></svg>
+        </div>
+        <div>
+          <h1>SafeRoute Miami</h1>
+          <span class="eyebrow"><span class="pulse" aria-hidden="true"></span>Live · 14 public data sources</span>
+        </div>
+      </div>
+      <p class="tagline">
+        The fastest route isn't always the safest. We score every alternative on
+        <strong>crash history, flooding, construction, live crashes and hurricane surge</strong>, then pick the one
+        you'd want a trusted driver to take.
+      </p>
+
+      <form id="form">
+        <div class="trip">
+          <div class="field">
+            <label for="origin">From</label>
+            <div class="input">
+              <svg class="i" aria-hidden="true"><use href="icons.svg#navigation" /></svg
+              ><input
+                id="origin"
+                type="text"
+                required
+                maxlength="200"
+                autocomplete="off"
+                value="Coconut Grove, Miami, FL"
+              />
+            </div>
+          </div>
+          <div class="field">
+            <label for="destination">To</label>
+            <div class="input">
+              <svg class="i" aria-hidden="true"><use href="icons.svg#map-pin" /></svg
+              ><input
+                id="destination"
+                type="text"
+                required
+                maxlength="200"
+                autocomplete="off"
+                value="Wynwood Walls, Miami, FL"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="chips" role="group" aria-label="Example trips">
+          <button type="button" class="chip" data-o="Coconut Grove, Miami, FL" data-d="Wynwood Walls, Miami, FL">
+            Coconut Grove → Wynwood
+          </button>
+          <button
+            type="button"
+            class="chip"
+            data-o="Florida International University, Miami, FL"
+            data-d="Brickell City Centre, Miami, FL"
+          >
+            FIU → Brickell
+          </button>
+          <button
+            type="button"
+            class="chip"
+            data-o="University of Miami, Coral Gables, FL"
+            data-d="Brickell City Centre, Miami, FL"
+          >
+            UM → Brickell
+          </button>
+        </div>
+        <div class="field">
+          <label for="scenario">Conditions</label>
+          <div class="input">
+            <svg class="i" aria-hidden="true"><use href="icons.svg#tornado" /></svg>
+            <select id="scenario">
+              <option value="">Live (real NOAA, NWS, police data)</option>
+              <option value="storm">Simulate: flood warning</option>
+              <option value="hurricane-1">Simulate: Category 1 hurricane</option>
+              <option value="hurricane-2">Simulate: Category 2 hurricane</option>
+              <option value="hurricane-3">Simulate: Category 3 hurricane</option>
+              <option value="hurricane-4">Simulate: Category 4 hurricane</option>
+              <option value="hurricane-5">Simulate: Category 5 hurricane</option>
+            </select>
+          </div>
+        </div>
+        <button class="go" id="go">
+          <svg class="i" aria-hidden="true"><use href="icons.svg#route" /></svg>Find the safest route
+        </button>
+      </form>
+      <p id="status" role="status" aria-live="polite"></p>
+
+      <div id="results" tabindex="-1">
+        <div class="empty section">
+          <strong>What every route is scored on</strong>
+          <ul class="sources">
+            <li>
+              <svg class="i" aria-hidden="true"><use href="icons.svg#car-front" /></svg>23,411 injury and fatal crashes
+              (FDOT, 2018–2019)
+            </li>
+            <li>
+              <svg class="i" aria-hidden="true"><use href="icons.svg#droplets" /></svg>5,449 flooding reports
+              (Miami-Dade 311, 2021–2023) and road elevation
+            </li>
+            <li>
+              <svg class="i" aria-hidden="true"><use href="icons.svg#construction" /></svg>152 active FDOT construction
+              projects
+            </li>
+            <li>
+              <svg class="i" aria-hidden="true"><use href="icons.svg#siren" /></svg>Crashes happening now, from
+              Miami-Dade Police
+            </li>
+            <li>
+              <svg class="i" aria-hidden="true"><use href="icons.svg#waves" /></svg>NOAA tides, NWS alerts, NHC forecast
+              cones, surge zones A–E, SLOSH surge depth
+            </li>
+            <li>
+              <svg class="i" aria-hidden="true"><use href="icons.svg#cloud-rain" /></svg>NOAA radar rainfall and 24-hour
+              rain forecast
+            </li>
+          </ul>
+        </div>
+      </div>
+      <footer>
+        Built at ShellHacks 2026 on public data. Crash data is historical and shows patterns, not predictions. Icons:
+        Lucide (ISC).
+      </footer>
+    </aside>
+    <main>
+      <div id="map" role="region" aria-label="Map of route options"></div>
+      <div class="legend" aria-hidden="true">
+        <div>
+          <i style="background: var(--safe); border-radius: 2px; height: 4px; width: 16px"></i>Recommended route
+        </div>
+        <div>
+          <i
+            style="
+              background: repeating-linear-gradient(90deg, var(--risk) 0 4px, transparent 4px 7px);
+              border-radius: 0;
+              height: 4px;
+              width: 16px;
+            "
+          ></i
+          >Google's fastest
+        </div>
+        <div><i style="background: var(--risk)"></i>Injury / fatal crash</div>
+        <div><i style="background: var(--water)"></i>Flooding report</div>
+        <div><i style="background: var(--work)"></i>Active construction</div>
+        <div><i style="background: var(--live)"></i>Crash happening now</div>
+        <div><i style="background: var(--zone-a); border-radius: 2px"></i>Surge evacuation zone</div>
+      </div>
+    </main>
+
+    <script>
+      const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+      const ROUTE_COLORS = () => [css("--safe"), css("--mid"), css("--risk")];
+      const REDUCED_MOTION = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const DARK_MAP = [
+        { elementType: "geometry", stylers: [{ color: "#0f141b" }] },
+        { elementType: "labels.text.fill", stylers: [{ color: "#8a95a3" }] },
+        { elementType: "labels.text.stroke", stylers: [{ color: "#070a0f" }] },
+        { featureType: "road", elementType: "geometry", stylers: [{ color: "#1d2530" }] },
+        { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#26303d" }] },
+        { featureType: "water", elementType: "geometry", stylers: [{ color: "#06182a" }] },
+        { featureType: "poi", stylers: [{ visibility: "off" }] },
+        { featureType: "transit", stylers: [{ visibility: "off" }] },
+      ];
+      let map,
+        data,
+        selected = 0,
+        lines = [],
+        floodLines = [],
+        cursorMark = null;
+      // Flood simulator water level in feet above mean sea level; survives re-renders.
+      let waterFt = 3;
+      // Water level the current routes were planned around (0 = not rerouting for water).
+      let routedWaterFt = 0;
+      // Safest route of the previous run of the same trip, to explain when the plan changes.
+      let lastPlan = null,
+        dataTrip = null;
+      const M_TO_FT = 3.28084;
+
+      let info;
+      window.initMap = () => {
+        const dark = matchMedia("(prefers-color-scheme: dark)").matches;
+        map = new google.maps.Map(document.getElementById("map"), {
+          center: { lat: 25.77, lng: -80.25 },
+          zoom: 11,
+          disableDefaultUI: true,
+          zoomControl: true,
+          zoomControlOptions: { position: google.maps.ControlPosition.RIGHT_TOP },
+          styles: dark ? DARK_MAP : [{ featureType: "poi", stylers: [{ visibility: "off" }] }],
+        });
+        // Click a hazard dot to see what it is. textContent keeps upstream text inert.
+        info = new google.maps.InfoWindow();
+        map.data.addListener("click", (e) => {
+          const detail = e.feature.getProperty("detail");
+          if (!detail) return;
+          const box = document.createElement("div");
+          box.style.cssText = "font: 500 13px Geist, sans-serif; color: #0d1117; max-width: 240px";
+          box.textContent = detail;
+          info.setContent(box);
+          info.setPosition(e.latLng);
+          info.open({ map });
+        });
+        // Results can arrive before the Maps script finishes loading; draw them once it does.
+        if (data) {
+          draw(selected);
+          drawFlood();
+        }
+      };
+
+      const esc = (s) =>
+        String(s ?? "").replace(
+          /[&<>"']/g,
+          (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c],
+        );
+      const icon = (name) => `<svg class="i" aria-hidden="true"><use href="icons.svg#${name}" /></svg>`;
+      const clear = (arr) => {
+        arr.forEach((o) => o.setMap(null));
+        arr.length = 0;
+      };
+      const colorFor = (i, n) => ROUTE_COLORS()[n === 1 ? 0 : Math.round((i / (n - 1)) * 2)];
+      const letter = (i) => String.fromCharCode(65 + i);
+      const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
+      // MDPD times are Miami local time without an offset; the viewer is assumed to be in Miami too.
+      const ago = (t) => {
+        const mins = Math.round((Date.now() - new Date(t)) / 60000);
+        return Number.isFinite(mins)
+          ? mins < 60
+            ? `${Math.max(mins, 0)} min ago`
+            : `${Math.round(mins / 60)} h ago`
+          : "time unknown";
+      };
+
+      // Count-up for numbers marked data-count (NumberTicker idea from Magic UI, plain rAF); instant with reduced motion.
+      function countUp(root) {
+        if (REDUCED_MOTION) return;
+        root.querySelectorAll("[data-count]").forEach((el) => {
+          const target = Number(el.dataset.count),
+            suffix = el.dataset.suffix ?? "";
+          const start = performance.now(),
+            ms = 700;
+          const tick = (now) => {
+            const t = Math.min((now - start) / ms, 1);
+            el.textContent = Math.round(target * (1 - (1 - t) ** 3)).toLocaleString() + suffix;
+            if (t < 1) requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        });
+      }
+      const num = (n, suffix = "") =>
+        `<span data-count="${Number(n)}" data-suffix="${esc(suffix)}">${Number(n).toLocaleString()}${esc(suffix)}</span>`;
+
+      // Share of each route's elevation samples at or below the water level (a "bathtub" model, not a forecast).
+      const underwaterShare = (r) =>
+        r.elevationProfile
+          ? r.elevationProfile.filter((p) => p[2] * M_TO_FT <= waterFt).length / r.elevationProfile.length
+          : null;
+
+      // Distance along the profile in miles, using a flat projection that is accurate at city scale.
+      function profileMiles(profile) {
+        let d = 0;
+        return profile.map((p, i) => {
+          if (i) {
+            const q = profile[i - 1];
+            d += Math.hypot((p[0] - q[0]) * 69.05, (p[1] - q[1]) * 69.05 * Math.cos((p[0] * Math.PI) / 180));
+          }
+          return d;
+        });
+      }
+
+      // Blue overlay on the selected route wherever it sits under the water level.
+      function drawFlood() {
+        clear(floodLines);
+        const r = data?.routes[selected];
+        if (!map || !r?.elevationProfile) return;
+        let run = [];
+        const flush = () => {
+          if (run.length > 1)
+            floodLines.push(
+              new google.maps.Polyline({
+                map,
+                path: run,
+                strokeColor: css("--water"),
+                strokeOpacity: 0.95,
+                strokeWeight: 11,
+                zIndex: 15,
+                clickable: false,
+              }),
+            );
+          run = [];
+        };
+        r.elevationProfile.forEach(([lat, lng, m], i, all) => {
+          if (m * M_TO_FT <= waterFt) {
+            // Start each run at the previous sample so short dips still draw a visible segment.
+            if (!run.length && i) run.push({ lat: all[i - 1][0], lng: all[i - 1][1] });
+            run.push({ lat, lng });
+          } else if (run.length) {
+            run.push({ lat, lng });
+            flush();
+          }
+        });
+        flush();
+      }
+
+      function chartHtml(r) {
+        if (!r.elevationProfile) return `<p>Elevation data unavailable for this route.</p>`;
+        const W = 400,
+          H = 150,
+          L = 30,
+          B = 20,
+          T = 8;
+        const miles = profileMiles(r.elevationProfile);
+        const feet = r.elevationProfile.map((p) => p[2] * M_TO_FT);
+        const maxX = miles.at(-1) || 1;
+        const maxY = Math.max(12, Math.ceil(Math.max(...feet) + 2));
+        const x = (mi) => L + (mi / maxX) * (W - L - 4);
+        const y = (ft) => T + (1 - Math.max(ft, 0) / maxY) * (H - T - B);
+        const ground =
+          `M${x(0)},${y(0)} ` +
+          feet.map((f, i) => `L${x(miles[i]).toFixed(1)},${y(f).toFixed(1)}`).join(" ") +
+          ` L${x(maxX)},${y(0)} Z`;
+        const wy = y(waterFt);
+        // Sine surface wider than the chart so the CSS translate loop is seamless.
+        let wave = `M${L - 40},${wy}`;
+        for (let px = L - 40; px <= W + 40; px += 10)
+          wave += ` Q${px + 5},${wy + (Math.abs(px / 10) % 2 === 0 ? -2.5 : 2.5)} ${px + 10},${wy}`;
+        const yTicks = [0, maxY / 2, maxY]
+          .map(
+            (f, k) =>
+              `<text class="axis" x="${L - 4}" y="${y(f) + (k === 2 ? 7 : 3)}" text-anchor="end">${Math.round(f)}${k === 2 ? " ft" : ""}</text>`,
+          )
+          .join("");
+        const xTicks = [0, maxX / 2, maxX]
+          .map((mi) => `<text class="axis" x="${x(mi)}" y="${H - 6}" text-anchor="middle">${mi.toFixed(1)} mi</text>`)
+          .join("");
+        return `<svg class="profile" viewBox="0 0 ${W} ${H}" role="img" aria-label="Road elevation along Route ${letter(selected)} with water at ${waterFt} feet">
+        <defs><clipPath id="plot"><rect x="${L}" y="0" width="${W - L}" height="${H - B}" /></clipPath></defs>
+        <g clip-path="url(#plot)">
+          <rect class="water" x="${L}" y="${wy}" width="${W - L}" height="${Math.max(y(0) - wy, 0)}" />
+          <path class="surface wave" d="${wave}" />
+          <path class="ground" d="${ground}" />
+        </g>
+        ${yTicks}${xTicks}
+        <g class="cursor" style="display:none"><line y1="${T}" y2="${H - B}" /><text y="${T + 10}"></text></g>
+      </svg>`;
+      }
+
+      function floodHtml() {
+        return `<div class="section flood">
+        <div class="flood-top">
+          <div>
+            <div class="flood-head"><div class="k">${icon("waves")}Flood simulator</div><output id="waterOut" for="water">${waterFt.toFixed(1)} ft</output></div>
+          </div>
+          <div class="gauge" id="gauge" role="img" aria-label="Share of the selected route under water"><div class="liquid"></div><span id="gaugePct">–</span></div>
+        </div>
+        <p>Drag to raise the water. Blue on the map and chart is road that would be under water. Tap any dot on the map for details.</p>
+        <input id="water" type="range" min="0" max="12" step="0.5" value="${waterFt}" aria-label="Water level in feet above mean sea level" />
+        <div class="ticks" aria-hidden="true"><span>0 ft</span><span>3</span><span>6</span><span>9</span><span>12 ft</span></div>
+        <div id="chart">${chartHtml(data.routes[selected])}</div>
+        <div class="readout" id="readout"></div>
+        <button type="button" class="reroute-btn" id="reroute">${icon("route")}<span id="rerouteLabel">Find a drier route at ${waterFt.toFixed(1)} ft</span></button>
+        <p>Bathtub model: Google road elevation versus a flat water level. Not a flood forecast.</p>
+      </div>`;
+      }
+
+      // Everything that depends on the water level, without rebuilding the page.
+      function updateFlood() {
+        document.getElementById("waterOut").textContent = `${waterFt.toFixed(1)} ft`;
+        document.getElementById("rerouteLabel").textContent =
+          routedWaterFt === waterFt
+            ? `Routed around ${waterFt.toFixed(1)} ft of water`
+            : `Find a drier route at ${waterFt.toFixed(1)} ft`;
+        document.getElementById("chart").innerHTML = chartHtml(data.routes[selected]);
+        bindChart();
+        data.routes.forEach((r, i) => {
+          const el = document.querySelector(`.route[data-i="${i}"] .uw b`);
+          const share = underwaterShare(r);
+          if (el) el.textContent = share == null ? "–" : `${Math.round(share * 100)}%`;
+        });
+        const r = data.routes[selected];
+        const share = underwaterShare(r);
+        const miles = r.elevationProfile ? profileMiles(r.elevationProfile).at(-1) : 0;
+        const pct = share == null ? null : Math.round(share * 100);
+        document.getElementById("gauge").style.setProperty("--level", `${pct ?? 0}%`);
+        document.getElementById("gaugePct").textContent = pct == null ? "–" : `${pct}%`;
+        document
+          .getElementById("gauge")
+          .setAttribute(
+            "aria-label",
+            pct == null
+              ? "Elevation unavailable"
+              : `Route ${letter(selected)} is ${pct}% under water at ${waterFt} feet`,
+          );
+        document.getElementById("readout").innerHTML =
+          share == null
+            ? ""
+            : `<span>Route ${letter(selected)}: <b>${(share * miles).toFixed(1)} mi</b> under water</span><span>Lowest point <b>${(Math.min(...r.elevationProfile.map((p) => p[2])) * M_TO_FT).toFixed(1)} ft</b></span>`;
+        drawFlood();
+      }
+
+      // Hover or drag on the chart moves a marker along the route on the map.
+      function bindChart() {
+        const svg = document.querySelector(".profile");
+        const r = data.routes[selected];
+        if (!svg || !r.elevationProfile) return;
+        const miles = profileMiles(r.elevationProfile);
+        const cursor = svg.querySelector(".cursor"),
+          label = cursor.querySelector("text"),
+          line = cursor.querySelector("line");
+        const move = (e) => {
+          const box = svg.getBoundingClientRect();
+          const vx = ((e.clientX - box.left) / box.width) * 400;
+          const t = Math.min(Math.max((vx - 30) / (400 - 34), 0), 1) * miles.at(-1);
+          const i = miles.findIndex((m) => m >= t);
+          const [lat, lng, m] = r.elevationProfile[Math.max(i, 0)];
+          const px = 30 + (miles[Math.max(i, 0)] / (miles.at(-1) || 1)) * (400 - 34);
+          cursor.style.display = "";
+          line.setAttribute("x1", px);
+          line.setAttribute("x2", px);
+          label.setAttribute("x", Math.min(px + 4, 330));
+          label.textContent = `${miles[Math.max(i, 0)].toFixed(1)} mi · ${(m * M_TO_FT).toFixed(1)} ft`;
+          if (!map) return;
+          if (!cursorMark)
+            cursorMark = new google.maps.Polyline({
+              map,
+              clickable: false,
+              zIndex: 50,
+              strokeOpacity: 0,
+              icons: [
+                {
+                  icon: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    scale: 8,
+                    fillColor: "#fff",
+                    fillOpacity: 1,
+                    strokeColor: css("--water"),
+                    strokeWeight: 4,
+                  },
+                  offset: "0",
+                },
+              ],
+            });
+          cursorMark.setPath([
+            { lat, lng },
+            { lat, lng },
+          ]);
+          cursorMark.setMap(map);
+        };
+        svg.addEventListener("pointermove", move);
+        svg.addEventListener("pointerleave", () => {
+          cursor.style.display = "none";
+          cursorMark?.setMap(null);
+        });
+      }
+
+      function draw(selected) {
+        if (!map) return;
+        clear(lines);
+        map.data.forEach((f) => map.data.remove(f));
+        const bounds = new google.maps.LatLngBounds();
+        const fastest = fastestIndex();
+        data.routes.forEach((r, i) => {
+          const path = google.maps.geometry.encoding.decodePath(r.polyline);
+          lines.push(new google.maps.Polyline({ map, path, clickable: true, ...lineStyle(i, fastest) }));
+          lines.at(-1).addListener("click", () => select(i));
+          path.forEach((p) => bounds.extend(p));
+        });
+        const r = data.routes[selected];
+        // Pixel-sized symbols (not meter circles) so hazards stay visible at city zoom.
+        const point = (lat, lng, props) => ({
+          type: "Feature",
+          geometry: { type: "Point", coordinates: [lng, lat] },
+          properties: props,
+        });
+        const area = (geometry, props) => ({ type: "Feature", geometry, properties: props });
+        const c = data.conditions;
+        map.data.addGeoJson({
+          type: "FeatureCollection",
+          features: [
+            ...data.surgeZones.map((z) => area(z.geometry, { kind: "surge", zone: z.zone })),
+            ...(c.stormMode && !c.simulated ? c.alertAreas.map((a) => area(a.geometry, { kind: "alert" })) : []),
+            ...(c.storms ?? [])
+              .filter((st) => st.threatensMiami && st.cone)
+              .map((st) => area(st.cone, { kind: "cone" })),
+            ...r.hazards.crashes.map(([lat, lng, sev, detail]) => point(lat, lng, { kind: "crash", sev, detail })),
+            ...r.hazards.floods.map(([lat, lng, , detail]) => point(lat, lng, { kind: "flood", sev: 1, detail })),
+            ...r.hazards.construction.map(([lat, lng, , detail]) => point(lat, lng, { kind: "work", sev: 1, detail })),
+            ...r.hazards.live.map(([lat, lng, , detail]) => point(lat, lng, { kind: "live", sev: 1, detail })),
+          ],
+        });
+        map.data.setStyle((f) => {
+          const kind = f.getProperty("kind");
+          if (kind === "surge") {
+            const color = css(`--zone-${f.getProperty("zone").toLowerCase()}`);
+            return {
+              clickable: false,
+              zIndex: 2,
+              fillColor: color,
+              fillOpacity: 0.26,
+              strokeColor: color,
+              strokeOpacity: 0.6,
+              strokeWeight: 1,
+            };
+          }
+          if (kind === "alert")
+            return {
+              clickable: false,
+              zIndex: 1,
+              fillColor: css("--water"),
+              fillOpacity: 0.08,
+              strokeColor: css("--water"),
+              strokeWeight: 1.5,
+            };
+          if (kind === "cone")
+            return {
+              clickable: false,
+              zIndex: 0,
+              fillColor: "#ffffff",
+              fillOpacity: 0.12,
+              strokeColor: "#ffffff",
+              strokeWeight: 2,
+            };
+          const title = f.getProperty("detail") ?? "";
+          if (kind === "live") {
+            return {
+              title,
+              clickable: true,
+              zIndex: 40,
+              icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: 9,
+                fillColor: css("--live"),
+                fillOpacity: 0.95,
+                strokeColor: "#fff",
+                strokeWeight: 2,
+              },
+            };
+          }
+          if (kind === "work") {
+            return {
+              title,
+              clickable: true,
+              zIndex: 25,
+              icon: {
+                path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                scale: 3,
+                fillColor: css("--work"),
+                fillOpacity: 1,
+                strokeColor: "#000",
+                strokeWeight: 0.5,
+              },
+            };
+          }
+          const flood = kind === "flood";
+          return {
+            title,
+            clickable: true,
+            zIndex: flood ? 30 : 20 + f.getProperty("sev"),
+            icon: {
+              path: google.maps.SymbolPath.CIRCLE,
+              scale: flood ? 5 : 3 + f.getProperty("sev") * 1.5,
+              fillColor: css(flood ? "--water" : "--risk"),
+              fillOpacity: flood ? 0.9 : 0.6,
+              strokeColor: "#fff",
+              strokeWeight: flood ? 1 : 0.5,
+            },
+          };
+        });
+        // Keep the routes clear of the floating panel on desktop.
+        const panel = document.querySelector("aside").getBoundingClientRect();
+        const floating = getComputedStyle(document.querySelector("aside")).position === "fixed";
+        map.fitBounds(bounds, floating ? { left: panel.right + 24, top: 48, right: 80, bottom: 48 } : 40);
+      }
+
+      const fastestIndex = () =>
+        data.routes.reduce((best, r, i) => (r.durationSec < data.routes[best].durationSec ? i : best), 0);
+      // Selected: bold in its color. Google's fastest (when not selected): dashed so the trade-off is visible.
+      // Everything else: thin gray context.
+      function lineStyle(i, fastest) {
+        if (i === selected)
+          return {
+            strokeColor: colorFor(i, data.routes.length),
+            strokeOpacity: 1,
+            strokeWeight: 7,
+            zIndex: 10,
+            icons: [],
+          };
+        if (i === fastest)
+          return {
+            strokeColor: css("--risk"),
+            strokeOpacity: 0,
+            strokeWeight: 4,
+            zIndex: 5,
+            icons: [
+              {
+                icon: { path: "M 0,-1 0,1", strokeOpacity: 0.9, strokeWeight: 4, scale: 3 },
+                offset: "0",
+                repeat: "14px",
+              },
+            ],
+          };
+        return { strokeColor: css("--muted"), strokeOpacity: 0.35, strokeWeight: 3, zIndex: 1, icons: [] };
+      }
+
+      function select(i) {
+        selected = i;
+        document.querySelectorAll(".route").forEach((el, j) => {
+          el.classList.toggle("selected", i === j);
+          el.setAttribute("aria-pressed", String(i === j));
+        });
+        draw(i);
+        if (document.getElementById("water")) updateFlood();
+      }
+
+      // Why the recommendation moved, compared with the previous run of the same trip.
+      function reroutedHtml() {
+        const c = data.conditions,
+          safest = data.routes[0];
+        const reasons = [];
+        if (c.surgeCategory)
+          reasons.push(
+            `Category ${c.surgeCategory} surge zones ${"ABCDE".slice(0, c.surgeCategory).split("").join(", ")}`,
+          );
+        if (routedWaterFt) reasons.push(`${routedWaterFt} ft of water`);
+        if (c.stormMode && !c.surgeCategory) reasons.push(c.alerts[0]?.event ?? "flood alert");
+        const changed = lastPlan && lastPlan.trip === dataTrip && lastPlan.via !== safest.description;
+        if (!reasons.length && !changed) return "";
+        const avoided = [
+          Object.keys(safest.surgeZoneKm).length
+            ? `${(Object.values(safest.surgeZoneKm).reduce((a, b) => a + b, 0) / 1.609).toFixed(1)} mi in surge zones`
+            : "no surge zones",
+          routedWaterFt ? `${safest.underwaterMi} mi under water` : null,
+        ]
+          .filter(Boolean)
+          .join(", ");
+        return `<div class="rerouted">${icon("route")}<span>${
+          changed
+            ? `<b>Rerouted:</b> ${esc(lastPlan.via)} → <b>${esc(safest.description)}</b>`
+            : `<b>Planning around hazards</b>`
+        }. Considered ${data.routes.length} routes for ${esc(reasons.join(" and ") || "current conditions")}; this one has ${avoided}.</span></div>`;
+      }
+      const tripKey = () =>
+        `${document.getElementById("origin").value}|${document.getElementById("destination").value}`;
+
+      function verdictHtml(routes) {
+        const safest = routes[0];
+        const fastest = routes[fastestIndex()];
+        const surgeMi = (r) => Object.values(r.surgeZoneKm).reduce((a, b) => a + b, 0) / 1.609;
+        const card = (k, big, sub) =>
+          `<div class="section verdict spot"><div class="k">${icon("shield-check")}${k}</div><div class="big">${big}</div><div class="sub">${sub}</div></div>`;
+        if (routes.length === 1)
+          return card(
+            "One route available",
+            `${num(safest.crashes.count)} crashes`,
+            "nearby on the only route found. Hazards are marked on the map.",
+          );
+        const time =
+          safest === fastest
+            ? "at <b>no extra time</b>"
+            : `for <b>+${safest.extraMinutes} min</b> versus Google's fastest route`;
+        // Lead with the hazard the user is planning around, falling back to crash history.
+        const water = fastest.underwaterMi - safest.underwaterMi;
+        if (routedWaterFt && water >= 0.1)
+          return card("Drier route", `${water.toFixed(1)} fewer mi under water`, `at ${routedWaterFt} ft, ${time}.`);
+        const surge = surgeMi(fastest) - surgeMi(safest);
+        if (data.conditions.surgeCategory && surge >= 0.1)
+          return card("Out of the surge zone", `${surge.toFixed(1)} fewer mi in surge zones`, `${time}.`);
+        const other = safest === fastest ? routes.at(-1) : fastest;
+        const crashes = other.crashes.count - safest.crashes.count;
+        if (crashes > 0)
+          return card(
+            safest === fastest ? "Safest is also fastest" : "Worth the detour",
+            `${num(crashes)} fewer crashes`,
+            `${safest === fastest ? "than the riskiest option" : ""} ${time}.`,
+          );
+        return card(
+          "Lowest overall risk",
+          `Risk ${num(other.risk.total - safest.risk.total)} lower`,
+          `${time}. See the cards for what differs.`,
+        );
+      }
+
+      function conditionsHtml(c) {
+        const tile = (name, k, v, alert = false) =>
+          `<div class="cond ${alert ? "alert" : ""}">${icon(name)}<div><div class="k">${k}</div><div class="v">${v}</div></div></div>`;
+        const tide = c.highTide
+          ? tile(
+              "waves",
+              "High tide today",
+              `${c.highTide.feet.toFixed(1)} ft · ${esc(c.highTide.time.slice(11))}${c.highTide.kingTide ? " · king tide" : ""}`,
+              c.highTide.kingTide,
+            )
+          : tile("waves", "High tide today", "unavailable");
+        const alerts = c.alerts.length
+          ? tile(
+              "triangle-alert",
+              c.stormMode ? "Storm mode on" : "Weather alerts",
+              `${esc(c.alerts[0].event)}${c.alerts.length > 1 ? ` +${c.alerts.length - 1}` : ""}`,
+              c.stormMode,
+            )
+          : tile("triangle-alert", "Weather alerts", "None for Miami-Dade");
+        const storms = c.storms ?? [];
+        const nearest = storms.reduce((m, st) => (!m || st.milesFromMiami < m.milesFromMiami ? st : m), null);
+        const storm =
+          c.storms == null
+            ? tile("tornado", "Hurricane center", "unavailable")
+            : c.surgeCategory
+              ? tile(
+                  "tornado",
+                  "Surge zones active",
+                  `${"ABCDE".slice(0, c.surgeCategory).split("").join(", ")}${c.simulated ? " (sim)" : ""}`,
+                  true,
+                )
+              : nearest
+                ? tile(
+                    "tornado",
+                    "Nearest Atlantic storm",
+                    `${esc(nearest.classification)} ${esc(nearest.name)} · ${nearest.milesFromMiami.toLocaleString()} mi${nearest.threatensMiami ? " · cone over Miami" : ""}`,
+                    nearest.threatensMiami,
+                  )
+                : tile("tornado", "Atlantic storms", "None active");
+        const rain = c.rainForecast
+          ? tile("cloud-rain", "Rain next 24 h", `${c.rainForecast.inches.toFixed(1)} in`, c.rainForecast.inches >= 1)
+          : tile("cloud-rain", "Rain forecast", "unavailable");
+        const live =
+          c.liveIncidents == null
+            ? tile("siren", "Live crashes", "unavailable")
+            : tile("siren", "Live crashes countywide", `${c.liveIncidents} active`);
+        const time = tile(
+          "clock",
+          "Updated",
+          new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+        );
+        const flags = [
+          c.stormMode && "storm mode",
+          c.highTide?.kingTide && "king tide",
+          c.surgeCategory && `surge ${"ABCDE".slice(0, c.surgeCategory)}`,
+        ].filter(Boolean);
+        return `<details class="section cond-wrap"><summary>${icon("waves")}Live conditions ${flags.map((f) => `<span class="pill">${esc(f)}</span>`).join(" ")}${icon("arrow-right-left")}</summary>
+        <div class="conditions">${tide}${alerts}${storm}${rain}${live}${time}</div></details>`;
+      }
+
+      function routeHtml(r, i, n, maxRisk) {
+        const pct = (v) => (maxRisk ? (v / maxRisk) * 100 : 0).toFixed(1);
+        const mins = Math.round(r.durationSec / 60);
+        const zones = Object.entries(r.surgeZoneKm).sort();
+        return `<div class="route spot ${i === 0 ? "safest" : ""}" role="button" tabindex="0" aria-pressed="false" data-i="${i}">
+        <div class="top">
+          <h2><span class="swatch" style="background:${colorFor(i, n)}"></span>Route ${letter(i)} ${i === 0 ? `<span class="badge">${icon("shield-check")}Safest</span>` : ""}</h2>
+          <div class="time">${mins} min ${r.extraMinutes > 0 ? `<small>+${r.extraMinutes}</small>` : "<small>fastest</small>"}</div>
+        </div>
+        <div class="via">via ${esc(r.description || "local roads")} · ${(r.distanceM / 1609.34).toFixed(1)} mi · ${plural(r.schoolsNearby.length, "school zone")} · risk <span class="mono">${r.risk.total}</span></div>
+        <div class="bar" aria-hidden="true">
+          <span style="width:${pct(r.risk.crash)}%;background:var(--risk)"></span>
+          <span style="width:${pct(r.risk.flood)}%;background:var(--water)"></span>
+        </div>
+        <div class="stats">
+          <div class="stat"><b>${num(r.crashes.count)}</b><span>crashes</span></div>
+          <div class="stat"><b>${num(r.crashes.killed)}</b><span>fatal</span></div>
+          <div class="stat"><b>${num(r.floodReports)}</b><span>flood reports</span></div>
+          <div class="stat"><b>${num(r.workZones.length)}</b><span>work zones</span></div>
+          <div class="stat uw"><b>${underwaterShare(r) == null ? "–" : `${Math.round(underwaterShare(r) * 100)}%`}</b><span>under water</span></div>
+        </div>
+        ${zones.length ? `<div class="flag surge">${icon("waves")}<span>Through surge zone${zones.length > 1 ? "s" : ""} ${zones.map(([z, km]) => `${esc(z)} ${(km / 1.609).toFixed(1)} mi`).join(", ")}</span></div>` : ""}
+        ${r.maxSurgeFt ? `<div class="flag surge">${icon("droplets")}<span>Up to ${Number(r.maxSurgeFt)} ft of storm surge on this route (NOAA SLOSH)</span></div>` : ""}
+        ${r.rain24hMm >= 10 ? `<div class="flag surge">${icon("cloud-rain")}<span>${(r.rain24hMm / 25.4).toFixed(1)} in of rain fell on this route in 24 h</span></div>` : ""}
+        ${r.inFloodAlertArea && !data.conditions.simulated ? `<div class="flag surge">${icon("triangle-alert")}<span>Enters the NWS flood alert area</span></div>` : ""}
+        ${r.liveIncidents.length ? `<div class="flag live">${icon("siren")}<span>Now: ${r.liveIncidents.map((x) => `${esc(x.signal.toLowerCase())} at ${esc(x.address)} (${esc(ago(x.createTime))})`).join("; ")}</span></div>` : ""}
+        ${
+          r.workZones.length
+            ? `<div class="flag work">${icon("construction")}<span>${r.workZones
+                .slice(0, 2)
+                .map((w) => esc(w.description))
+                .join("; ")}${r.workZones.length > 2 ? ` +${r.workZones.length - 2} more` : ""}</span></div>`
+            : ""
+        }
+      </div>`;
+      }
+
+      function render() {
+        const n = data.routes.length;
+        const maxRisk = Math.max(...data.routes.map((r) => r.risk.total), 1);
+        // Order: the answer, why, the options, then the tools and context.
+        let html = verdictHtml(data.routes) + reroutedHtml();
+        // Filled in by loadExplanation() once Gemini answers; routes do not wait for it.
+        html += `<div class="section why" id="why"><div class="k">${icon("sparkles")}Gemini recommendation</div><div id="whyText" class="muted-line">Writing a summary…</div></div>`;
+        const cards = data.routes.map((r, i) => routeHtml(r, i, n, maxRisk));
+        html += `<div class="section">${cards.slice(0, 3).join("")}${cards.length > 3 ? `<details class="more"><summary>Show ${cards.length - 3} more routes</summary>${cards.slice(3).join("")}</details>` : ""}</div>`;
+        html += floodHtml() + conditionsHtml(data.conditions);
+        const results = document.getElementById("results");
+        results.innerHTML = html;
+        results.querySelectorAll(".route").forEach((el) => {
+          const i = Number(el.dataset.i);
+          el.addEventListener("click", () => select(i));
+          // Preview: hovering a card brings its line to the front without changing the selection.
+          el.addEventListener("pointerenter", () =>
+            lines[i]?.setOptions({
+              strokeColor: colorFor(i, data.routes.length),
+              strokeOpacity: 1,
+              strokeWeight: 8,
+              zIndex: 12,
+              icons: [],
+            }),
+          );
+          el.addEventListener("pointerleave", () => lines[i]?.setOptions(lineStyle(i, fastestIndex())));
+          el.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              select(i);
+            }
+          });
+        });
+        document.getElementById("reroute").addEventListener("click", () => {
+          routedWaterFt = waterFt;
+          form.requestSubmit();
+        });
+        document.getElementById("water").addEventListener("input", (e) => {
+          waterFt = Number(e.target.value);
+          updateFlood();
+        });
+        results.querySelectorAll(".spot").forEach((el) =>
+          el.addEventListener("pointermove", (e) => {
+            const box = el.getBoundingClientRect();
+            el.style.setProperty("--mx", `${e.clientX - box.left}px`);
+            el.style.setProperty("--my", `${e.clientY - box.top}px`);
+          }),
+        );
+        countUp(results);
+        select(0);
+      }
+
+      document.querySelectorAll(".chip").forEach((chip) =>
+        chip.addEventListener("click", () => {
+          routedWaterFt = 0;
+          document.getElementById("origin").value = chip.dataset.o;
+          document.getElementById("destination").value = chip.dataset.d;
+          form.requestSubmit();
+        }),
+      );
+
+      async function loadExplanation(id) {
+        const target = () => document.getElementById("whyText");
+        try {
+          const res = await fetch(`/api/explain?id=${encodeURIComponent(id)}`);
+          const body = await res.json();
+          // Ignore answers for a search the user has already replaced.
+          if (data?.explainId !== id || !target()) return;
+          if (body.explanation) target().textContent = body.explanation;
+          else document.getElementById("why").remove();
+        } catch {
+          if (data?.explainId === id) document.getElementById("why")?.remove();
+        }
+      }
+
+      const form = document.getElementById("form");
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById("go"),
+          status = document.getElementById("status"),
+          results = document.getElementById("results");
+        btn.disabled = true;
+        status.className = "";
+        status.textContent = "Scoring routes against 35,000 hazards and live NOAA data…";
+        const trip = tripKey();
+        if (!data)
+          results.innerHTML = `<div class="section" aria-hidden="true"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>`;
+        try {
+          const res = await fetch("/api/routes", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              origin: document.getElementById("origin").value,
+              destination: document.getElementById("destination").value,
+              simulate: document.getElementById("scenario").value || undefined,
+              waterFt: routedWaterFt || undefined,
+            }),
+          });
+          const body = await res.json();
+          if (!res.ok) throw new Error(body.error || res.statusText);
+          if (data) lastPlan = { trip: dataTrip, via: data.routes[0].description };
+          data = body;
+          dataTrip = trip;
+          results.classList.remove("stale");
+          status.textContent = `${plural(data.routes.length, "route")} compared.`;
+          render();
+          results.focus({ preventScroll: true });
+          loadExplanation(data.explainId);
+        } catch (err) {
+          status.className = "error";
+          status.textContent = err.message;
+          // Old results stay for context but are dimmed so they are not mistaken for this search.
+          if (data) results.classList.add("stale");
+          else results.innerHTML = "";
+        } finally {
+          btn.disabled = false;
+        }
+      });
+      // Switching scenarios reruns the same trip so the change on the map is immediate.
+      document.getElementById("scenario").addEventListener("change", () => form.requestSubmit());
+      // Open straight onto a result so the demo starts with something on screen.
+      form.requestSubmit();
+    </script>
+    <script
+      async
+      src="https://maps.googleapis.com/maps/api/js?key=__MAPS_KEY__&libraries=geometry&callback=initMap"
+    ></script>
+  </body>
+</html>
