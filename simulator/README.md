@@ -1,5 +1,7 @@
 # MechDog bridge simulation
 
+See [compatibility tests and detailed evidence](COMPATIBILITY.md) for the full verification scope.
+
 PyBullet's bundled eight-motor Minitaur is an **uncalibrated MechDog surrogate**.
 The scene exercises motors, contact and rendering. It does not reproduce MechDog
 walking/action groups, the frozen Hiwonder library, or the ESP32 firmware image.
