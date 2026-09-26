@@ -37,6 +37,7 @@
     "Manhole": "CAUTION: Utility manhole cover or depression in pathway ahead. Guiding around.",
     "Traffic Cone": "Work zone hazard detected. Pivoting to detour around marker.",
     "Teraffic Barrel": "Construction drum ahead. Bypassing.",
+    "Traffic Barrel": "Construction drum ahead. Bypassing.",
     "Fire hydrant": "Low metal obstruction to your side. Cane clearance clear.",
     "Guard rail": "Sidewalk barrier on side. Following alignment guide."
   },

@@ -1,7 +1,5 @@
 #!/bin/bash
 #SBATCH --job-name=yolo-real-b200
-#SBATCH --mail-type=END,FAIL
-#SBATCH --mail-user=speppers5329@fgcu.edu
 #SBATCH --partition=hpg-b200
 #SBATCH --account=cqu.fgcu
 #SBATCH --qos=cqu.fgcu
