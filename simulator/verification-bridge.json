@@ -1,0 +1,26 @@
+{
+  "scope": "Unmodified Bridge logic on CPython with surrogate hardware; not ESP32 firmware emulation",
+  "firmware_sha256": "3c4d012d2f050b3621d37d408eb08bfc72aedde86459e4953d9dad7b63c3977e",
+  "checks": {
+    "hello": true,
+    "telemetry": true,
+    "bad_json_rejected": true,
+    "command_clamping": true,
+    "move_reaches_physics": true,
+    "heartbeat_keeps_command": true,
+    "stop": true,
+    "watchdog_stop": true,
+    "physics_sonar": true,
+    "obstacle_stop": true,
+    "low_battery_rejects_move": true,
+    "fall_rejects_move": true,
+    "upright_event": true,
+    "walking_before_disconnect": true,
+    "disconnect_stops": true,
+    "panel_connects": true,
+    "panel_reads_telemetry": true,
+    "panel_move": true,
+    "panel_stop": true
+  },
+  "passed": true
+}

@@ -1,0 +1,38 @@
+{
+  "model": "PyBullet Minitaur (MechDog surrogate, uncalibrated)",
+  "pybullet_version": "3.2.7",
+  "connection": "DIRECT",
+  "steps": 2400,
+  "simulated_seconds": 10.0,
+  "contact_steps": 2366,
+  "motor_excursion_rad": [
+    0.23999974777844324,
+    0.24004480472045264,
+    0.23996118095200036,
+    0.2400181010648026,
+    0.23998178187000363,
+    0.24002874517338801,
+    0.24004642624771133,
+    0.2400389559459164
+  ],
+  "final_position_m": [
+    -0.026651084650675547,
+    -0.011795438234177206,
+    0.16634744674616464
+  ],
+  "final_roll_pitch_rad": [
+    0.0005768830413563479,
+    0.0020404047832684943
+  ],
+  "robot_pixels": 17305,
+  "checks": {
+    "eight_motors": true,
+    "four_leg_constraints": true,
+    "ground_contact": true,
+    "all_motors_moved": true,
+    "body_above_ground": true,
+    "upright_at_end": true,
+    "robot_rendered": true
+  },
+  "passed": true
+}
