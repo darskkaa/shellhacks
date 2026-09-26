@@ -6,6 +6,7 @@ and live YOLO vision detections (localhost:8001/detections).
 Translates rider voice commands + vision perception into real-time quadruped motor actions:
   - walk(stride, angle)
   - stop()
+  - set_speed_mode(normal | brisk | sprint) -> bridge gait cadence
   - speak_guidance(text)
 """
 
@@ -18,6 +19,16 @@ import urllib.request
 import urllib.error
 import argparse
 from pathlib import Path
+
+from real_world_escort import RealDogController
+
+GAIT_PRESETS = {
+    "normal": RealDogController.GAIT_DEFAULT,
+    "brisk": RealDogController.GAIT_FAST,
+    "sprint": RealDogController.GAIT_SPRINT,
+}
+# Faster gaits shorten reaction distance, so any of these in view forces the default gait.
+SLOW_DOWN_CLASSES = {"curb_drop_off_hazard", "ped_signal_stop", "conflict_vehicle_cyclist"}
 
 # Load GEMINI_API_KEY from environment or repo root .env
 def get_api_key():
@@ -38,6 +49,7 @@ class MechDogBridgeClient:
         self.host = host
         self.port = port
         self.sock = None
+        self.gait = None
         self.connect()
 
     def connect(self):
@@ -45,6 +57,7 @@ class MechDogBridgeClient:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.sock.settimeout(2.0)
             self.sock.connect((self.host, self.port))
+            self.gait = None  # bridge may have rebooted or been reset; force resend
             print(f"[DogClient] Connected to MechDog Bridge at {self.host}:{self.port}")
         except Exception as e:
             print(f"[DogClient Error] Could not connect to {self.host}:{self.port}: {e}")
@@ -69,6 +82,17 @@ class MechDogBridgeClient:
         print(f"🐕 [EXECUTE MOVE] Stride: {stride} | Angle: {angle}°")
         self.send_cmd({"t": "move", "stride": stride, "angle": angle})
 
+    def set_gait(self, lift_ms, contact_ms, lift_mm):
+        gait = (lift_ms, contact_ms, lift_mm)
+        if gait == self.gait:
+            return
+        print(f"⚙️  [EXECUTE GAIT] lift {lift_ms} ms / contact {contact_ms} ms / lift {lift_mm} mm")
+        self.send_cmd({"t": "gait", "lift_ms": lift_ms, "contact_ms": contact_ms, "lift_mm": lift_mm})
+        self.gait = gait if self.sock else None
+
+    def set_speed_mode(self, mode):
+        self.set_gait(*GAIT_PRESETS.get(mode, GAIT_PRESETS["normal"]))
+
     def stop(self):
         print("🛑 [EXECUTE STOP]")
         self.send_cmd({"t": "stop"})
@@ -86,11 +110,11 @@ class MechDogBridgeClient:
 
 
 class GeminiDogAgent:
-    def __init__(self, api_key: str, dog_host="127.0.0.1", dog_port=5005, vision_url="http://localhost:8001/detections"):
-        self.api_key = api_key
+    def __init__(self, api_key: str = None, dog_host="127.0.0.1", dog_port=5005, vision_url="http://localhost:8001/detections"):
+        self.api_key = api_key or get_api_key()
         self.dog = MechDogBridgeClient(host=dog_host, port=dog_port)
         self.vision_url = vision_url
-        self.gemini_endpoint = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={self.api_key}"
+        self.gemini_endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent"
 
     def fetch_vision_detections(self):
         try:
@@ -115,11 +139,17 @@ Safety Rules:
 - If curb_ramp_ada is detected ahead, align dog angle toward ramp center and walk forward (stride 40 to 60).
 - If waymo_door_handle is detected, guide passenger directly to handle touchpoint.
 
+Speed Rules (speed_mode sets gait cadence: normal 2.0, brisk 4.0, sprint 5.0 steps/s):
+- "sprint": only while crossing a street on ped_signal_walk with no conflict_vehicle_cyclist, stride 80 to 100.
+- "brisk": clear, hazard-free path approaching the waymo_door_handle.
+- "normal": everything else, including near any curb edge, ramp alignment, turns, or uncertainty.
+
 Respond STRICTLY in JSON format with this exact schema:
 {
   "action": "walk" | "stop",
   "stride": integer (-100 to 100),
   "angle": integer (-30 to 30),
+  "speed_mode": "normal" | "brisk" | "sprint",
   "led_color": [r, g, b],
   "speech": "Natural spoken sentence guiding the visually impaired rider"
 }
@@ -143,13 +173,28 @@ Decide the immediate quadruped motion and spoken escort guidance. Output raw val
                 }
             }
             try:
+                import ssl
+                ctx = ssl.create_default_context()
+                for ca in ['/etc/ssl/certs/ca-certificates.crt', '/etc/pki/tls/certs/ca-bundle.crt', '/etc/ssl/cert.pem']:
+                    if os.path.exists(ca):
+                        ctx.load_verify_locations(ca)
+                        break
+                try:
+                    import certifi
+                    ctx.load_verify_locations(certifi.where())
+                except Exception:
+                    pass
+
                 req = urllib.request.Request(
                     self.gemini_endpoint,
                     data=json.dumps(payload).encode("utf-8"),
-                    headers={"Content-Type": "application/json"},
+                    headers={
+                        "Content-Type": "application/json",
+                        "x-goog-api-key": self.api_key
+                    },
                     method="POST"
                 )
-                with urllib.request.urlopen(req, timeout=5.0) as response:
+                with urllib.request.urlopen(req, timeout=8.0, context=ctx) as response:
                     result = json.loads(response.read().decode("utf-8"))
                     text_response = result["candidates"][0]["content"]["parts"][0]["text"]
                     return json.loads(text_response)
@@ -179,6 +224,7 @@ Decide the immediate quadruped motion and spoken escort guidance. Output raw val
             "action": "stop",
             "stride": 0,
             "angle": 0,
+            "speed_mode": "normal",
             "led_color": [255, 0, 0],
             "speech": "Obstacle scan active. Standing by safely."
         }
@@ -192,11 +238,16 @@ Decide the immediate quadruped motion and spoken escort guidance. Output raw val
 
         # 2. Get Gemini autonomous decision
         decision = self.decide_action(rider_goal, detections)
-        print(f"🤖 [Gemini Decision] Action: {decision.get('action')} | Stride: {decision.get('stride')} | Angle: {decision.get('angle')}°")
+        speed_mode = decision.get("speed_mode", "normal")
+        if speed_mode not in GAIT_PRESETS or any(d.get("class") in SLOW_DOWN_CLASSES for d in detections):
+            speed_mode = "normal"
+        decision["speed_mode"] = speed_mode
+        print(f"🤖 [Gemini Decision] Action: {decision.get('action')} | Stride: {decision.get('stride')} | Angle: {decision.get('angle')}° | Speed: {speed_mode}")
         print(f"🗣️  [Voice Guidance] \"{decision.get('speech')}\"")
 
         # 3. Execute on dog
         if decision.get("action") == "walk":
+            self.dog.set_speed_mode(speed_mode)
             self.dog.move(stride=decision.get("stride", 50), angle=decision.get("angle", 0))
         else:
             self.dog.stop()

@@ -4,6 +4,15 @@ Extracts gait timing and stride parameters directly from firmware and SDK.
 Calculates ground speed (m/s), walking pace, and street crossing duration.
 """
 
+from real_world_escort import RealDogController
+
+GAITS = {
+    "DEFAULT": RealDogController.GAIT_DEFAULT,
+    "FAST": RealDogController.GAIT_FAST,
+    "SPRINT": RealDogController.GAIT_SPRINT,
+}
+
+
 def compute_mechdog_speed(stride_mm=50, lift_ms=150, contact_ms=200, slip_factor=0.85):
     """
     Computes theoretical and real-world ground velocity for Hiwonder MechDog.
@@ -35,18 +44,22 @@ if __name__ == "__main__":
     print("      HIWONDER MECHDOG PHYSICAL VELOCITY ANALYSIS       ")
     print("========================================================\n")
 
-    strides = [30, 40, 50, 60, 80, 100]
-    print(f"{'Stride':<10} | {'Cadence':<12} | {'Real Speed':<14} | {'Speed (mph)':<12} | {'Time (6m Cross)':<15}")
-    print("-" * 75)
+    strides = [40, 60, 80, 100]
+    print(f"{'Gait':<8} | {'lift/contact/lift_mm':<20} | {'Stride':<7} | {'Cadence':<11} | {'Speed':<9} | {'mph':<5} | 6m Cross")
+    print("-" * 87)
 
-    for s in strides:
-        m = compute_mechdog_speed(stride_mm=s, lift_ms=150, contact_ms=200)
-        print(f"{s} mm{'':<5} | {m['cadence_steps_per_sec']} steps/s   | {m['real_speed_mps']} m/s ({m['real_speed_mps']*100:.0f} cm/s) | {m['real_speed_mph']} mph      | {m['time_to_cross_6m_street_sec']} s")
+    for name, (lift_ms, contact_ms, lift_mm) in GAITS.items():
+        for s in strides:
+            m = compute_mechdog_speed(stride_mm=s, lift_ms=lift_ms, contact_ms=contact_ms)
+            timing = f"{lift_ms}/{contact_ms}/{lift_mm}"
+            print(f"{name:<8} | {timing:<20} | {s:>3} mm  | {m['cadence_steps_per_sec']:.1f} steps/s | {m['real_speed_mps']:.3f} m/s | {m['real_speed_mph']:.2f}  | {m['time_to_cross_6m_street_sec']:5.1f} s")
+        print("-" * 87)
 
+    top = compute_mechdog_speed(100, *GAITS["SPRINT"][:2])
     print("\n[Comparison with Human Pedestrian Pace]:")
     print("  • Average adult walking speed: 1.20 - 1.40 m/s (~3.0 mph)")
     print("  • Blind / cane user walking speed: 0.80 - 1.00 m/s (~2.0 mph)")
-    print("  • MechDog max speed (stride 100): ~0.25 - 0.28 m/s (~0.6 mph)")
-    print("  • Conclusion: Robot dog travels at ~1/3 to 1/4 the speed of a human walking pace.")
+    print(f"  • MechDog top speed (SPRINT gait, stride 100): {top['real_speed_mps']:.2f} m/s ({top['real_speed_mph']:.2f} mph)")
+    print("  • Conclusion: even at sprint cadence the dog travels at ~1/2 of a cane user's pace.")
     print("    In real life, the blind person does NOT get towed; the dog walks alongside")
     print("    the handler's left leg as a short-range curb scout and obstacle radar.\n")

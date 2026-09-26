@@ -25,15 +25,17 @@
 ## ⏱️ Crosswalk Speed & Timing Analysis
 Crucial safety consideration for street crossings:
 
-| Mode | Stride Parameter | Real-World Speed | Time to Cross 6m Street (2 lanes) | Pedestrian Clearance Standard (MUTCD) |
-|---|---|---|---|---|
-| **Sidewalk Escort** | `stride 40` | $\sim 0.25\text{ m/s}$ | **24.0 seconds** | ⚠️ Too slow for street crossing! Use only on sidewalk. |
-| **Crosswalk Transit** | `stride 100` | $\sim 0.60\text{ m/s}$ | **10.0 seconds** | ✅ **Safe**. Clears street well inside typical 18–22s signal window. |
+| Mode | Stride Parameter | Gait Preset | Cadence | Ground Speed | 6m Street Cross | Notes |
+|---|---|---|---|---|---|---|
+| **Sidewalk Escort (Default)** | `stride 40` | `DEFAULT` (200/300/20) | 2.0 steps/s | 0.07 m/s | 88.2 s | Tactile paving & curb scanning |
+| **Sidewalk Escort (Brisk)** | `stride 40` | `FAST` (100/150/20) | 4.0 steps/s | 0.14 m/s | 44.1 s | Brisk sidewalk navigation |
+| **Crosswalk Transit (Sprint)** | `stride 100` | `SPRINT` (80/120/18) | 5.0 steps/s | **0.43 m/s (~1.0 mph)** | **14.1 s** | ✅ Clears street within standard signal window |
 
-### The Two-Speed Safety Invariant
-1. **On Sidewalk / Approach**: Use `stride 40` (`[w]`). Slow, controlled pace for scanning ADA tactile paving, curb drop-offs, and trash obstacles.
-2. **On Crosswalk Street**: Once the dog identifies the `curb_ramp_ada` and pedestrian signal confirms `ped_signal_walk`, switch immediately to **`stride 100`** (`[c]`) to sprint across the road alongside the handler!
-3. **Clearance Gate**: Never initiate crossing if the WALK signal has already been active for $>5\text{ seconds}$ (insufficient clearance time remaining).
+### The Dynamic Gait Speed Architecture
+1. **On Sidewalk / Approach**: Use standard stride (`[w]`). Slow, controlled pace for scanning ADA tactile paving, curb drop-offs, and trash obstacles.
+2. **Speed Toggle (`[f]`)**: Press `[f]` in `tools/real_world_escort.py` to toggle between Normal and Fast mode (activates `FAST` gait on sidewalks, `SPRINT` gait on crosswalks).
+3. **On Crosswalk Street**: Once the dog identifies the `curb_ramp_ada` and pedestrian signal confirms `ped_signal_walk`, press `[c]` (or let Gemini select `speed_mode: "sprint"`) to sprint across the road at 5.0 steps/s (~1 mph)!
+4. **Autonomous Safety Guard**: In `gemini_dog_agent.py`, if a `curb_drop_off_hazard`, `ped_signal_stop`, or `conflict_vehicle_cyclist` is detected, speed is automatically demoted to `normal` regardless of rider goals.
 
 ---
 

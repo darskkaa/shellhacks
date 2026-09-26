@@ -6,7 +6,7 @@ Safety Guards:
   1. Hardware Sonar Hard Stop: Automatically halts if obstacle < 35 cm.
   2. Tilt / Fall Protection: Immediately stops if pitch/roll tilt > 35 degrees.
   3. Battery Gate: Enforces battery >= 7.0V before permitting escort traversal.
-  4. Speed Capping: Limits walk stride to 40 (human walking speed).
+  4. Speed Capping: Limits sidewalk stride to 40; faster gait cadence only when fast mode is toggled on.
   5. Keyboard Emergency Stop: Pressing Spacebar or Ctrl+C immediately stops all motion.
   6. Zero-Tolerance Drop-off Guard: Prohibits forward movement when curb_drop_off_hazard is present.
 """
@@ -27,6 +27,11 @@ C = "\033[96m"
 W = "\033[0m"
 
 class RealDogController:
+    # (lift_ms, contact_ms, lift_mm) for the bridge "gait" command; cadence = 1000 / (lift_ms + contact_ms)
+    GAIT_DEFAULT = (200, 300, 20)  # 2.0 steps/s, sidewalk precision (stock bridge default)
+    GAIT_FAST = (100, 150, 20)     # 4.0 steps/s, brisk escort
+    GAIT_SPRINT = (80, 120, 18)    # 5.0 steps/s, crosswalk transit
+
     def __init__(self, host="192.168.4.1", port=5005, max_stride=40, min_sonar_cm=35):
         self.host = host
         self.port = port
@@ -38,6 +43,7 @@ class RealDogController:
         self.batt_v = 7.4
         self.dist_cm = 999.0
         self.is_walking = False
+        self.gait = None
         self.lock = threading.Lock()
 
         self.connect()
@@ -49,6 +55,7 @@ class RealDogController:
             self.sock.settimeout(3.0)
             self.sock.connect((self.host, self.port))
             self.sock.settimeout(None)
+            self.gait = None  # bridge may have rebooted or been reset; force resend
             print(f"{G}[RealDog] Connected to MechDog Bridge successfully!{W}")
             # Start telemetry reader
             threading.Thread(target=self._reader_loop, daemon=True).start()
@@ -102,7 +109,15 @@ class RealDogController:
         except Exception:
             pass
 
-    def walk_safe(self, stride=None, angle=0, is_crosswalk=False):
+    def set_gait(self, lift_ms, contact_ms, lift_mm):
+        gait = (lift_ms, contact_ms, lift_mm)
+        if gait == self.gait:
+            return
+        self._send({"t": "gait", "lift_ms": lift_ms, "contact_ms": contact_ms, "lift_mm": lift_mm})
+        self.gait = gait if self.sock else None
+        print(f"{C}⚙️  Gait: lift {lift_ms} ms / contact {contact_ms} ms / lift {lift_mm} mm ({1000 / (lift_ms + contact_ms):.1f} steps/s){W}")
+
+    def walk_safe(self, stride=None, angle=0, is_crosswalk=False, fast_mode=False):
         # 1. Battery check
         if self.batt_v < 6.8:
             print(f"{R}⚠️ Low battery ({self.batt_v:.2f}V < 6.8V). Motion inhibited.{W}")
@@ -120,7 +135,14 @@ class RealDogController:
         safe_stride = max(-100, min(100, stride if is_crosswalk else min(self.max_stride, stride)))
         safe_angle = max(-25, min(25, angle))
 
-        mode_label = f"{R}[CROSSWALK SPRINT (Stride 100)]{W}" if is_crosswalk else f"{C}[SIDEWALK ESCORT (Stride {safe_stride})]{W}"
+        if not fast_mode:
+            gait = self.GAIT_DEFAULT
+        else:
+            gait = self.GAIT_SPRINT if is_crosswalk else self.GAIT_FAST
+        self.set_gait(*gait)
+
+        pace = " +FAST GAIT" if fast_mode else ""
+        mode_label = f"{R}[CROSSWALK SPRINT{pace} (Stride {safe_stride})]{W}" if is_crosswalk else f"{C}[SIDEWALK ESCORT{pace} (Stride {safe_stride})]{W}"
         print(f"🐕 {mode_label} Angle: {safe_angle}°")
 
         self.is_walking = True
@@ -178,24 +200,30 @@ def main():
     print("Commands:")
     print("  [w] Walk forward (sidewalk pace, stride 40)")
     print("  [c] Fast Crosswalk Transit (rapid crossing, stride 100)")
+    print("  [f] Toggle Fast Speed (Brisk/Sprint): 4.0 steps/s sidewalk, 5.0 steps/s crosswalk")
     print("  [s] Stop dog immediately")
     print("  [a] Turn slightly left (15 deg)")
     print("  [d] Turn slightly right (15 deg)")
     print("  [q] Quit and shut down")
 
+    fast = False
     try:
         while True:
-            cmd = input(f"\n[{dog.batt_v:.1f}V | {dog.dist_cm:.0f}cm] Command (w/c/s/a/d/q): ").strip().lower()
+            speed = "FAST" if fast else "NORMAL"
+            cmd = input(f"\n[{dog.batt_v:.1f}V | {dog.dist_cm:.0f}cm | {speed}] Command (w/c/f/s/a/d/q): ").strip().lower()
             if cmd == "w":
-                dog.walk_safe(is_crosswalk=False)
+                dog.walk_safe(is_crosswalk=False, fast_mode=fast)
             elif cmd == "c":
-                dog.walk_safe(is_crosswalk=True)
+                dog.walk_safe(is_crosswalk=True, fast_mode=fast)
+            elif cmd == "f":
+                fast = not fast
+                print(f"{Y}Fast speed {'ON (Brisk/Sprint gait)' if fast else 'OFF (default gait)'}; applies on next walk command.{W}")
             elif cmd == "s":
                 dog.stop()
             elif cmd == "a":
-                dog.walk_safe(stride=args.max_stride, angle=-15)
+                dog.walk_safe(stride=args.max_stride, angle=-15, fast_mode=fast)
             elif cmd == "d":
-                dog.walk_safe(stride=args.max_stride, angle=15)
+                dog.walk_safe(stride=args.max_stride, angle=15, fast_mode=fast)
             elif cmd == "q":
                 break
             else:
