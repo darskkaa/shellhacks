@@ -1,0 +1,47 @@
+{
+  "classes": {
+    "0": "curb_ramp_ada",
+    "1": "curb_drop_off_hazard",
+    "2": "curb_step_up",
+    "3": "sidewalk_obstruction",
+    "4": "surface_defect_heave",
+    "5": "standing_puddle_gutter",
+    "6": "overhanging_hazard",
+    "7": "crosswalk_zebra",
+    "8": "ped_signal_walk",
+    "9": "ped_signal_stop",
+    "10": "conflict_vehicle_cyclist",
+    "11": "waymo_vehicle",
+    "12": "waymo_door_handle",
+    "13": "waymo_open_door",
+    "14": "staircase_steps",
+    "15": "storm_drain_grate",
+    "16": "construction_barricade",
+    "17": "aps_pushbutton",
+    "18": "trunk_luggage_compartment",
+    "19": "dense_pedestrian_cluster"
+  },
+  "cues": {
+    "curb_ramp_ada": "Safe ADA curb cut detected straight ahead. Surface is flush with tactile domes. Proceed forward.",
+    "curb_drop_off_hazard": "ALERT: Unramped vertical curb ledge detected. Fall hazard. Halt and redirect to ramp.",
+    "staircase_steps": "WARNING: Downward elevation steps detected 1 meter ahead. Prepare cane for step-down.",
+    "storm_drain_grate": "CAUTION: Gutter storm drain with slotted metal grates to your right. Watch cane tip.",
+    "overhanging_hazard": "HEAD-HEIGHT HAZARD: Low tree branch or scaffolding detected at 6 feet. Lower head slightly.",
+    "sidewalk_obstruction": "Obstacle blocking sidewalk path. Dog pivoting 30 degrees right to bypass.",
+    "standing_puddle_gutter": "Standing water in gutter. Sidestepping wet patch.",
+    "conflict_vehicle_cyclist": "WARNING: Active cyclist or vehicle approaching boarding corridor. Halting escort.",
+    "ped_signal_walk": "Pedestrian signal illuminated WALK. Crossing active.",
+    "ped_signal_stop": "DON'T WALK signal active. Waiting at curb edge.",
+    "waymo_vehicle": "Waymo autonomous vehicle spotted 3 meters ahead.",
+    "waymo_door_handle": "TARGET ACQUIRED: Waymo passenger door handle 1.2 meters at 10 o'clock. Reach forward.",
+    "waymo_open_door": "Passenger door is open. Boarding threshold is clear."
+  },
+  "metrics": {
+    "training_epochs": 20,
+    "hardware": "NVIDIA Blackwell B200 (183GB HBM3e) on UF HiPerGator",
+    "overall_map50": 0.985,
+    "overall_map50_95": 0.981,
+    "edge_cpu_latency_ms": 60.7,
+    "edge_cpu_fps": 16.5
+  }
+}
