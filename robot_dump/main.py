@@ -1,6 +1,6 @@
 # MechDog WiFi command bridge — MicroPython main.py for the Hiwonder MechDog ESP32 controller.
 #
-# Implements PROTOCOL.md (newline-delimited JSON over TCP) on top of Hiwonder's stock motion library so the
+# Implements PROTOCOL.md (newline-delimited JSON over TCP, and over the USB-serial REPL port) on top of Hiwonder's stock motion library so the
 # Arduino UNO Q can drive the dog without touching servo wiring or calibration. Back up the factory main.py
 # before uploading this file (see README.md in this folder).
 
@@ -8,6 +8,7 @@ import gc
 import json
 import select
 import socket
+import sys
 import time
 
 import config
@@ -284,6 +285,31 @@ def wifi_ap():
 # ---------------------------------------------------------------------------------------------------------
 # Server
 # ---------------------------------------------------------------------------------------------------------
+class UsbLink:
+    """The USB-serial REPL port (CH340, 115200) as a permanent bridge client: JSON lines in on stdin, out on
+    stdout. print() output shares the port, so hosts must skip non-JSON lines. A UART cannot tell when the
+    cable is pulled, so the watchdog, not link_lost, is what stops the dog on a USB drop."""
+
+    def __init__(self):
+        self._in = sys.stdin.buffer
+        self._out = sys.stdout.buffer
+        self._p = select.poll()
+        self._p.register(sys.stdin, select.POLLIN)
+
+    def recv(self, n):
+        # stdin.read(n) blocks until n bytes arrive, so take only what is already buffered.
+        out = b""
+        while len(out) < n and self._p.poll(0):
+            out += self._in.read(1)
+        return out
+
+    def send(self, data):
+        self._out.write(data)
+
+    def close(self):
+        pass
+
+
 class Bridge:
     def __init__(self, hal):
         self.hal = hal
@@ -313,6 +339,10 @@ class Bridge:
         self.srv.listen(2)
         self.srv.setblocking(False)
         self.poller.register(self.srv, select.POLLIN)
+        self.usb = UsbLink()
+        self.clients.append(self.usb)
+        self.bufs[id(self.usb)] = b""
+        self.poller.register(sys.stdin, select.POLLIN)
         try:
             self.port = self.srv.getsockname()[1]
         except Exception:
@@ -342,6 +372,8 @@ class Bridge:
             self.send(c, msg)
 
     def drop(self, c):
+        if c is self.usb:
+            return  # never unplug the UART client; the watchdog covers a dead cable
         if c in self.clients:
             self.clients.remove(c)
             self.bufs.pop(id(c), None)
@@ -353,8 +385,11 @@ class Bridge:
                 c.close()
             except Exception:
                 pass
-        if not self.clients:
+        if not any(x is not self.usb for x in self.clients):
             self.safe_stop("link_lost")
+
+    def hello(self, c):
+        self.send(c, {"t": "hello", "proto": 1, "fw": config.FW_VERSION, "name": "MechDog", "caps": self.hal.caps})
 
     def accept(self):
         try:
@@ -365,7 +400,7 @@ class Bridge:
         self.clients.append(c)
         self.bufs[id(c)] = b""
         self.poller.register(c, select.POLLIN)
-        self.send(c, {"t": "hello", "proto": 1, "fw": config.FW_VERSION, "name": "MechDog", "caps": self.hal.caps})
+        self.hello(c)
         print("client", addr)
 
     def read(self, c):
@@ -419,7 +454,9 @@ class Bridge:
             clamped = clamped or (cv != v)
             return cv
 
-        if t == "ping":
+        if t == "hello":
+            self.hello(c)  # USB hosts attach without a connect event, so they ask for caps
+        elif t == "ping":
             p = {"t": "pong", "ts": self.uptime()}
             if mid is not None:
                 p["id"] = mid
@@ -537,11 +574,14 @@ class Bridge:
         self.broadcast(msg)
 
     def run(self):
-        print("bridge listening on", config.PORT)
+        print("bridge listening on", config.PORT, "and USB serial")
+        self.hello(self.usb)
         while self.running:
             for sock, ev in self.poller.poll(config.LOOP_MS):
                 if sock is self.srv:
                     self.accept()
+                elif sock is sys.stdin:
+                    self.read(self.usb)
                 elif ev & select.POLLIN:
                     self.read(sock)
                 else:
