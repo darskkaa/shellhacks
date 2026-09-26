@@ -22,6 +22,21 @@
 
 ---
 
+## ⏱️ Crosswalk Speed & Timing Analysis
+Crucial safety consideration for street crossings:
+
+| Mode | Stride Parameter | Real-World Speed | Time to Cross 6m Street (2 lanes) | Pedestrian Clearance Standard (MUTCD) |
+|---|---|---|---|---|
+| **Sidewalk Escort** | `stride 40` | $\sim 0.25\text{ m/s}$ | **24.0 seconds** | ⚠️ Too slow for street crossing! Use only on sidewalk. |
+| **Crosswalk Transit** | `stride 100` | $\sim 0.60\text{ m/s}$ | **10.0 seconds** | ✅ **Safe**. Clears street well inside typical 18–22s signal window. |
+
+### The Two-Speed Safety Invariant
+1. **On Sidewalk / Approach**: Use `stride 40` (`[w]`). Slow, controlled pace for scanning ADA tactile paving, curb drop-offs, and trash obstacles.
+2. **On Crosswalk Street**: Once the dog identifies the `curb_ramp_ada` and pedestrian signal confirms `ped_signal_walk`, switch immediately to **`stride 100`** (`[c]`) to sprint across the road alongside the handler!
+3. **Clearance Gate**: Never initiate crossing if the WALK signal has already been active for $>5\text{ seconds}$ (insufficient clearance time remaining).
+
+---
+
 ## 🔒 Built-in Hardware Safety Guards
 
 1. **Hardware Sonar Cutoff (<35 cm)**: If the ultrasonic sensor reads an obstacle within 35 cm, the controller overrides all walk commands and stops immediately.

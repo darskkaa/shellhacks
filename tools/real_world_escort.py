@@ -102,7 +102,7 @@ class RealDogController:
         except Exception:
             pass
 
-    def walk_safe(self, stride=35, angle=0):
+    def walk_safe(self, stride=None, angle=0, is_crosswalk=False):
         # 1. Battery check
         if self.batt_v < 6.8:
             print(f"{R}⚠️ Low battery ({self.batt_v:.2f}V < 6.8V). Motion inhibited.{W}")
@@ -113,9 +113,15 @@ class RealDogController:
             print(f"{R}⚠️ Path blocked: Sonar object at {self.dist_cm:.1f} cm. Motion inhibited.{W}")
             return False
 
-        # 3. Clamp stride and angle
-        safe_stride = max(-self.max_stride, min(self.max_stride, stride))
+        # 3. Dynamic Stride: Stride 40 on sidewalk, Stride 100 for rapid street crossing!
+        if stride is None:
+            stride = 100 if is_crosswalk else self.max_stride
+
+        safe_stride = max(-100, min(100, stride if is_crosswalk else min(self.max_stride, stride)))
         safe_angle = max(-25, min(25, angle))
+
+        mode_label = f"{R}[CROSSWALK SPRINT (Stride 100)]{W}" if is_crosswalk else f"{C}[SIDEWALK ESCORT (Stride {safe_stride})]{W}"
+        print(f"🐕 {mode_label} Angle: {safe_angle}°")
 
         self.is_walking = True
         self._send({"t": "move", "stride": safe_stride, "angle": safe_angle})
@@ -170,7 +176,8 @@ def main():
 
     print(f"\n{G}Ready for Private Road Testing.{W}")
     print("Commands:")
-    print("  [w] Walk forward (safe stride)")
+    print("  [w] Walk forward (sidewalk pace, stride 40)")
+    print("  [c] Fast Crosswalk Transit (rapid crossing, stride 100)")
     print("  [s] Stop dog immediately")
     print("  [a] Turn slightly left (15 deg)")
     print("  [d] Turn slightly right (15 deg)")
@@ -178,9 +185,11 @@ def main():
 
     try:
         while True:
-            cmd = input(f"\n[{dog.batt_v:.1f}V | {dog.dist_cm:.0f}cm] Command (w/s/a/d/q): ").strip().lower()
+            cmd = input(f"\n[{dog.batt_v:.1f}V | {dog.dist_cm:.0f}cm] Command (w/c/s/a/d/q): ").strip().lower()
             if cmd == "w":
-                dog.walk_safe(stride=args.max_stride, angle=0)
+                dog.walk_safe(is_crosswalk=False)
+            elif cmd == "c":
+                dog.walk_safe(is_crosswalk=True)
             elif cmd == "s":
                 dog.stop()
             elif cmd == "a":
