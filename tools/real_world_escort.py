@@ -31,7 +31,7 @@ W = "\033[0m"
 
 VISION_URL = "http://localhost:8001/detections"
 VISION_MIN_CONF = 0.45
-WALK_CLASSES = {"ped_signal_walk", "ped_signal_stop", "crosswalk_zebra"}
+WALK_CLASSES = {"ped_signal_walk", "ped_signal_stop"}
 STOP_CLASSES = {"curb_drop_off_hazard", "conflict_vehicle_cyclist"}
 
 
@@ -338,23 +338,24 @@ class AutoVision:
             dog = self.dog
             if labels & STOP_CLASSES:
                 self.last_seen = now
-                if self.state != "stop" or dog.is_walking:
+                if dog.is_walking or self.state != "stop":
                     dog.stop()
                     dog.set_color(255, 0, 0)
-                    print(f"\n{R}🔴 [VISION] STOP / HAZARD DETECTED ({', '.join(sorted(labels & STOP_CLASSES))}) -> Halting safely!{W}")
+                    print(f"\n{R}🔴 [VISION] STOP HAZARD ({', '.join(sorted(labels & STOP_CLASSES))}) -> Halting safely!{W}")
                 self.state = "stop"
             elif labels & WALK_CLASSES:
                 self.last_seen = now
-                if not dog.is_walking and dog.walk_safe(is_crosswalk=True, fast_mode=self.fast):
-                    dog.set_color(0, 255, 0)
-                    print(f"\n{G}🟢 [VISION] WALK TRIGGER ({', '.join(sorted(labels & WALK_CLASSES))}) -> Walking forward!{W}")
-                self.state = "walk"
+                if not dog.is_walking:
+                    if dog.walk_safe(is_crosswalk=True, fast_mode=self.fast):
+                        dog.set_color(0, 255, 0)
+                        print(f"\n{G}🟢 [VISION] WALK TRIGGER ({', '.join(sorted(labels & WALK_CLASSES))}) -> Walking forward!{W}")
+                        self.state = "walk"
+                else:
+                    dog.heartbeat()
             elif dog.is_walking and now - self.last_seen >= self.LOST_S:
                 print(f"\n{Y}🟡 [VISION] No signal for {self.LOST_S:.0f}s -> Stopping for safety.{W}")
                 dog.stop()
                 self.state = None
-            if dog.is_walking:
-                dog.heartbeat()  # bridge watchdog halts a walk after 1.5 s without traffic
 
 
 def main():
