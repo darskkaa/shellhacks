@@ -4,16 +4,16 @@ ShellHacks 2026 project: driving a **Hiwonder MechDog** (ESP32 quadruped robot) 
 
 ## Layout
 
-| Path                           | What's in it                                                                                                                                                                                                  |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `robot_dump/`                  | Files backed up from the dog's ESP32 (MicroPython 1.21). `main.py` is our custom WiFi bridge, a JSON-over-TCP command server on port 5005.                                                                    |
-| `robot_dump/config.example.py` | Bridge config template: WiFi mode, SSID/password, port, safety thresholds. Copy it to `config.py` and fill in your network.                                                                                   |
-| `tools/dog_panel.py`           | Local web control panel at http://localhost:8000. Talks to the dog over WiFi, falls back to USB serial.                                                                                                       |
-| `tools/vision_stream.py`       | Live YOLO26 detection on the webcam at http://localhost:8001 (MJPEG stream + JSON detections).                                                                                                                |
-| `models/`                      | `yolo26n.pt` weights and sample camera snapshots.                                                                                                                                                             |
-| `hiwonder_mechdog_sdk/`        | Vendored copy of Hiwonder's official SDK and examples ([Hiwonder/MechDog](https://github.com/Hiwonder/MechDog)).                                                                                              |
-| `docs/`                        | Hardware research, the SDK/device reference (**read `mechdog-sdk-reference.md` first**), and ShellHacks event notes.                                                                                          |
-| `saferoute/`                   | **SafeRoute Miami** (Waymo track): a separate Node web app that ranks and reroutes Miami drives around crashes, flooding, construction and hurricane surge. See [`saferoute/README.md`](saferoute/README.md). |
+| Path | What's in it |
+|---|---|
+| `robot_dump/` | Files backed up from the dog's ESP32 (MicroPython 1.21). `main.py` is our custom WiFi bridge, a JSON-over-TCP command server on port 5005. |
+| `robot_dump/config.example.py` | Bridge config template: WiFi mode, SSID/password, port, safety thresholds. Copy it to `config.py` and fill in your network. |
+| `tools/dog_panel.py` | Local web control panel at http://localhost:8000. Talks to the dog over WiFi, falls back to USB serial. |
+| `tools/vision_stream.py` | Live YOLO26 detection on the webcam at http://localhost:8001 (MJPEG stream + JSON detections). |
+| `models/` | `yolo26n.pt` weights and sample camera snapshots. |
+| `hiwonder_mechdog_sdk/` | Vendored copy of Hiwonder's official SDK and examples ([Hiwonder/MechDog](https://github.com/Hiwonder/MechDog)). |
+| `docs/` | Hardware research, the SDK/device reference (**read `mechdog-sdk-reference.md` first**), and ShellHacks event notes. |
+| `saferoute/` | **SafeRoute Miami** (Waymo track): a separate Node web app that ranks and reroutes Miami drives around crashes, flooding, construction and hurricane surge. See [`saferoute/README.md`](saferoute/README.md). |
 
 ## SafeRoute Miami
 
@@ -50,7 +50,6 @@ python -m mpremote connect COM3 reset
 ```
 
 In `config.py`, set `WIFI_MODE`:
-
 - `"ap"`: the dog hosts its own network `MechDog_wifi` (password `12345678`). Join it from the laptop and the dog is at `192.168.4.1`.
 - `"sta"`: the dog joins your network via `STA_SSID` / `STA_PASSWORD`. The panel finds it by scanning your local /24 subnet.
 
@@ -91,7 +90,6 @@ Newline-delimited JSON over TCP to `<dog-ip>:5005`. The full table is in `docs/m
 ```
 
 Safety built into the bridge:
-
 - A `move` must be repeated, or followed by `hb`, within 1.5 s, or the watchdog stops the dog.
 - Walking forward stops automatically when the sonar reads under 20 cm.
 - The bridge sends `fall` / `upright` events past 50° of tilt and `low_battery` below 6.6 V.
