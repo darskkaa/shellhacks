@@ -59,12 +59,27 @@ class Camera:
 
     def __init__(self, index):
         backend = cv2.CAP_DSHOW if sys.platform.startswith("win") else cv2.CAP_ANY
-        self.cap = cv2.VideoCapture(index, backend)
-        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
-        self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
-        if not self.cap.isOpened():
-            raise SystemExit("camera %d did not open" % index)
+        candidates = [index, 3, 2, 4, 1, 0]
+        seen = set()
+        unique_cands = [x for x in candidates if not (x in seen or seen.add(x))]
+        opened = False
+        for c_idx in unique_cands:
+            cap = cv2.VideoCapture(c_idx, backend)
+            if cap.isOpened():
+                cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+                cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+                cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+                ok, test_frame = cap.read()
+                if ok and test_frame is not None:
+                    self.cap = cap
+                    self.index = c_idx
+                    opened = True
+                    print(f"[Camera] Successfully opened camera index {c_idx}", flush=True)
+                    break
+                cap.release()
+
+        if not opened:
+            raise SystemExit("No working camera found across indices %s" % unique_cands)
         self.frame = None
         self.lock = threading.Lock()
         threading.Thread(target=self._loop, daemon=True).start()
