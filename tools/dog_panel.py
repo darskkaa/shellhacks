@@ -111,86 +111,90 @@ class WifiDog:
 
 
 class SerialDog:
-    """Drives the dog by typing MicroPython into its REPL. main.py (the WiFi bridge) is interrupted to get a prompt."""
-    keepalive = False
-    INIT = [
-        "import Hiwonder, Hiwonder_IIC",
-        "from HW_MechDog import MechDog",
-        "d = MechDog()",
-        "s = Hiwonder_IIC.I2CSonar(Hiwonder_IIC.IIC(1))",
-        "bz = Hiwonder.Buzzer()",
-    ]
+    """Client for mechdog-bridge over USB serial: newline-delimited JSON."""
+    keepalive = True
 
     def __init__(self, port):
         self.label = "USB %s" % port
         self.events = []
+        self.lock = threading.Lock()
+        self.alive = True
+        self.dist_cm = None
+        self.batt_v = None
         self.s = serial.Serial()
-        self.s.port, self.s.baudrate, self.s.timeout = port, 115200, 0.05
-        self.s.dtr = False  # keep DTR/RTS low so opening the port does not reset the ESP32
+        self.s.port, self.s.baudrate, self.s.timeout = port, 115200, 0.5
+        self.s.dtr = False
         self.s.rts = False
         self.s.open()
-        self.lock = threading.Lock()
-        with self.lock:
-            for _ in range(10):
-                self.s.write(b"\x03")
-                time.sleep(0.1)
-            time.sleep(0.3)
-            self.s.reset_input_buffer()
-            self.s.write(b"\r")
-            self._read_prompt(5)
-        for line in self.INIT:
-            self.run(line, timeout=15)
+        time.sleep(0.1)
+        self.s.reset_input_buffer()
+        self.s.write(b'{"t":"hello"}\n')
+        threading.Thread(target=self._reader, daemon=True).start()
+        self._send({"t": "sub", "hz": 4})
 
-    def _read_prompt(self, timeout):
+    def _reader(self):
         buf = b""
-        end = time.time() + timeout
-        while time.time() < end:
-            buf += self.s.read(512)
-            if buf.endswith(b">>> "):
-                return buf.decode(errors="replace")
-        raise TimeoutError("no REPL prompt: %r" % buf[-200:])
+        while self.alive:
+            try:
+                data = self.s.read(self.s.in_waiting or 1)
+            except Exception:
+                break
+            if not data:
+                continue
+            buf += data
+            while b"\n" in buf:
+                line, buf = buf.split(b"\n", 1)
+                line = line.strip()
+                if not line.startswith(b"{"):
+                    continue
+                try:
+                    m = json.loads(line)
+                except ValueError:
+                    continue
+                if m.get("t") == "tel":
+                    d = m.get("dist_cm")
+                    self.dist_cm = round(d, 1) if isinstance(d, (int, float)) else None
+                    self.batt_v = m.get("batt_v")
+                elif m.get("t") == "event" and m.get("name") != "watchdog_stop":
+                    self.events.append(m["name"].replace("_", " "))
+        self.alive = False
 
-    def run(self, code, timeout=4):
+    def _send(self, msg):
+        if not self.alive:
+            raise ConnectionError("bridge disconnected")
         with self.lock:
-            self.s.reset_input_buffer()
-            self.s.write(code.encode() + b"\r")
-            out = self._read_prompt(timeout)
-        body = out.split("\n", 1)[1] if "\n" in out else ""
-        body = body.rsplit(">>> ", 1)[0].strip()
-        if "Traceback" in body:
-            raise RuntimeError(body)
-        return body
+            self.s.write((json.dumps(msg) + "\n").encode())
 
     def move(self, stride, angle):
-        self.run("d.move(%d,%d)" % (stride, angle))
+        self._send({"t": "move", "stride": stride, "angle": angle})
 
     def stop(self):
-        self.run("d.move(0,0)")
+        self._send({"t": "stop"})
 
     def action(self, i):
-        self.run('d.action_run("%s")' % ACTIONS[i])
+        self._send({"t": "action", "id": i})
 
     def stand(self):
-        self.run("d.set_default_pose()")
+        self._send({"t": "reset"})
 
     def rgb(self, r, g, b):
-        self.run("s.setRGB(0,%d,%d,%d)" % (r, g, b))
+        self._send({"t": "rgb", "r": r, "g": g, "b": b})
 
     def beep(self, freq, ms):
-        self.run("bz.playTone(%d,%d,False)" % (freq, ms))
+        self._send({"t": "buzzer", "freq": freq, "ms": ms})
 
     def sensors(self):
-        d = float(self.run("print(s.getDistance())"))
-        b = round(float(self.run("print(Hiwonder.Battery_power())")) / 1000, 2)
-        return (round(d, 1) if 0 < d < 500 else None), b
+        if not self.alive:
+            raise ConnectionError("bridge disconnected")
+        return self.dist_cm, self.batt_v
 
     def close(self):
-        with self.lock:
-            self.s.write(b"d.move(0,0)\r")
-            time.sleep(0.3)
-            self.s.write(b"\x04")  # soft reset -> main.py bridge starts again
-            time.sleep(0.2)
-            self.s.close()
+        try:
+            self.stop()
+        except Exception:
+            pass
+        self.alive = False
+        self.s.close()
 
 
 def local_subnet():
