@@ -8,6 +8,7 @@ Open: http://localhost:8001            viewer page
 import argparse
 import json
 import os
+import sys
 import threading
 import time
 import webbrowser
@@ -17,10 +18,13 @@ import cv2
 from ultralytics import YOLO
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DEFAULT_MODEL = os.path.join(ROOT, "blind_escort_yolo", "weights", "yolo11n_blind_escort.pt")
+if not os.path.exists(DEFAULT_MODEL):
+    DEFAULT_MODEL = os.path.join(ROOT, "models", "yolo26n.pt")
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--cam", type=int, default=1, help="camera index (1 = Brio 105, 0 = laptop webcam)")
-ap.add_argument("--model", default=os.path.join(ROOT, "models", "yolo26n.pt"))
+ap.add_argument("--model", default=DEFAULT_MODEL)
 ap.add_argument("--imgsz", type=int, default=416)
 ap.add_argument("--conf", type=float, default=0.35)
 ap.add_argument("--port", type=int, default=8001)
@@ -32,7 +36,8 @@ class Camera:
     """Reads frames continuously so inference always sees the newest one (no lag from a queued buffer)."""
 
     def __init__(self, index):
-        self.cap = cv2.VideoCapture(index, cv2.CAP_DSHOW)
+        backend = cv2.CAP_DSHOW if sys.platform.startswith("win") else cv2.CAP_ANY
+        self.cap = cv2.VideoCapture(index, backend)
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
         self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
