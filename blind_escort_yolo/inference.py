@@ -10,6 +10,7 @@ import time
 import json
 import argparse
 from pathlib import Path
+import cv2
 import numpy as np
 from PIL import Image
 
@@ -83,7 +84,13 @@ class BlindEscortDetector:
             confs = np.max(scores, axis=1)
 
             mask = confs >= conf_thresh
-            for box, conf, cls_id in zip(boxes[mask], confs[mask], class_ids[mask]):
+            boxes, confs, class_ids = boxes[mask], confs[mask], class_ids[mask]
+            # Raw output has one box per anchor, so one object yields many overlapping boxes. Per-class NMS at
+            # IoU 0.7 matches the ultralytics .pt path's defaults.
+            xywh = np.column_stack([boxes[:, :2] - boxes[:, 2:] / 2, boxes[:, 2:]])
+            keep = cv2.dnn.NMSBoxesBatched(xywh.tolist(), confs.tolist(), class_ids.tolist(), conf_thresh, 0.7) if len(boxes) else []
+            keep = np.array(keep, dtype=int).flatten()
+            for box, conf, cls_id in zip(boxes[keep], confs[keep], class_ids[keep]):
                 cls_name = CLASSES.get(int(cls_id), f"class_{cls_id}")
                 cx, cy, w, h = box
                 x1, y1 = float(cx - w/2), float(cy - h/2)
