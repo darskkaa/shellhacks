@@ -26,9 +26,13 @@ GAP = 4.5
 COLORS = {"red": [1, 0.03, 0.02, 1], "amber": [1, 0.6, 0, 1], "green": [0, 1, 0.1, 1]}
 
 
-def phase_at(seconds: float) -> str:
-    phase = seconds % 14
-    return "red" if phase < 6 else "green" if phase < 12 else "amber"
+CYCLE = (6.0, 6.0, 2.0)  # red, green, amber seconds
+
+
+def phase_at(seconds: float, cycle: tuple[float, float, float] = CYCLE) -> str:
+    red, green, amber = cycle
+    phase = seconds % (red + green + amber)
+    return "red" if phase < red else "green" if phase < red + green else "amber"
 
 
 def box(position, half_extents, color) -> int:
@@ -41,8 +45,10 @@ def box(position, half_extents, color) -> int:
 class TrafficScene:
     """Own rendered state and deterministic traffic updates; never infer detections."""
 
-    def __init__(self, assets: Path):
+    def __init__(self, assets: Path, cycle: tuple[float, float, float] = CYCLE):
+        self.cycle = cycle
         objects = load_scene(assets)
+        self.person = objects["person"]
         p.resetBasePositionAndOrientation(
             objects["person"], [8, 0, 0], p.getQuaternionFromEuler([0, 0, math.pi])
         )
@@ -62,7 +68,7 @@ class TrafficScene:
                 baseVisualShapeIndex=shape,
                 basePosition=[7.15, -2.15, 2.9 - index * 0.4],
             )
-        box([2.7, 1.5, 0.9], [0.06, 0.06, 0.9], [0.3, 0.3, 0.3, 1])
+        self.pedestrian_pole = box([2.7, 1.5, 0.9], [0.06, 0.06, 0.9], [0.3, 0.3, 0.3, 1])
         self.pedestrian = box([2.7, 1.5, 1.8], [0.18, 0.12, 0.2], COLORS["red"])
         # Reuse the verified converted car mesh, including its diffuse materials.
         shape = p.createVisualShape(
@@ -95,7 +101,7 @@ class TrafficScene:
             raise ValueError(
                 "Traffic step must be finite and between 0 and 0.1 seconds"
             )
-        self.phase = phase_at(self.elapsed)
+        self.phase = phase_at(self.elapsed, self.cycle)
         leader = math.inf
         for index in sorted(
             range(len(self.cars)), key=lambda i: self.positions[i], reverse=True
