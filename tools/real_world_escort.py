@@ -31,8 +31,8 @@ W = "\033[0m"
 
 VISION_URL = "http://localhost:8001/detections"
 VISION_MIN_CONF = 0.45
-WALK_CLASSES = {"ped_signal_walk"}
-STOP_CLASSES = {"ped_signal_stop", "curb_drop_off_hazard", "conflict_vehicle_cyclist"}
+WALK_CLASSES = {"ped_signal_walk", "ped_signal_stop", "crosswalk_zebra"}
+STOP_CLASSES = {"curb_drop_off_hazard", "conflict_vehicle_cyclist"}
 
 
 def fetch_detections(url=VISION_URL, timeout=1.0):
@@ -341,13 +341,13 @@ class AutoVision:
                 if self.state != "stop" or dog.is_walking:
                     dog.stop()
                     dog.set_color(255, 0, 0)
-                    print(f"\n{R}🔴 [VISION] STOP / HAZARD DETECTED -> Halting safely! ({', '.join(sorted(labels & STOP_CLASSES))}){W}")
+                    print(f"\n{R}🔴 [VISION] STOP / HAZARD DETECTED ({', '.join(sorted(labels & STOP_CLASSES))}) -> Halting safely!{W}")
                 self.state = "stop"
             elif labels & WALK_CLASSES:
                 self.last_seen = now
                 if not dog.is_walking and dog.walk_safe(is_crosswalk=True, fast_mode=self.fast):
                     dog.set_color(0, 255, 0)
-                    print(f"\n{G}🟢 [VISION] WALK SIGNAL DETECTED -> Walking forward!{W}")
+                    print(f"\n{G}🟢 [VISION] WALK TRIGGER ({', '.join(sorted(labels & WALK_CLASSES))}) -> Walking forward!{W}")
                 self.state = "walk"
             elif dog.is_walking and now - self.last_seen >= self.LOST_S:
                 print(f"\n{Y}🟡 [VISION] No signal for {self.LOST_S:.0f}s -> Stopping for safety.{W}")
