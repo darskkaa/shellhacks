@@ -74,14 +74,19 @@ python tools/vision_stream.py --cam 0 --model blind_escort_yolo/weights/yolo11n_
 ### Step 3: Run the Safe Escort Controller
 In **Terminal 2**, launch the real-world safety runner over USB serial (or `--wifi 192.168.4.1`):
 ```bash
+# Manual control with live camera reactive capability
 python tools/real_world_escort.py --serial /dev/ttyUSB0 --min-sonar 35 --max-stride 40
+
+# Or launch directly in Auto-Vision Reactive mode:
+python tools/real_world_escort.py --serial /dev/ttyUSB0 --auto-vision
 ```
 - Automatically auto-reconnects if the physical cable disconnects or wobbles.
 - Keyboard controls:
+  - `v`: Toggle Auto-Vision Reactive Mode (walks forward on `ped_signal_walk`, halts on `ped_signal_stop` or hazards)
   - `w`: Step forward (sidewalk pace, stride 40)
   - `f`: Toggle Fast mode (Brisk 4.0 steps/s on sidewalk, Sprint 5.0 steps/s on crosswalk)
   - `c`: Crosswalk Sprint (rapid road crossing at ~1.0 mph, stride 100)
-  - `s`: Stop dog immediately
+  - `s`: Stop dog immediately (instantly disengages auto-vision)
   - `a`: Turn 15° left
   - `d`: Turn 15° right
   - `q`: Disconnect and power down servos
@@ -91,6 +96,7 @@ python tools/real_world_escort.py --serial /dev/ttyUSB0 --min-sonar 35 --max-str
 ### Step 4: (Optional) Autonomous Gemini AI Escort Brain
 In **Terminal 3**, launch the autonomous Gemini escort brain over USB serial:
 ```bash
-python tools/gemini_dog_agent.py --serial /dev/ttyUSB0 --goal "Guide me safely to the Waymo passenger door"
+python tools/gemini_dog_agent.py --serial /dev/ttyUSB0 --reactive --goal "Guide me safely to the Waymo passenger door"
 ```
-The Gemini agent reads live YOLO camera detections, reasons about curb ramp access and pedestrian obstacles, and sends autonomous walking commands to the dog over USB while speaking audio directions to the rider.
+- `--reactive`: Bypasses LLM round-trip latency to react instantaneously to WALK/STOP signals and curb drop-offs.
+- The Gemini agent reads live YOLO camera detections, reasons about curb ramp access and pedestrian obstacles, and sends autonomous walking commands to the dog over USB while speaking audio directions to the rider.

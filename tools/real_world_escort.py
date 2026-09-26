@@ -9,6 +9,8 @@ Safety Guards:
   4. Speed Capping: Limits sidewalk stride to 40; faster gait cadence only when fast mode is toggled on.
   5. Keyboard Emergency Stop: Pressing Spacebar or Ctrl+C immediately stops all motion.
   6. Zero-Tolerance Drop-off Guard: Prohibits forward movement when curb_drop_off_hazard is present.
+  7. Auto-Vision (--auto-vision / [v]): walks on ped_signal_walk, halts on stop signals and hazards,
+     and stops if no signal is seen for 2 s. Any manual command cancels it.
 """
 
 import sys
@@ -17,6 +19,7 @@ import json
 import socket
 import argparse
 import threading
+import urllib.request
 from pathlib import Path
 
 # ANSI Terminal Colors
@@ -25,6 +28,37 @@ Y = "\033[93m"
 R = "\033[91m"
 C = "\033[96m"
 W = "\033[0m"
+
+VISION_URL = "http://localhost:8001/detections"
+VISION_MIN_CONF = 0.35
+WALK_CLASSES = {"ped_signal_walk", "curb_ramp_ada"}
+STOP_CLASSES = {"ped_signal_stop", "curb_drop_off_hazard", "conflict_vehicle_cyclist"}
+
+
+def fetch_detections(url=VISION_URL, timeout=1.0):
+    """Latest YOLO detections from tools/vision_stream.py; [] when the stream is down."""
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "MechDogEscort/1.0"})
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            data = json.loads(resp.read().decode())
+        dets = data.get("dets")
+        if dets is None:
+            dets = data.get("detections", [])
+        return dets or []
+    except Exception:
+        return []
+
+
+def det_label(d):
+    return d.get("label") or d.get("class")
+
+
+def det_conf(d):
+    return float(d.get("conf", d.get("confidence")) or 0)
+
+
+def seen_labels(dets, min_conf=VISION_MIN_CONF):
+    return {det_label(d) for d in dets if det_conf(d) >= min_conf}
 
 
 class BridgeLink:
@@ -262,6 +296,67 @@ class RealDogController:
         self.link.close()
 
 
+class AutoVision:
+    """Drives the dog straight from the YOLO stream: walk signal -> cross, stop signal or hazard -> halt."""
+    HZ = 4
+    LOST_S = 2.0
+
+    def __init__(self, dog, url=VISION_URL):
+        self.dog = dog
+        self.url = url
+        self.active = False
+        self.fast = False
+        self.state = None
+        self.last_seen = 0.0
+        # Held while acting so a cancel can never be followed by a walk from an in-flight tick.
+        self.lock = threading.Lock()
+        threading.Thread(target=self._loop, daemon=True).start()
+
+    def set_active(self, on):
+        with self.lock:
+            self.active = on
+            self.state = None
+            self.last_seen = time.monotonic()
+        print(f"{Y}Auto-Vision {'ON: watching ' + self.url if on else 'OFF'}{W}")
+
+    def _loop(self):
+        while True:
+            time.sleep(1 / self.HZ)
+            if not self.active:
+                continue
+            try:
+                self._tick()
+            except Exception as e:
+                print(f"{R}[VISION] Tick error: {e}{W}")
+
+    def _tick(self):
+        labels = seen_labels(fetch_detections(self.url))
+        now = time.monotonic()
+        with self.lock:
+            if not self.active:
+                return
+            dog = self.dog
+            if labels & STOP_CLASSES:
+                self.last_seen = now
+                if self.state != "stop" or dog.is_walking:
+                    dog.stop()
+                    dog.set_color(255, 0, 0)
+                    print(f"\n{R}🔴 [VISION] STOP / HAZARD DETECTED -> Halting safely! ({', '.join(sorted(labels & STOP_CLASSES))}){W}")
+                self.state = "stop"
+            elif labels & WALK_CLASSES:
+                self.last_seen = now
+                if not dog.is_walking and dog.walk_safe(is_crosswalk=True, fast_mode=self.fast):
+                    dog.set_color(0, 255, 0)
+                    print(f"\n{G}🟢 [VISION] WALK SIGNAL DETECTED -> Walking forward!{W}")
+                self.state = "walk"
+            elif dog.is_walking and now - self.last_seen >= self.LOST_S:
+                print(f"\n{Y}🟡 [VISION] No signal for {self.LOST_S:.0f}s -> Stopping for safety.{W}")
+                dog.stop()
+                self.state = None
+            if dog.is_walking:
+                dog.heartbeat()  # bridge watchdog halts a walk after 1.5 s without traffic
+
+
 def main():
     parser = argparse.ArgumentParser(description="Real-World MechDog Escort Controller")
     parser.add_argument("--wifi", default="127.0.0.1", help="Dog IP (use 192.168.4.1 for real dog AP mode, 127.0.0.1 for local/sim)")
@@ -270,6 +365,8 @@ def main():
     parser.add_argument("--max-stride", type=int, default=40, help="Max safe walking stride (10-50)")
     parser.add_argument("--min-sonar", type=int, default=35, help="Minimum obstacle stop distance in cm")
     parser.add_argument("--gemini", action="store_true", help="Enable Gemini 2.5 Flash autonomous reasoning")
+    parser.add_argument("--auto-vision", action="store_true",
+                        help=f"Start in Auto-Vision mode: walk/stop on YOLO signals from {VISION_URL}")
     args = parser.parse_args()
 
     print(f"\n========================================================")
@@ -295,22 +392,34 @@ def main():
     print("  [w] Walk forward (sidewalk pace, stride 40)")
     print("  [c] Fast Crosswalk Transit (rapid crossing, stride 100)")
     print("  [f] Toggle Fast Speed (Brisk/Sprint): 4.0 steps/s sidewalk, 5.0 steps/s crosswalk")
-    print("  [s] Stop dog immediately")
+    print("  [v] Toggle Auto-Vision Mode (walk on walk signal, stop on stop signal/hazard)")
+    print("  [s] Stop dog immediately (also cancels Auto-Vision)")
     print("  [a] Turn slightly left (15 deg)")
     print("  [d] Turn slightly right (15 deg)")
     print("  [q] Quit and shut down")
 
     fast = False
+    auto = AutoVision(dog)
+    if args.auto_vision:
+        auto.set_active(True)
     try:
         while True:
             speed = "FAST" if fast else "NORMAL"
-            cmd = input(f"\n[{dog.batt_v:.1f}V | {dog.dist_cm:.0f}cm | {speed}] Command (w/c/f/s/a/d/q): ").strip().lower()
-            if cmd == "w":
+            mode = " | AUTO" if auto.active else ""
+            cmd = input(f"\n[{dog.batt_v:.1f}V | {dog.dist_cm:.0f}cm | {speed}{mode}] Command (w/c/f/v/s/a/d/q): ").strip().lower()
+            if auto.active and cmd not in ("v", "f"):
+                auto.set_active(False)  # any manual command (incl. s / Spacebar) takes back control
+            if cmd == "v":
+                auto.set_active(not auto.active)
+                if not auto.active:
+                    dog.stop()
+            elif cmd == "w":
                 dog.walk_safe(is_crosswalk=False, fast_mode=fast)
             elif cmd == "c":
                 dog.walk_safe(is_crosswalk=True, fast_mode=fast)
             elif cmd == "f":
                 fast = not fast
+                auto.fast = fast
                 print(f"{Y}Fast speed {'ON (Brisk/Sprint gait)' if fast else 'OFF (default gait)'}; applies on next walk command.{W}")
             elif cmd == "s":
                 dog.stop()
@@ -325,6 +434,7 @@ def main():
     except KeyboardInterrupt:
         print(f"\n{R}Emergency Stop Triggered.{W}")
     finally:
+        auto.set_active(False)
         dog.stop()
         dog.close()
         print("MechDog safe shutdown completed.")

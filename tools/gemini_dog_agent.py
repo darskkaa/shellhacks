@@ -19,7 +19,7 @@ import urllib.error
 import argparse
 from pathlib import Path
 
-from real_world_escort import BridgeLink, RealDogController
+from real_world_escort import BridgeLink, RealDogController, STOP_CLASSES, det_conf, det_label, fetch_detections, seen_labels
 
 GAIT_PRESETS = {
     "normal": RealDogController.GAIT_DEFAULT,
@@ -27,7 +27,7 @@ GAIT_PRESETS = {
     "sprint": RealDogController.GAIT_SPRINT,
 }
 # Faster gaits shorten reaction distance, so any of these in view forces the default gait.
-SLOW_DOWN_CLASSES = {"curb_drop_off_hazard", "ped_signal_stop", "conflict_vehicle_cyclist"}
+SLOW_DOWN_CLASSES = STOP_CLASSES
 
 # Load GEMINI_API_KEY from environment or repo root .env
 def get_api_key():
@@ -99,13 +99,18 @@ class GeminiDogAgent:
         self.gemini_endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent"
 
     def fetch_vision_detections(self):
-        try:
-            req = urllib.request.Request(self.vision_url, headers={"User-Agent": "GeminiDogAgent/1.0"})
-            with urllib.request.urlopen(req, timeout=1.0) as resp:
-                data = json.loads(resp.read().decode())
-                return data.get("detections", [])
-        except Exception:
-            return []
+        return fetch_detections(self.vision_url)
+
+    def reactive_decision(self, detections):
+        """Signal-only rules that skip the LLM round trip; None when no signal is in view."""
+        labels = seen_labels(detections)
+        if labels & STOP_CLASSES:
+            return {"action": "stop", "stride": 0, "angle": 0, "speed_mode": "normal", "led_color": [255, 0, 0],
+                    "speech": "Stop. Signal or hazard ahead, holding here."}
+        if "ped_signal_walk" in labels:
+            return {"action": "walk", "stride": 100, "angle": 0, "speed_mode": "sprint", "led_color": [0, 255, 0],
+                    "speech": "Walk signal is on. Crossing now, stay with me."}
+        return None
 
     def decide_action(self, rider_goal: str, detected_objects: list):
         """Query Gemini API or agy CLI with system prompt & vision detections to decide quadruped action."""
@@ -211,20 +216,23 @@ Decide the immediate quadruped motion and spoken escort guidance. Output raw val
             "speech": "Obstacle scan active. Standing by safely."
         }
 
-    def run_escort_step(self, rider_goal: str):
+    def run_escort_step(self, rider_goal: str, reactive=False):
         # 1. Fetch latest YOLO detections
         detections = self.fetch_vision_detections()
         print(f"\n--- [Perception Update] {len(detections)} objects detected ---")
         for d in detections[:3]:
-            print(f"  • {d.get('class')} (conf: {d.get('confidence')})")
+            print(f"  • {det_label(d)} (conf: {det_conf(d):.2f})")
 
-        # 2. Get Gemini autonomous decision
-        decision = self.decide_action(rider_goal, detections)
+        # 2. Reactive signal rules first, else Gemini autonomous decision
+        decision = self.reactive_decision(detections) if reactive else None
+        source = "Reactive" if decision else "Gemini"
+        if decision is None:
+            decision = self.decide_action(rider_goal, detections)
         speed_mode = decision.get("speed_mode", "normal")
-        if speed_mode not in GAIT_PRESETS or any(d.get("class") in SLOW_DOWN_CLASSES for d in detections):
+        if speed_mode not in GAIT_PRESETS or seen_labels(detections, min_conf=0) & SLOW_DOWN_CLASSES:
             speed_mode = "normal"
         decision["speed_mode"] = speed_mode
-        print(f"🤖 [Gemini Decision] Action: {decision.get('action')} | Stride: {decision.get('stride')} | Angle: {decision.get('angle')}° | Speed: {speed_mode}")
+        print(f"🤖 [{source} Decision] Action: {decision.get('action')} | Stride: {decision.get('stride')} | Angle: {decision.get('angle')}° | Speed: {speed_mode}")
         print(f"🗣️  [Voice Guidance] \"{decision.get('speech')}\"")
 
         # 3. Execute on dog
@@ -248,6 +256,8 @@ def main():
     parser.add_argument("--serial", metavar="DEV", help="Drive over USB serial instead of WiFi (e.g. /dev/ttyUSB0, COM3)")
     parser.add_argument("--goal", type=str, default="Guide me safely to the Waymo passenger door", help="Rider goal prompt")
     parser.add_argument("--once", action="store_true", help="Run a single step instead of continuous loop")
+    parser.add_argument("--reactive", action="store_true",
+                        help="Act on ped_signal_walk / stop signals and hazards immediately, skipping Gemini; loop at 4 Hz")
     args = parser.parse_args()
 
     api_key = args.key or get_api_key()
@@ -261,11 +271,11 @@ def main():
 
     try:
         if args.once:
-            agent.run_escort_step(args.goal)
+            agent.run_escort_step(args.goal, reactive=args.reactive)
         else:
             while True:
-                agent.run_escort_step(args.goal)
-                time.sleep(2.0)
+                agent.run_escort_step(args.goal, reactive=args.reactive)
+                time.sleep(0.25 if args.reactive else 2.0)
     except KeyboardInterrupt:
         print("\nStopping dog and disconnecting...")
         agent.dog.stop()
