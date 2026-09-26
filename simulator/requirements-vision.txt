@@ -1,0 +1,7 @@
+-r requirements.txt
+# Install CPU torch/torchvision first; see VISION.md for the CPU index command.
+ultralytics==8.4.163
+onnxruntime==1.30.0
+onnx==1.23.0
+opencv-python==4.11.0.86
+trimesh==5.1.0

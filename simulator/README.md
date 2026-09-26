@@ -1,6 +1,7 @@
 # MechDog bridge simulation
 
 See [compatibility tests and detailed evidence](COMPATIBILITY.md) for the full verification scope.
+See [rendered-camera YOLO experiment](VISION.md) for person/car assets and vision control.
 
 PyBullet's bundled eight-motor Minitaur is an **uncalibrated MechDog surrogate**.
 The scene exercises motors, contact and rendering. It does not reproduce MechDog
