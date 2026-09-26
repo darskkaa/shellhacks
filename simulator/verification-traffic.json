@@ -1,0 +1,43 @@
+{
+  "scope": "Scripted one-direction traffic; no YOLO signal perception or autonomous robot crossing",
+  "crosswalk": "Stripes parallel to car travel, spaced across pedestrian route",
+  "runs": {
+    "headless": {
+      "completed": true,
+      "passed": true,
+      "checks": {
+        "no_red_or_amber_entries": true,
+        "cars_keep_gap": true,
+        "all_phases_observed": true,
+        "cars_stopped_on_red": true,
+        "cars_entered_on_green": true
+      },
+      "seconds": 14.0,
+      "firmware_sha256": "3c4d012d2f050b3621d37d408eb08bfc72aedde86459e4953d9dad7b63c3977e",
+      "crossings": 2,
+      "violations": 0,
+      "minimum_center_gap_m": 4.499999999999999,
+      "recorded_images": true,
+      "pedestrian_indicator_only_when_red_and_clear": true
+    },
+    "gui": {
+      "completed": true,
+      "passed": true,
+      "checks": {
+        "no_red_or_amber_entries": true,
+        "cars_keep_gap": true,
+        "all_phases_observed": true,
+        "cars_stopped_on_red": true,
+        "cars_entered_on_green": true
+      },
+      "seconds": 14.0,
+      "firmware_sha256": "3c4d012d2f050b3621d37d408eb08bfc72aedde86459e4953d9dad7b63c3977e",
+      "crossings": 2,
+      "violations": 0,
+      "minimum_center_gap_m": 4.499999999999999,
+      "recorded_images": false,
+      "pedestrian_indicator_only_when_red_and_clear": true
+    }
+  },
+  "tests": "2 unittest methods passed with actual PyBullet bodies and local assets"
+}
