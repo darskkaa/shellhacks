@@ -30,8 +30,8 @@ C = "\033[96m"
 W = "\033[0m"
 
 VISION_URL = "http://localhost:8001/detections"
-VISION_MIN_CONF = 0.35
-WALK_CLASSES = {"ped_signal_walk", "curb_ramp_ada"}
+VISION_MIN_CONF = 0.45
+WALK_CLASSES = {"ped_signal_walk"}
 STOP_CLASSES = {"ped_signal_stop", "curb_drop_off_hazard", "conflict_vehicle_cyclist"}
 
 
