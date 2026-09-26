@@ -1,5 +1,7 @@
 # Traffic-light scene
 
+For copy-paste setup, launch, recording, and troubleshooting: [Run the simulation](RUN_TRAFFIC.md).
+
 Run from the vision worktree, with the environment and downloaded assets from
 [VISION.md](VISION.md) and [ASSETS.md](ASSETS.md):
 
