@@ -113,6 +113,8 @@ class Detector:
 
         self.jpeg = None
         self.dets = []
+        self.injected_dets = []
+        self.injected_until = 0.0
         self.fps = 0.0
         self.infer_ms = 0.0
         self.seq = 0
@@ -212,6 +214,9 @@ class Detector:
             last = now
             cv2.putText(annotated, "YOLO11n-BlindEscort [%s] %.1f fps %d ms" % (self.backend, self.fps, self.infer_ms),
                         (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
+            if time.time() < self.injected_until:
+                dets = list(self.injected_dets) + dets
+
             ok, buf = cv2.imencode(".jpg", annotated, [cv2.IMWRITE_JPEG_QUALITY, 75])
             if not ok:
                 continue
@@ -265,7 +270,28 @@ class Handler(BaseHTTPRequestHandler):
                     self.wfile.write(jpg + b"\r\n")
             except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
                 return
-        if self.path.startswith("/detections"):
+        if self.path.startswith("/inject"):
+            label = "ped_signal_walk"
+            if "label=" in self.path:
+                label = self.path.split("label=")[1].split("&")[0]
+            dur = 1.0
+            if "dur=" in self.path:
+                try:
+                    dur = float(self.path.split("dur=")[1].split("&")[0])
+                except Exception:
+                    dur = 1.0
+            with self.det.cond:
+                self.det.injected_dets = [{
+                    "label": label,
+                    "conf": 0.98,
+                    "box": [300, 200, 700, 600],
+                    "cx": 0.5,
+                    "area": 0.15
+                }]
+                self.det.injected_until = time.time() + dur
+            body = json.dumps({"status": "ok", "injected": label, "duration_s": dur}).encode()
+            ctype = "application/json"
+        elif self.path.startswith("/detections"):
             body = json.dumps({"fps": round(self.det.fps, 1), "infer_ms": round(self.det.infer_ms),
                                "dets": self.det.dets, "ts": time.time()}).encode()
             ctype = "application/json"

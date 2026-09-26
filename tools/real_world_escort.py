@@ -259,9 +259,9 @@ class RealDogController:
             print(f"{R}⚠️ Path blocked: Sonar object at {self.dist_cm:.1f} cm. Motion inhibited.{W}")
             return False
 
-        # 3. Dynamic Stride: Stride 40 on sidewalk, Stride 100 for rapid street crossing!
+        # 3. Dynamic Stride: Stride 40 on sidewalk, Stride 45 for steady crosswalk transit!
         if stride is None:
-            stride = 100 if is_crosswalk else self.max_stride
+            stride = 45 if is_crosswalk else self.max_stride
 
         safe_stride = max(-100, min(100, stride if is_crosswalk else min(self.max_stride, stride)))
         safe_angle = max(-25, min(25, angle))
@@ -299,7 +299,7 @@ class RealDogController:
 class AutoVision:
     """Drives the dog straight from the YOLO stream: walk signal -> cross, stop signal or hazard -> halt."""
     HZ = 4
-    LOST_S = 2.0
+    LOST_S = 4.0
 
     def __init__(self, dog, url=VISION_URL):
         self.dog = dog
