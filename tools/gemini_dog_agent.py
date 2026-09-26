@@ -1,6 +1,6 @@
 """
 Waymo SafePoint 3D: Gemini Autonomous Escort Agent for MechDog Quadruped.
-Connects Gemini 2.5 Flash to the robot dog TCP bridge (127.0.0.1:5005)
+Connects Gemini 2.5 Flash to the robot dog bridge (TCP 127.0.0.1:5005 or USB serial via --serial)
 and live YOLO vision detections (localhost:8001/detections).
 
 Translates rider voice commands + vision perception into real-time quadruped motor actions:
@@ -14,13 +14,12 @@ import os
 import sys
 import time
 import json
-import socket
 import urllib.request
 import urllib.error
 import argparse
 from pathlib import Path
 
-from real_world_escort import RealDogController
+from real_world_escort import BridgeLink, RealDogController
 
 GAIT_PRESETS = {
     "normal": RealDogController.GAIT_DEFAULT,
@@ -44,36 +43,20 @@ def get_api_key():
     return None
 
 class MechDogBridgeClient:
-    """TCP client communicating with MechDog Bridge (simulated or real robot)."""
-    def __init__(self, host="127.0.0.1", port=5005):
-        self.host = host
-        self.port = port
-        self.sock = None
+    """Client for the MechDog Bridge (simulated or real robot) over TCP or USB serial, auto-reconnecting."""
+    def __init__(self, host="127.0.0.1", port=5005, serial_port=None):
         self.gait = None
-        self.connect()
+        self.link = BridgeLink(host, port, serial_port, on_ready=self._on_ready, tag="DogClient")
+        self.link.start()
 
-    def connect(self):
-        try:
-            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.sock.settimeout(2.0)
-            self.sock.connect((self.host, self.port))
-            self.gait = None  # bridge may have rebooted or been reset; force resend
-            print(f"[DogClient] Connected to MechDog Bridge at {self.host}:{self.port}")
-        except Exception as e:
-            print(f"[DogClient Error] Could not connect to {self.host}:{self.port}: {e}")
-            self.sock = None
+    def _on_ready(self, first):
+        self.gait = None  # bridge may have rebooted or been reset; force resend
 
     def send_cmd(self, cmd_dict):
-        if not self.sock:
-            self.connect()
-        if not self.sock:
-            return None
-        try:
-            msg = json.dumps(cmd_dict) + "\n"
-            self.sock.sendall(msg.encode())
-        except Exception as e:
-            print(f"[DogClient Error] Send failed: {e}")
-            self.sock = None
+        if not self.link.send(cmd_dict):
+            print(f"[DogClient Error] Bridge offline, dropped {cmd_dict.get('t')}")
+            return False
+        return True
 
     def move(self, stride=50, angle=0):
         # stride: -100..100, angle: -30..30
@@ -87,8 +70,8 @@ class MechDogBridgeClient:
         if gait == self.gait:
             return
         print(f"⚙️  [EXECUTE GAIT] lift {lift_ms} ms / contact {contact_ms} ms / lift {lift_mm} mm")
-        self.send_cmd({"t": "gait", "lift_ms": lift_ms, "contact_ms": contact_ms, "lift_mm": lift_mm})
-        self.gait = gait if self.sock else None
+        sent = self.send_cmd({"t": "gait", "lift_ms": lift_ms, "contact_ms": contact_ms, "lift_mm": lift_mm})
+        self.gait = gait if sent else None
 
     def set_speed_mode(self, mode):
         self.set_gait(*GAIT_PRESETS.get(mode, GAIT_PRESETS["normal"]))
@@ -104,15 +87,14 @@ class MechDogBridgeClient:
         self.send_cmd({"t": "rgb", "r": r, "g": g, "b": b})
 
     def close(self):
-        if self.sock:
-            self.sock.close()
-            self.sock = None
+        self.link.close()
 
 
 class GeminiDogAgent:
-    def __init__(self, api_key: str = None, dog_host="127.0.0.1", dog_port=5005, vision_url="http://localhost:8001/detections"):
+    def __init__(self, api_key: str = None, dog_host="127.0.0.1", dog_port=5005, vision_url="http://localhost:8001/detections",
+                 dog_serial=None):
         self.api_key = api_key or get_api_key()
-        self.dog = MechDogBridgeClient(host=dog_host, port=dog_port)
+        self.dog = MechDogBridgeClient(host=dog_host, port=dog_port, serial_port=dog_serial)
         self.vision_url = vision_url
         self.gemini_endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent"
 
@@ -263,6 +245,7 @@ def main():
     parser.add_argument("--key", type=str, default=None, help="Gemini API Key")
     parser.add_argument("--host", type=str, default="127.0.0.1", help="MechDog Bridge IP/Host")
     parser.add_argument("--port", type=int, default=5005, help="MechDog Bridge TCP Port")
+    parser.add_argument("--serial", metavar="DEV", help="Drive over USB serial instead of WiFi (e.g. /dev/ttyUSB0, COM3)")
     parser.add_argument("--goal", type=str, default="Guide me safely to the Waymo passenger door", help="Rider goal prompt")
     parser.add_argument("--once", action="store_true", help="Run a single step instead of continuous loop")
     args = parser.parse_args()
@@ -271,9 +254,9 @@ def main():
     if not api_key:
         print("\nℹ️  GEMINI_API_KEY not found; using local Google Antigravity (agy CLI) fallback.")
 
-    agent = GeminiDogAgent(api_key=api_key, dog_host=args.host, dog_port=args.port)
+    agent = GeminiDogAgent(api_key=api_key, dog_host=args.host, dog_port=args.port, dog_serial=args.serial)
     print(f"\n🐾 [MechDog Gemini Brain Active]")
-    print(f"Target Bridge: {args.host}:{args.port}")
+    print(f"Target Bridge: {args.serial or f'{args.host}:{args.port}'}")
     print(f"Active Escort Mission: \"{args.goal}\"\n")
 
     try:

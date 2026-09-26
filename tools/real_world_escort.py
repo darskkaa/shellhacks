@@ -26,76 +26,173 @@ R = "\033[91m"
 C = "\033[96m"
 W = "\033[0m"
 
+
+class BridgeLink:
+    """Newline-JSON link to the MechDog bridge over TCP or USB serial. A background thread reads lines and
+    reopens the link every RECONNECT_S after any drop. on_ready(first) fires on each bridge "hello", i.e. on
+    every (re)connect and whenever the ESP32 reboots, so callers can redo their setup."""
+    RECONNECT_S = 1.0
+
+    def __init__(self, host="127.0.0.1", port=5005, serial_port=None, on_msg=None, on_ready=None, tag="Link"):
+        self.host = host
+        self.port = port
+        self.serial_port = serial_port
+        self.on_msg = on_msg
+        self.on_ready = on_ready
+        self.tag = tag
+        self.target = serial_port or f"{host}:{port}"
+        self.conn = None
+        self.alive = True
+        self.hellos = 0
+        self.lock = threading.Lock()
+
+    def start(self):
+        """Call after assigning the link, so callbacks on the reader thread can already reach it."""
+        self._open(verbose=True)
+        threading.Thread(target=self._loop, daemon=True).start()
+
+    @property
+    def connected(self):
+        return self.conn is not None
+
+    def _open(self, verbose=False):
+        try:
+            if self.serial_port:
+                import serial
+                c = serial.Serial()
+                c.port, c.baudrate, c.timeout, c.write_timeout = self.serial_port, 115200, 1.0, 1.0
+                c.dtr = c.rts = False  # CH340 auto-reset wiring: asserting DTR/RTS reboots the ESP32
+                c.open()
+                c.reset_input_buffer()
+            else:
+                c = socket.create_connection((self.host, self.port), timeout=3.0)
+                c.settimeout(1.0)
+        except Exception as e:
+            if verbose:
+                print(f"{R}[{self.tag}] Cannot open {self.target}: {e}{W}")
+            return
+        self.conn = c
+        print(f"{G}[{self.tag}] Link open to {self.target}, waiting for bridge hello{W}")
+        if self.serial_port:
+            self.send({"t": "hello"})  # a UART has no connect event; TCP accept sends hello unprompted
+
+    def _drop(self, c, why):
+        with self.lock:
+            if self.conn is c:
+                self.conn = None
+        try:
+            c.close()  # release the fd now, or a replugged CH340 re-enumerates as the next ttyUSB
+        except Exception:
+            pass
+        if self.alive:
+            print(f"{Y}[{self.tag}] Link to {self.target} lost ({why}); retrying every {self.RECONNECT_S:.0f}s{W}")
+
+    def send(self, payload):
+        c = self.conn
+        if c is None:
+            return False
+        data = (json.dumps(payload) + "\n").encode()
+        try:
+            with self.lock:
+                if self.serial_port:
+                    c.write(data)
+                else:
+                    c.sendall(data)
+            return True
+        except Exception as e:
+            self._drop(c, f"send: {e}")
+            return False
+
+    def _loop(self):
+        buf = b""
+        while self.alive:
+            c = self.conn
+            if c is None:
+                time.sleep(self.RECONNECT_S)
+                if self.alive:
+                    buf = b""
+                    self._open()
+                continue
+            try:
+                if self.serial_port:
+                    data = c.read(c.in_waiting or 1)  # b"" on timeout
+                else:
+                    try:
+                        data = c.recv(1024)
+                    except socket.timeout:
+                        continue
+                    if not data:
+                        self._drop(c, "closed by bridge")
+                        continue
+            except Exception as e:  # SerialException / OSError when the cable wobbles out
+                self._drop(c, e)
+                continue
+            buf += data
+            while b"\n" in buf:
+                line, buf = buf.split(b"\n", 1)
+                line = line.strip()
+                if not line.startswith(b"{"):
+                    continue  # MicroPython print() chatter shares the UART
+                try:
+                    msg = json.loads(line)
+                except ValueError:
+                    continue
+                try:
+                    if msg.get("t") == "hello":
+                        self.hellos += 1
+                        print(f"{G}[{self.tag}] MechDog bridge ready ({msg.get('fw')}){W}")
+                        if self.on_ready:
+                            self.on_ready(self.hellos == 1)
+                    elif self.on_msg:
+                        self.on_msg(msg)
+                except Exception as e:  # a callback bug must not kill the reader and its sonar trip
+                    print(f"{R}[{self.tag}] Handler error on {msg.get('t')}: {e}{W}")
+
+    def close(self):
+        self.alive = False
+        c = self.conn
+        if c is not None:
+            self._drop(c, "closed")
+
+
 class RealDogController:
     # (lift_ms, contact_ms, lift_mm) for the bridge "gait" command; cadence = 1000 / (lift_ms + contact_ms)
     GAIT_DEFAULT = (200, 300, 20)  # 2.0 steps/s, sidewalk precision (stock bridge default)
     GAIT_FAST = (100, 150, 20)     # 4.0 steps/s, brisk escort
     GAIT_SPRINT = (80, 120, 18)    # 5.0 steps/s, crosswalk transit
 
-    def __init__(self, host="192.168.4.1", port=5005, max_stride=40, min_sonar_cm=35):
-        self.host = host
-        self.port = port
+    def __init__(self, host="192.168.4.1", port=5005, max_stride=40, min_sonar_cm=35, serial_port=None):
         self.max_stride = max_stride
         self.min_sonar_cm = min_sonar_cm
 
-        self.sock = None
-        self.alive = True
         self.batt_v = 7.4
         self.dist_cm = 999.0
         self.is_walking = False
         self.gait = None
-        self.lock = threading.Lock()
 
-        self.connect()
+        print(f"{C}[RealDog] Connecting to physical MechDog at {serial_port or f'{host}:{port}'}...{W}")
+        self.link = BridgeLink(host, port, serial_port, on_msg=self._handle_telemetry, on_ready=self._on_ready,
+                               tag="RealDog")
+        self.link.start()
 
-    def connect(self):
-        try:
-            print(f"{C}[RealDog] Connecting to physical MechDog at {self.host}:{self.port}...{W}")
-            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.sock.settimeout(3.0)
-            self.sock.connect((self.host, self.port))
-            self.sock.settimeout(None)
-            self.gait = None  # bridge may have rebooted or been reset; force resend
-            print(f"{G}[RealDog] Connected to MechDog Bridge successfully!{W}")
-            # Start telemetry reader
-            threading.Thread(target=self._reader_loop, daemon=True).start()
-            # Subscribe to telemetry at 4Hz
-            self._send({"t": "sub", "hz": 4})
-        except Exception as e:
-            print(f"{R}[RealDog Error] Failed to connect to {self.host}:{self.port}: {e}{W}")
-            self.sock = None
+    @property
+    def connected(self):
+        return self.link.connected
+
+    def _on_ready(self, first):
+        self.gait = None  # bridge may have rebooted or been reset; force resend
+        if not first:
+            # The watchdog has likely already halted the dog; make that explicit so the operator re-commands.
+            self.is_walking = False
+            self._send({"t": "stop"})
+            print(f"\n{Y}[RealDog] Bridge link re-established; dog stopped, re-issue your command.{W}")
+        self._send({"t": "sub", "hz": 4})
 
     def _send(self, payload):
-        if not self.sock:
-            return
-        try:
-            with self.lock:
-                msg = json.dumps(payload) + "\n"
-                self.sock.sendall(msg.encode())
-        except Exception as e:
-            print(f"{R}[RealDog Error] Send error: {e}{W}")
-            self.sock = None
+        return self.link.send(payload)
 
-    def _reader_loop(self):
-        buf = ""
-        while self.alive and self.sock:
-            try:
-                data = self.sock.recv(1024).decode(errors="ignore")
-                if not data:
-                    break
-                buf += data
-                while "\n" in buf:
-                    line, buf = buf.split("\n", 1)
-                    line = line.strip()
-                    if line:
-                        self._handle_telemetry(line)
-            except Exception:
-                break
-        print(f"{Y}[RealDog] Telemetry connection closed.{W}")
-
-    def _handle_telemetry(self, raw_json):
+    def _handle_telemetry(self, data):
         try:
-            data = json.loads(raw_json)
             # Distance / Sonar
             if "dist_cm" in data and data["dist_cm"] is not None:
                 self.dist_cm = float(data["dist_cm"])
@@ -113,8 +210,8 @@ class RealDogController:
         gait = (lift_ms, contact_ms, lift_mm)
         if gait == self.gait:
             return
-        self._send({"t": "gait", "lift_ms": lift_ms, "contact_ms": contact_ms, "lift_mm": lift_mm})
-        self.gait = gait if self.sock else None
+        sent = self._send({"t": "gait", "lift_ms": lift_ms, "contact_ms": contact_ms, "lift_mm": lift_mm})
+        self.gait = gait if sent else None
         print(f"{C}⚙️  Gait: lift {lift_ms} ms / contact {contact_ms} ms / lift {lift_mm} mm ({1000 / (lift_ms + contact_ms):.1f} steps/s){W}")
 
     def walk_safe(self, stride=None, angle=0, is_crosswalk=False, fast_mode=False):
@@ -161,19 +258,15 @@ class RealDogController:
         self._send({"t": "rgb", "r": r, "g": g, "b": b})
 
     def close(self):
-        self.alive = False
         self.stop()
-        if self.sock:
-            try:
-                self.sock.close()
-            except Exception:
-                pass
+        self.link.close()
 
 
 def main():
     parser = argparse.ArgumentParser(description="Real-World MechDog Escort Controller")
     parser.add_argument("--wifi", default="127.0.0.1", help="Dog IP (use 192.168.4.1 for real dog AP mode, 127.0.0.1 for local/sim)")
     parser.add_argument("--port", type=int, default=5005, help="Bridge TCP port")
+    parser.add_argument("--serial", metavar="DEV", help="Drive over USB serial instead of WiFi (e.g. /dev/ttyUSB0, COM3)")
     parser.add_argument("--max-stride", type=int, default=40, help="Max safe walking stride (10-50)")
     parser.add_argument("--min-sonar", type=int, default=35, help="Minimum obstacle stop distance in cm")
     parser.add_argument("--gemini", action="store_true", help="Enable Gemini 2.5 Flash autonomous reasoning")
@@ -182,19 +275,20 @@ def main():
     print(f"\n========================================================")
     print(f"   🐕 WAYMO SAFEPOINT: REAL-WORLD MECHDOG ESCORT RUNNER   ")
     print(f"========================================================")
-    print(f"• Target IP: {args.wifi}:{args.port}")
+    print(f"• Target: {args.serial or f'{args.wifi}:{args.port}'}{' (USB serial)' if args.serial else ''}")
     print(f"• Max Escort Stride: {args.max_stride} (Human walking pace)")
     print(f"• Sonar Hard-Stop: < {args.min_sonar} cm")
     print(f"• Emergency Stop: Press Ctrl+C or Spacebar at ANY time")
     print(f"========================================================\n")
 
-    dog = RealDogController(host=args.wifi, port=args.port, max_stride=args.max_stride, min_sonar_cm=args.min_sonar)
+    dog = RealDogController(host=args.wifi, port=args.port, max_stride=args.max_stride, min_sonar_cm=args.min_sonar,
+                            serial_port=args.serial)
 
     print("\nPre-Flight Hardware Verification:")
     time.sleep(1.0)
     print(f"  • Battery Voltage: {dog.batt_v:.2f} V ({'OK' if dog.batt_v >= 7.0 else 'LOW'})")
     print(f"  • Sonar Distance:  {dog.dist_cm:.1f} cm ({'CLEAR' if dog.dist_cm >= args.min_sonar else 'OBSTACLE DETECTED'})")
-    print(f"  • Bridge Connection: {'ACTIVE' if dog.sock else 'WAITING/OFFLINE'}")
+    print(f"  • Bridge Connection: {'ACTIVE' if dog.connected else 'WAITING/OFFLINE (auto-retrying)'}")
 
     print(f"\n{G}Ready for Private Road Testing.{W}")
     print("Commands:")

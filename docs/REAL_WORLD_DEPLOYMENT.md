@@ -72,24 +72,25 @@ python tools/vision_stream.py --cam 0 --model blind_escort_yolo/weights/yolo11n_
 ---
 
 ### Step 3: Run the Safe Escort Controller
-In **Terminal 2**, launch the real-world safety runner:
+In **Terminal 2**, launch the real-world safety runner over USB serial (or `--wifi 192.168.4.1`):
 ```bash
-python tools/real_world_escort.py --wifi 192.168.4.1 --min-sonar 35 --max-stride 40
+python tools/real_world_escort.py --serial /dev/ttyUSB0 --min-sonar 35 --max-stride 40
 ```
-- It will verify the battery voltage and sonar clear distance before enabling motion.
+- Automatically auto-reconnects if the physical cable disconnects or wobbles.
 - Keyboard controls:
-  - `w`: Step forward (gentle stride)
-  - `s`: Stop immediately
-  - `a`: Turn 15° left (re-orient toward curb ramp)
+  - `w`: Step forward (sidewalk pace, stride 40)
+  - `f`: Toggle Fast mode (Brisk 4.0 steps/s on sidewalk, Sprint 5.0 steps/s on crosswalk)
+  - `c`: Crosswalk Sprint (rapid road crossing at ~1.0 mph, stride 100)
+  - `s`: Stop dog immediately
+  - `a`: Turn 15° left
   - `d`: Turn 15° right
   - `q`: Disconnect and power down servos
 
 ---
 
 ### Step 4: (Optional) Autonomous Gemini AI Escort Brain
-In **Terminal 3**, launch the autonomous Gemini 2.5 Flash agent:
+In **Terminal 3**, launch the autonomous Gemini escort brain over USB serial:
 ```bash
-export GEMINI_API_KEY="your-gemini-key"
-python tools/gemini_dog_agent.py --host 192.168.4.1 --goal "Guide me safely to the Waymo passenger door"
+python tools/gemini_dog_agent.py --serial /dev/ttyUSB0 --goal "Guide me safely to the Waymo passenger door"
 ```
-The Gemini agent reads the live camera detections, reasons about curb ramp access and pedestrian obstacles, and sends autonomous walking commands to the dog while speaking audio directions to the rider.
+The Gemini agent reads live YOLO camera detections, reasons about curb ramp access and pedestrian obstacles, and sends autonomous walking commands to the dog over USB while speaking audio directions to the rider.
