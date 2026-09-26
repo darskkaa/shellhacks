@@ -1,5 +1,5 @@
 // SafeRoute Miami: scores Google route alternatives by crash, flood, and school-zone exposure.
-// Run: node --env-file=.env server.mjs
+// Run: npm start (reads keys from the repo-root .env)
 import { createServer } from "node:http";
 import { gzipSync } from "node:zlib";
 import { createHash } from "node:crypto";

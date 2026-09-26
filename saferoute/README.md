@@ -5,7 +5,7 @@ Ranks Google driving routes across Miami-Dade by crash history, flood reports, l
 ## Run
 
 ```sh
-cp -n .env.example .env               # then fill in keys (-n never overwrites an existing .env)
+cp -n .env.example ../.env            # keys live in the repo-root .env (git-ignored); -n never overwrites
 git config core.hooksPath .githooks   # blocks committing .env or API keys
 npm install
 npm run fetch-data                    # downloads hazard data into data/
