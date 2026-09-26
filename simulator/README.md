@@ -3,6 +3,7 @@
 See [compatibility tests and detailed evidence](COMPATIBILITY.md) for the full verification scope.
 See [rendered-camera YOLO experiment](VISION.md) for person/car assets and vision control.
 Start here: [traffic simulation run instructions](RUN_TRAFFIC.md), including NixOS setup.
+See [guide-dog crossing gated by the blind-escort YOLO model](ESCORT.md) for the WALK-signal escort demo.
 
 PyBullet's bundled eight-motor Minitaur is an **uncalibrated MechDog surrogate**.
 The scene exercises motors, contact and rendering. It does not reproduce MechDog

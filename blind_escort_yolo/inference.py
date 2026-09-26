@@ -90,9 +90,11 @@ class BlindEscortDetector:
             xywh = np.column_stack([boxes[:, :2] - boxes[:, 2:] / 2, boxes[:, 2:]])
             keep = cv2.dnn.NMSBoxesBatched(xywh.tolist(), confs.tolist(), class_ids.tolist(), conf_thresh, 0.7) if len(boxes) else []
             keep = np.array(keep, dtype=int).flatten()
+            # preprocess() stretches the frame to imgsz x imgsz; map boxes back to the input image's pixels.
+            sx, sy = pil_img.size[0] / imgsz, pil_img.size[1] / imgsz
             for box, conf, cls_id in zip(boxes[keep], confs[keep], class_ids[keep]):
                 cls_name = CLASSES.get(int(cls_id), f"class_{cls_id}")
-                cx, cy, w, h = box
+                cx, cy, w, h = box * np.array([sx, sy, sx, sy])
                 x1, y1 = float(cx - w/2), float(cy - h/2)
                 x2, y2 = float(cx + w/2), float(cy + h/2)
                 detections.append({

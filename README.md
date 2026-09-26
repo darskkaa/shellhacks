@@ -1,5 +1,9 @@
 # shellhacks
 
+![Robot dog escorting a blind pedestrian across a crosswalk once YOLO sees WALK](docs/media/escort-crossing.gif)
+
+*Simulated guide-dog crossing: the dog waits until the blind-escort YOLO model sees the WALK signal, then leads its handler across. Details in [`simulator/ESCORT.md`](simulator/ESCORT.md).*
+
 ShellHacks 2026 project: driving a **Hiwonder MechDog** (ESP32 quadruped robot) from a laptop, with a browser control panel and live YOLO object detection from a USB webcam.
 
 ## Layout

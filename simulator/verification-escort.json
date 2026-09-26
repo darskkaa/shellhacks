@@ -1,0 +1,79 @@
+{
+  "cycle": {
+    "completed": true,
+    "passed": true,
+    "checks": {
+      "no_walk_votes_on_dont_walk": true,
+      "crossing_started_on_true_walk": true,
+      "in_road_only_while_cars_held_on_red": true,
+      "dog_reached_far_curb": true,
+      "handler_reached_far_curb": true,
+      "handler_stayed_beside_dog": true
+    },
+    "signal_mode": "cycle",
+    "seconds": 30,
+    "model_sha256": "6547aee411dd9eccb6cc458bc0cc81e5c55e79157b6ad0f6f7a839e7edfe2d8c",
+    "firmware_sha256": "3c4d012d2f050b3621d37d408eb08bfc72aedde86459e4953d9dad7b63c3977e",
+    "decision_rule": {
+      "walk_conf": 0.4,
+      "margin_over_dont_walk": 0.1,
+      "confirm_frames": 3,
+      "conflict_veto": 0.5
+    },
+    "model_grading_while_waiting": {
+      "frames": 54,
+      "walk_votes_on_walk": 3,
+      "walk_votes_on_dont_walk": 0,
+      "dont_walk_votes_on_dont_walk": 51,
+      "non_walk_votes_on_walk": 0
+    },
+    "first_ground_truth_walk_s": 10.0,
+    "crossing_start": {
+      "seconds": 10.6,
+      "ground_truth_walk": true,
+      "phase": "red"
+    },
+    "detection_latency_s": 0.6,
+    "road_violations_steps": 0,
+    "min_car_center_distance_in_road_m": 2.4,
+    "max_handler_gap_m": 0.695,
+    "final_dog_x": 8.28,
+    "final_handler_x": 7.93,
+    "limitations": "Synthetic signal face (0.8 m, oversized), rendered TinyRenderer frames, planar motion proxy, static handler mesh. Grades the model on this scene only; not evidence of real-street accuracy."
+  },
+  "stuck_dont_walk": {
+    "completed": true,
+    "passed": true,
+    "checks": {
+      "no_walk_votes_on_dont_walk": true,
+      "stayed_on_curb": true
+    },
+    "signal_mode": "stop",
+    "seconds": 30.0,
+    "model_sha256": "6547aee411dd9eccb6cc458bc0cc81e5c55e79157b6ad0f6f7a839e7edfe2d8c",
+    "firmware_sha256": "3c4d012d2f050b3621d37d408eb08bfc72aedde86459e4953d9dad7b63c3977e",
+    "decision_rule": {
+      "walk_conf": 0.4,
+      "margin_over_dont_walk": 0.1,
+      "confirm_frames": 3,
+      "conflict_veto": 0.5
+    },
+    "model_grading_while_waiting": {
+      "frames": 150,
+      "walk_votes_on_walk": 0,
+      "walk_votes_on_dont_walk": 0,
+      "dont_walk_votes_on_dont_walk": 150,
+      "non_walk_votes_on_walk": 0
+    },
+    "first_ground_truth_walk_s": null,
+    "crossing_start": null,
+    "detection_latency_s": null,
+    "road_violations_steps": 0,
+    "min_car_center_distance_in_road_m": null,
+    "max_handler_gap_m": 0.695,
+    "final_dog_x": 2.4,
+    "final_handler_x": 2.05,
+    "limitations": "Synthetic signal face (0.8 m, oversized), rendered TinyRenderer frames, planar motion proxy, static handler mesh. Grades the model on this scene only; not evidence of real-street accuracy."
+  },
+  "recorded": "2026-09-26, Linux x86-64, Python 3.11, onnxruntime 1.30.0, pybullet 3.2.7"
+}
