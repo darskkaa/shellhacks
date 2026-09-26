@@ -1,0 +1,4 @@
+pybullet==3.2.7
+numpy==1.26.4
+pillow==11.3.0
+pyserial==3.5

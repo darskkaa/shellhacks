@@ -13,8 +13,26 @@ ShellHacks 2026 project: driving a **Hiwonder MechDog** (ESP32 quadruped robot) 
 | `models/` | `yolo26n.pt` weights and sample camera snapshots. |
 | `hiwonder_mechdog_sdk/` | Vendored copy of Hiwonder's official SDK and examples ([Hiwonder/MechDog](https://github.com/Hiwonder/MechDog)). |
 | `docs/` | Hardware research, the SDK/device reference (**read `mechdog-sdk-reference.md` first**), and ShellHacks event notes. |
+| `saferoute/` | **SafeRoute Miami** (Waymo track): a separate Node web app that ranks and reroutes Miami drives around crashes, flooding, construction and hurricane surge. See [`saferoute/README.md`](saferoute/README.md). |
+| `blind_escort_yolo/` | Custom 20-class YOLO11-Nano model (ONNX + PyTorch weights) and CPU inference script for guiding a blind rider from the sidewalk to a Waymo. See [`blind_escort_yolo/README.md`](blind_escort_yolo/README.md). |
+| `simulator/` | PyBullet physics sandbox that runs the WiFi bridge and control panel against a surrogate robot, with traffic and YOLO vision scenes. No ROS needed. See [`simulator/README.md`](simulator/README.md). |
+
+## SafeRoute Miami
+
+A second ShellHacks 2026 project in this repo, independent of the MechDog code. Quick start:
+
+```bash
+cd saferoute
+cp -n .env.example ../.env     # keys live in the repo-root .env (git-ignored)
+npm install
+npm start                      # http://localhost:3000
+```
+
+Full docs, data sources and the demo script are in [`saferoute/README.md`](saferoute/README.md) and [`saferoute/docs/`](saferoute/docs/).
 
 ## Hardware
+
+For a verified local physics sandbox, see [simulator setup](simulator/README.md).
 
 - Hiwonder MechDog (ESP32 main controller, 8 servos, IMU, ultrasonic sonar with RGB LEDs, buzzer). Our unit has **no** onboard camera module.
 - Logitech Brio 105 USB webcam on the laptop for vision.
