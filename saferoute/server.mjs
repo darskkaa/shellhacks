@@ -21,6 +21,8 @@ import {
 
 const PORT = Number(process.env.PORT ?? 3000);
 const MAPS_KEY = process.env.GOOGLE_MAPS_API_KEY;
+// Optional browser-only key for Maps JS; restrict it by HTTP referrer. Falls back to the server key for local dev.
+const BROWSER_MAPS_KEY = process.env.GOOGLE_MAPS_BROWSER_KEY || MAPS_KEY;
 const GEMINI_KEY = process.env.GEMINI_API_KEY;
 const NWS_CONTACT = process.env.NWS_CONTACT ?? "saferoute-miami hackathon demo";
 if (!MAPS_KEY) throw new Error("GOOGLE_MAPS_API_KEY missing from .env");
@@ -75,6 +77,10 @@ const db = process.env.MONGODB_URI
   ? await new MongoClient(process.env.MONGODB_URI, { serverSelectionTimeoutMS: 5_000, connectTimeoutMS: 5_000 })
       .connect()
       .then((client) => client.db("saferoute"))
+      .catch((err) => {
+        console.error(`MongoDB Atlas unreachable (${err.message}); using local data/ instead`);
+        return null;
+      })
   : null;
 const hazardsCollection = db?.collection("hazards") ?? null;
 const evacCollection = db?.collection("evac_zones") ?? null;
@@ -145,7 +151,7 @@ async function fetchJson(url, init = {}, timeoutMs = 10_000) {
   if (!res.ok) {
     // Upstream error text stays in server logs; the browser only sees host and status.
     console.error(`api ${host}${pathname} error: ${body?.error?.message ?? "(no message)"}`);
-    throw new Error(`${host} HTTP ${res.status}`);
+    throw Object.assign(new Error(`${host} HTTP ${res.status}`), { upstreamStatus: res.status, host });
   }
   if (body === null) throw new Error(`${host} returned non-JSON`);
   return body;
@@ -186,7 +192,9 @@ async function fetchConditions() {
   const peak = highs.reduce((m, p) => (Number(p.v) > Number(m?.v ?? -Infinity) ? p : m), null);
   const localFeatures =
     alerts.status === "fulfilled"
-      ? alerts.value.features.filter((f) => /Miami-Dade|Biscayne Bay|Metro Miami/i.test(f.properties.areaDesc))
+      ? (Array.isArray(alerts.value?.features) ? alerts.value.features : []).filter((f) =>
+          /Miami-Dade|Biscayne Bay|Metro Miami/i.test(f.properties.areaDesc),
+        )
       : [];
   const localAlerts = localFeatures.map(({ properties: p }) => ({
     event: p.event,
@@ -242,8 +250,8 @@ function rainAlong(points, polyline) {
       returnFirstValueOnly: "true",
       f: "json",
     });
-    const body = await fetchJson(`${MRMS_QPE}?${params}`);
-    const mm = (body.samples ?? []).map((x) => Number(x.value)).filter(Number.isFinite);
+    const body = await fetchJson(MRMS_QPE, { method: "POST", body: params });
+    const mm = (body.samples ?? []).map((x) => Number(x.value)).filter((v) => Number.isFinite(v) && v >= 0);
     if (!mm.length) throw new Error("MRMS returned no samples");
     return { maxMm: Math.max(...mm), meanMm: mm.reduce((a, b) => a + b, 0) / mm.length };
   });
@@ -283,7 +291,7 @@ function surgeDepthAlong(points, polyline, category) {
       returnGeometry: "false",
       f: "json",
     });
-    const body = await fetchJson(`${SLOSH_IDENTIFY}?${params}`, {}, 15_000);
+    const body = await fetchJson(SLOSH_IDENTIFY, { method: "POST", body: params }, 15_000);
     // Take the largest number in each class label so open-ended top classes ("... or greater") still count.
     const depths = (body.results ?? [])
       .map((r) => (r.attributes?.["Raster.data_range"] ?? "").match(/\d+/g))
@@ -432,7 +440,17 @@ async function addDetours(origin, destination, routes, offsets) {
     const detour = d.status === "fulfilled" ? d.value[0] : null;
     // Skip detours that collapse onto a route we already have (same length within 2%) or wander far (> 1.6x length).
     if (!detour || detour.distanceMeters > 1.6 * routes[0].distanceMeters) continue;
-    if (routes.some((r) => Math.abs(r.distanceMeters - detour.distanceMeters) < 0.02 * r.distanceMeters)) continue;
+    const mid = (r) => {
+      const p = decodePolyline(r.polyline.encodedPolyline);
+      return p[Math.floor(p.length / 2)];
+    };
+    const detourMid = mid(detour);
+    const duplicate = routes.some(
+      (r) =>
+        Math.abs(r.distanceMeters - detour.distanceMeters) < 0.02 * r.distanceMeters &&
+        distanceM(mid(r), detourMid) < 400,
+    );
+    if (duplicate) continue;
     routes.push({ ...detour, description: `${detour.description || "local roads"} (SafeRoute detour)` });
   }
   return routes;
@@ -840,7 +858,7 @@ async function serveStatic(req, res) {
   try {
     let content = await readFile(file);
     // The Maps JS key is public by design; protect it with HTTP-referrer restrictions in Cloud Console.
-    if (file.endsWith("index.html")) content = content.toString().replace("__MAPS_KEY__", MAPS_KEY);
+    if (file.endsWith("index.html")) content = content.toString().replace("__MAPS_KEY__", () => BROWSER_MAPS_KEY);
     // HTML revalidates every load (it carries the key and changes during development); other assets cache for a day.
     const headers = {
       "Content-Type": MIME[extname(file)] ?? "application/octet-stream",
@@ -859,13 +877,20 @@ async function serveStatic(req, res) {
 }
 
 createServer(async (req, res) => {
+  // 8. Route on the path only, so query strings do not change which handler runs.
+  const path = new URL(req.url, "http://localhost").pathname;
   try {
-    if (req.method === "POST" && req.url === "/api/routes") return await handleRoutes(req, res);
-    if (req.method === "GET" && req.url.startsWith("/api/explain?")) return await handleExplain(req, res);
+    if (req.method === "POST" && path === "/api/routes") return await handleRoutes(req, res);
+    if (req.method === "GET" && path === "/api/explain") return await handleExplain(req, res);
     if (req.method === "GET") return await serveStatic(req, res);
     sendJson(res, 405, { error: "method not allowed" });
   } catch (err) {
     console.error(err);
+    if (err.host === "routes.googleapis.com" && err.upstreamStatus === 400) {
+      return sendJson(res, 400, {
+        error: "Google could not read one of those addresses. Try a fuller address or an example trip.",
+      });
+    }
     sendJson(res, 502, { error: err.message });
   }
 }).listen(PORT, () => console.log(`SafeRoute Miami on http://localhost:${PORT}`));

@@ -14,17 +14,18 @@ npm start                             # http://localhost:3000
 npm run check                         # geometry self-check
 ```
 
-Requires Node 20.6+. The Google Cloud project needs **Maps JavaScript API**, **Routes API**, and **Elevation API** enabled.
+Requires Node 20.11+. The Google Cloud project needs **Maps JavaScript API**, **Routes API**, and **Elevation API** enabled.
 
 ## Environment
 
-| Variable              | Required | Use                                                                                        |
-| --------------------- | -------- | ------------------------------------------------------------------------------------------ |
-| `GOOGLE_MAPS_API_KEY` | yes      | Maps JS, Routes, Elevation. Sent to the browser for Maps JS: restrict it by HTTP referrer. |
-| `GEMINI_API_KEY`      | no       | plain-English route recommendation                                                         |
-| `MONGODB_URI`         | no       | when set, hazards are queried from Atlas (`saferoute.hazards`); otherwise from `data/`     |
-| `NWS_CONTACT`         | no       | `User-Agent` contact sent to api.weather.gov                                               |
-| `PORT`                | no       | default 3000                                                                               |
+| Variable                  | Required    | Use                                                                                                                    |
+| ------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `GOOGLE_MAPS_API_KEY`     | yes         | Server-side Routes and Elevation. API-restrict it; do not add HTTP-referrer restrictions (server calls would fail).    |
+| `GOOGLE_MAPS_BROWSER_KEY` | recommended | Maps JavaScript key sent to the browser; restrict it by HTTP referrer. Falls back to `GOOGLE_MAPS_API_KEY` when unset. |
+| `GEMINI_API_KEY`          | no          | plain-English route recommendation                                                                                     |
+| `MONGODB_URI`             | no          | when set, hazards are queried from Atlas (`saferoute.hazards`); otherwise from `data/`                                 |
+| `NWS_CONTACT`             | no          | `User-Agent` contact sent to api.weather.gov                                                                           |
+| `PORT`                    | no          | default 3000                                                                                                           |
 
 ## Data
 

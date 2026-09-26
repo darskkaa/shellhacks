@@ -4,7 +4,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node --env-file=.env server.mjs",
-    "check": "node check-geo.mjs",
+    "check": "node check-geo.mjs && node scripts/check-page.mjs",
     "fetch-data": "node scripts/fetch-data.mjs",
     "load-mongo": "node --env-file=.env scripts/load-mongo.mjs",
     "lint": "eslint . && prettier --check .",
@@ -20,5 +20,8 @@
     "eslint": "^10.11.0",
     "globals": "^17.12.0",
     "prettier": "^3.9.9"
+  },
+  "engines": {
+    "node": ">=20.11"
   }
 }

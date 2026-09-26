@@ -1669,11 +1669,10 @@
             `${num(crashes)} fewer crashes`,
             `${safest === fastest ? "than the riskiest option" : ""} ${time}.`,
           );
-        return card(
-          "Lowest overall risk",
-          `Risk ${num(other.risk.total - safest.risk.total)} lower`,
-          `${time}. See the cards for what differs.`,
-        );
+        const riskGap = other.risk.total - safest.risk.total;
+        if (riskGap <= 0)
+          return card("Routes are about even", "Similar risk", `${time}. See the cards for what differs.`);
+        return card("Lowest overall risk", `Risk ${num(riskGap)} lower`, `${time}. See the cards for what differs.`);
       }
 
       function conditionsHtml(c) {
