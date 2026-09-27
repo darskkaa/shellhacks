@@ -150,22 +150,32 @@ async function fetchJson(url, init = {}, timeoutMs = 10_000) {
     res = await fetch(url, { ...init, signal: AbortSignal.timeout(timeoutMs) });
   } catch (err) {
     console.log(`api ${host}${pathname} FAILED ${err.name} ${Date.now() - started}ms`);
-    throw new Error(`${host} unreachable (${err.name})`, { cause: err });
+    throw Object.assign(new Error(`${host} unreachable (${err.name})`, { cause: err }), { host });
   }
   console.log(`api ${host}${pathname} ${res.status} ${Date.now() - started}ms`);
   const body = await res.json().catch(() => null);
-  if (res.status === 429) throw new Error(`${host} rate limited us; wait a few minutes before retrying`);
+  if (res.status === 429)
+    throw Object.assign(
+      new Error(
+        host === "routes.googleapis.com"
+          ? "Google's daily route limit for this demo was reached; it resets at midnight Pacific. Try an example trip already searched in the last 15 minutes."
+          : `${host} rate limited us; wait a few minutes before retrying`,
+      ),
+      { host, rateLimited: true },
+    );
   if (!res.ok) {
     // Upstream error text stays in server logs; the browser only sees host and status.
     console.error(`api ${host}${pathname} error: ${body?.error?.message ?? "(no message)"}`);
     throw Object.assign(new Error(`${host} HTTP ${res.status}`), { upstreamStatus: res.status, host });
   }
-  if (body === null) throw new Error(`${host} returned non-JSON`);
+  if (body === null) throw Object.assign(new Error(`${host} returned non-JSON`), { host });
   return body;
 }
 
 // In-memory TTL cache of promises: repeat demo queries cost zero upstream calls, and concurrent identical
-// requests share one call. Failed calls are evicted so they are not cached.
+// requests share one call. A failed call is kept for NEGATIVE_TTL_MS so a dead feed fails fast instead of stalling
+// every request for its full timeout. Google calls (routes, elevation, Gemini) are the exception: a transient failure
+// is retried on the next request, and only a rate limit is kept, so a quota error does not re-spend quota.
 // ponytail: unbounded-ish Map capped by insertion order; swap for an LRU if traffic ever matters.
 const CACHE_MAX = 500;
 const cache = new Map();
@@ -173,7 +183,9 @@ function cached(key, ttlMs, fn) {
   const hit = cache.get(key);
   if (hit && hit.expires > Date.now()) return hit.value;
   const value = fn().catch((err) => {
-    cache.delete(key);
+    if (err.rateLimited || !/googleapis\.com$/.test(err.host ?? ""))
+      cache.set(key, { value, expires: Date.now() + NEGATIVE_TTL_MS });
+    else cache.delete(key);
     throw err;
   });
   cache.set(key, { value, expires: Date.now() + ttlMs });
@@ -181,6 +193,7 @@ function cached(key, ttlMs, fn) {
   return value;
 }
 const MINUTE = 60_000;
+const NEGATIVE_TTL_MS = 2 * MINUTE;
 
 // Tides and alerts change slowly; one fetch per 10 minutes covers every request in between.
 const getConditions = () => cached("conditions", 10 * MINUTE, fetchConditions);
@@ -651,7 +664,12 @@ async function handleRoutes(req, res) {
   let input;
   try {
     input = JSON.parse(await readBody(req));
-  } catch {
+  } catch (err) {
+    if (err.status === 413) {
+      // Answer first, then drop the connection so the rest of the oversized upload is never read.
+      res.on("finish", () => req.destroy());
+      return sendJson(res, 413, { error: "Request body too large." }, { Connection: "close" });
+    }
     return sendJson(res, 400, { error: "Body must be JSON" });
   }
   const { origin, destination, simulate } = input ?? {};
@@ -816,8 +834,10 @@ async function handleRoutes(req, res) {
     ranking,
     explainId,
   };
-  // A response built while a live feed was down would otherwise pin the degraded view for the whole TTL.
-  if (!conditions.unavailable.length) responses.set(responseKey, { body, expires: Date.now() + RESPONSE_TTL_MS });
+  // A response built while a live feed was down is kept briefly: long enough that reloads skip the dead feed and
+  // spend no Routes quota, short enough that the full view returns soon after the feed recovers.
+  const ttl = conditions.unavailable.length ? DEGRADED_RESPONSE_TTL_MS : RESPONSE_TTL_MS;
+  responses.set(responseKey, { body, expires: Date.now() + ttl });
   if (responses.size > RESPONSE_CACHE_MAX) responses.delete(responses.keys().next().value);
   sendJson(res, 200, body, { "Server-Timing": serverTiming });
 }
@@ -825,6 +845,7 @@ async function handleRoutes(req, res) {
 // Successful /api/routes bodies by normalized (origin, destination, scenario, waterFt). Live conditions inside
 // (tide, alerts, police crashes) can be up to 15 minutes stale on a hit; Map order doubles as LRU order.
 const RESPONSE_TTL_MS = 15 * MINUTE;
+const DEGRADED_RESPONSE_TTL_MS = 2 * MINUTE;
 const RESPONSE_CACHE_MAX = 100;
 const responses = new Map();
 
@@ -858,13 +879,15 @@ const PUBLIC_FILES = {
 function readBody(req) {
   return new Promise((resolve, reject) => {
     let data = "";
-    req.on("data", (chunk) => {
+    const onData = (chunk) => {
       data += chunk;
       if (data.length > 10_000) {
-        req.destroy();
-        reject(new Error("body too large"));
+        req.off("data", onData);
+        req.pause();
+        reject(Object.assign(new Error("body too large"), { status: 413 }));
       }
-    });
+    };
+    req.on("data", onData);
     req.on("end", () => resolve(data));
     req.on("error", reject);
   });
@@ -939,6 +962,14 @@ export default async function handler(req, res) {
 }
 
 // realpath: argv[1] keeps symlinks while import.meta.filename resolves them.
-if (process.argv[1] && realpathSync(process.argv[1]) === import.meta.filename) {
+// An unresolvable argv[1] (as on some serverless runtimes) means this module was imported, not run.
+const runDirectly = (() => {
+  try {
+    return Boolean(process.argv[1]) && realpathSync(process.argv[1]) === import.meta.filename;
+  } catch {
+    return false;
+  }
+})();
+if (runDirectly) {
   createServer(handler).listen(PORT, () => console.log(`SafeRoute Miami on http://localhost:${PORT}`));
 }

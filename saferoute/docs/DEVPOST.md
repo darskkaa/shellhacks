@@ -24,7 +24,7 @@ Example: for FIU to Brickell on Sep 26 (a king tide plus an NWS Coastal Flood St
 ## How we built it
 
 - **Node.js** server with no framework. **Google Routes API** for alternatives, **Elevation API** for low-lying segments, **Maps JavaScript API** for the map.
-- **MongoDB Atlas** stores 34,817 point hazards and 1,547 evacuation-zone polygons with `2dsphere` indexes. Each trip makes one `$geoWithin` query for points in the routes' bounding box and one `$geoIntersects` query for zones the route lines cross, then computes exact distances and point-in-polygon exposure in JS.
+- **MongoDB Atlas** stores 34,817 point hazards and 1,547 evacuation-zone polygons with `2dsphere` indexes. The server loads the point hazards into an in-memory grid index at startup (local GeoJSON when Atlas is not configured), and each trip makes one `$geoIntersects` query for zones the route lines cross, then computes exact distances and point-in-polygon exposure in JS.
 - **Gemini** (`gemini-flash-lite-latest`, ~1 s versus ~15 s for the larger flash model) turns the scores into a short recommendation. It receives only the computed numbers, so it has no facts to invent.
 - Public data: FDOT ArcGIS crash and active-construction services, Miami-Dade Open Data 311 and schools, NOAA CO-OPS, and api.weather.gov.
 
