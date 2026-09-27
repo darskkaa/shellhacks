@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "api/index.mjs": {
+      "includeFiles": "{data,public}/**",
+      "maxDuration": 60
+    }
+  },
+  "routes": [{ "src": "/(.*)", "dest": "/api" }]
+}

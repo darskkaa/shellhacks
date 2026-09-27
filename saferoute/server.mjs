@@ -1,10 +1,11 @@
 // SafeRoute Miami: scores Google route alternatives by crash, flood, and school-zone exposure.
-// Run: npm start (reads keys from the repo-root .env)
+// Run: npm start (reads keys from the repo-root .env). On Vercel, api/index.mjs re-exports the request handler.
 import { createServer } from "node:http";
 import { gzipSync } from "node:zlib";
 import { createHash } from "node:crypto";
+import { realpathSync } from "node:fs";
 import { readFile } from "node:fs/promises";
-import { extname, join, normalize } from "node:path";
+import { extname } from "node:path";
 import { MongoClient } from "mongodb";
 import {
   boundsOf,
@@ -18,14 +19,18 @@ import {
   pointInPolygon,
   polygonBounds,
 } from "./geo.mjs";
+import { rankRoutes, routeEnergyKwh } from "./rank.mjs";
 
 const PORT = Number(process.env.PORT ?? 3000);
 const MAPS_KEY = process.env.GOOGLE_MAPS_API_KEY;
-// Optional browser-only key for Maps JS; restrict it by HTTP referrer. Falls back to the server key for local dev.
-const BROWSER_MAPS_KEY = process.env.GOOGLE_MAPS_BROWSER_KEY || MAPS_KEY;
+// Browser-only key for Maps JS; restrict it by HTTP referrer. Falls back to the server key for local dev only:
+// the page embeds this key, so on a public Vercel deploy the fallback would publish the unrestricted server key.
+const BROWSER_MAPS_KEY = process.env.GOOGLE_MAPS_BROWSER_KEY || (process.env.VERCEL ? undefined : MAPS_KEY);
 const GEMINI_KEY = process.env.GEMINI_API_KEY;
 const NWS_CONTACT = process.env.NWS_CONTACT ?? "saferoute-miami hackathon demo";
-if (!MAPS_KEY) throw new Error("GOOGLE_MAPS_API_KEY missing from .env");
+if (!MAPS_KEY) throw new Error("GOOGLE_MAPS_API_KEY missing (repo-root .env locally, project env vars on Vercel)");
+if (!BROWSER_MAPS_KEY)
+  throw new Error("GOOGLE_MAPS_BROWSER_KEY missing: on Vercel it must be a separate, referrer-restricted key");
 
 const CRASH_RADIUS_M = 40;
 const FLOOD_RADIUS_M = 60;
@@ -65,11 +70,13 @@ const M_TO_FT = 3.28084;
 const NHC_MAPSERVER =
   "https://mapservices.weather.noaa.gov/tropical/rest/services/tropical/NHC_tropical_weather/MapServer";
 
+// Literal new URL(..., import.meta.url) paths: Vercel's file tracer bundles exactly these files with the function,
+// and they resolve from the module, not the working directory.
 const KIND_FILES = {
-  crash: "data/crashes.geojson",
-  flood: "data/flooding.geojson",
-  school: "data/schools.geojson",
-  construction: "data/construction.geojson",
+  crash: new URL("./data/crashes.geojson", import.meta.url),
+  flood: new URL("./data/flooding.geojson", import.meta.url),
+  school: new URL("./data/schools.geojson", import.meta.url),
+  construction: new URL("./data/construction.geojson", import.meta.url),
 };
 
 // Atlas is the hazard store when MONGODB_URI is set (npm run load-mongo); local GeoJSON otherwise.
@@ -86,7 +93,7 @@ const hazardsCollection = db?.collection("hazards") ?? null;
 const evacCollection = db?.collection("evac_zones") ?? null;
 const localEvacZones = db
   ? null
-  : JSON.parse(await readFile("data/evac-zones.geojson", "utf8")).features.map((f) => ({
+  : JSON.parse(await readFile(new URL("./data/evac-zones.geojson", import.meta.url), "utf8")).features.map((f) => ({
       geometry: f.geometry,
       category: f.properties.CATEGORY,
       zone: f.properties.ZONEID,
@@ -495,10 +502,11 @@ function explain(summary) {
 
 async function fetchExplanation(summary) {
   const prompt =
-    // Route A is already the lowest-risk route; the model explains that choice, it does not re-rank.
-    "You are a driving-safety assistant for Miami. Route A is the recommended route because it has the lowest " +
-    "risk score. In at most 3 short sentences and under 60 words, explain why Route A is safer than the alternatives and " +
-    "state any extra minutes it costs, citing the numbers. Crash data is 2018-2019 injury/fatal crashes; flood data " +
+    // Route A is already the recommended route (rank.mjs); the model explains that choice, it does not re-rank.
+    "You are a driving-safety assistant for Waymo rides in Miami. Route A is the recommended route under rankingRule. " +
+    "In at most 3 short sentences and under 60 words, explain why Route A beats the alternatives on safety first, then " +
+    "time and the Waymo's battery energy (waymoEnergyKwh), and state any extra minutes it costs, citing the numbers. " +
+    "Crash data is 2018-2019 injury/fatal crashes; flood data " +
     "is 311 flooding reports 2021-2023; work zones are active FDOT construction projects; " +
     "activeIncidentsOnRouteNow are live police-reported crashes happening now; " +
     "rainLast24hMm is NOAA radar rainfall; worstCaseSurgeFeet is NOAA SLOSH surge depth for the active category; " +
@@ -588,10 +596,12 @@ async function scoreRoute(route, path, indexes, conditions, liveIndex, surge, wa
     surgeRisk +
     SURGE_DEPTH_WEIGHT_PER_FT * (surgeDepth?.maxFt ?? 0);
 
+  const durationSec = parseInt(route.duration, 10);
   return {
     description: route.description,
-    durationSec: parseInt(route.duration, 10),
+    durationSec,
     distanceM: route.distanceMeters,
+    energyKwh: routeEnergyKwh({ distanceM: route.distanceMeters, durationSec, elevationProfile: elevation?.profile }),
     polyline: route.polyline.encodedPolyline,
     crashes: { count: nearCrashes.length, killed, serious },
     floodReports: nearFloods.length,
@@ -652,6 +662,20 @@ async function handleRoutes(req, res) {
     return sendJson(res, 400, { error: "Enter both a start and a destination." });
   if (origin.trim().toLowerCase() === destination.trim().toLowerCase())
     return sendJson(res, 400, { error: "Start and destination are the same place." });
+
+  // Whole-response cache: page loads and example chips repeat the same few trips, and each miss spends Google quota.
+  const norm = (s) => s.trim().toLowerCase().replace(/\s+/g, " ");
+  const scenario = simulate === "storm" || simulatedCategory ? simulate : "";
+  const responseKey = JSON.stringify([norm(origin), norm(destination), scenario, waterFt]);
+  const hit = responses.get(responseKey);
+  if (hit && hit.expires > Date.now()) {
+    // Re-insert so eviction drops the least recently used trip.
+    responses.delete(responseKey);
+    responses.set(responseKey, hit);
+    console.log("routes cache hit");
+    return sendJson(res, 200, hit.body, { "Server-Timing": "cache;desc=hit" });
+  }
+  responses.delete(responseKey);
 
   // Stage timings go out as a Server-Timing header (visible in DevTools > Network > Timing) and to the log.
   const timings = [];
@@ -728,12 +752,11 @@ async function handleRoutes(req, res) {
   const surgeZones = await evacZonesAlong(paths, surgeCategory);
   lap("atlas");
   const surge = { category: surgeCategory, zones: surgeZones };
-  const scored = await Promise.all(
-    routes.map((r, i) => scoreRoute(r, paths[i], indexes, conditions, liveIndex, surge, waterFt)),
+  const { routes: scored, ranking } = rankRoutes(
+    await Promise.all(routes.map((r, i) => scoreRoute(r, paths[i], indexes, conditions, liveIndex, surge, waterFt))),
   );
   lap("score");
   const fastest = Math.min(...scored.map((r) => r.durationSec));
-  scored.sort((a, b) => a.risk.total - b.risk.total);
   for (const r of scored) r.extraMinutes = Math.round((r.durationSec - fastest) / 60);
 
   // Polygons stay out of the model prompt; it only needs the conditions in words and numbers.
@@ -743,6 +766,7 @@ async function handleRoutes(req, res) {
       ...conditionsText,
       activeAtlanticStorms: (stormList ?? []).map(({ cone, ...st }) => st),
     },
+    rankingRule: ranking.rule,
     // Minutes and a trimmed shape so the model quotes numbers a driver would say out loud.
     routes: scored.map((r, i) => ({
       route: String.fromCharCode(65 + i),
@@ -764,12 +788,16 @@ async function handleRoutes(req, res) {
       rainLast24hMm: r.rain24hMm,
       worstCaseSurgeFeet: r.maxSurgeFt,
       riskScore: r.risk.total,
+      waymoEnergyKwh: r.energyKwh,
+      badges: r.badges,
+      paretoOptimal: r.frontier,
+      dominatedByRoute: r.dominatedBy,
     })),
   };
   const explainId = createHash("sha1").update(JSON.stringify(summary)).digest("hex").slice(0, 16);
   explanations.set(explainId, explain(summary));
   if (explanations.size > 200) explanations.delete(explanations.keys().next().value);
-  const serverTiming = timings.map(([name, ms]) => `${name};dur=${ms.toFixed(0)}`).join(", ");
+  const serverTiming = ["cache;desc=miss", ...timings.map(([name, ms]) => `${name};dur=${ms.toFixed(0)}`)].join(", ");
   console.log(`routes ${routes.length} | ${serverTiming}`);
   // The map draws alert areas only for real storm mode and cones only when they cover Miami.
   const wireConditions = {
@@ -780,18 +808,23 @@ async function handleRoutes(req, res) {
         : [],
     storms: conditions.storms?.map((st) => ({ ...st, cone: st.threatensMiami ? slimGeometry(st.cone) : null })) ?? null,
   };
-  sendJson(
-    res,
-    200,
-    {
-      conditions: wireConditions,
-      surgeZones: surgeZones.map((z) => ({ zone: z.zone, category: z.category, geometry: slimGeometry(z.geometry) })),
-      routes: scored,
-      explainId,
-    },
-    { "Server-Timing": serverTiming },
-  );
+  const body = {
+    conditions: wireConditions,
+    surgeZones: surgeZones.map((z) => ({ zone: z.zone, category: z.category, geometry: slimGeometry(z.geometry) })),
+    routes: scored,
+    ranking,
+    explainId,
+  };
+  responses.set(responseKey, { body, expires: Date.now() + RESPONSE_TTL_MS });
+  if (responses.size > RESPONSE_CACHE_MAX) responses.delete(responses.keys().next().value);
+  sendJson(res, 200, body, { "Server-Timing": serverTiming });
 }
+
+// Successful /api/routes bodies by normalized (origin, destination, scenario, waterFt). Live conditions inside
+// (tide, alerts, police crashes) can be up to 15 minutes stale on a hit; Map order doubles as LRU order.
+const RESPONSE_TTL_MS = 15 * MINUTE;
+const RESPONSE_CACHE_MAX = 100;
+const responses = new Map();
 
 // Gemini summaries in flight or done, by id; the route response returns before the model does.
 const explanations = new Map();
@@ -812,7 +845,13 @@ const MIME = {
   ".json": "application/json",
   ".svg": "image/svg+xml",
 };
-const PUBLIC_DIR = join(import.meta.dirname, "public");
+// The only files served; an allowlist also rules out path traversal.
+const INDEX_HTML = new URL("./public/index.html", import.meta.url);
+const PUBLIC_FILES = {
+  "/": INDEX_HTML,
+  "/index.html": INDEX_HTML,
+  "/icons.svg": new URL("./public/icons.svg", import.meta.url),
+};
 
 function readBody(req) {
   return new Promise((resolve, reject) => {
@@ -853,10 +892,11 @@ function sendJson(res, status, body, headers = {}) {
 
 async function serveStatic(req, res) {
   const url = new URL(req.url, "http://localhost");
-  const file = normalize(join(PUBLIC_DIR, url.pathname === "/" ? "index.html" : url.pathname));
-  if (!file.startsWith(PUBLIC_DIR)) return sendJson(res, 403, { error: "forbidden" });
+  const fileUrl = PUBLIC_FILES[url.pathname];
+  if (!fileUrl) return sendJson(res, 404, { error: "not found" });
+  const file = fileUrl.pathname;
   try {
-    let content = await readFile(file);
+    let content = await readFile(fileUrl);
     // The Maps JS key is public by design; protect it with HTTP-referrer restrictions in Cloud Console.
     if (file.endsWith("index.html")) content = content.toString().replace("__MAPS_KEY__", () => BROWSER_MAPS_KEY);
     // HTML revalidates every load (it carries the key and changes during development); other assets cache for a day.
@@ -876,7 +916,8 @@ async function serveStatic(req, res) {
   }
 }
 
-createServer(async (req, res) => {
+// Default export so Vercel can run this module as a Node function (api/index.mjs); `node server.mjs` also listens.
+export default async function handler(req, res) {
   // 8. Route on the path only, so query strings do not change which handler runs.
   const path = new URL(req.url, "http://localhost").pathname;
   try {
@@ -893,4 +934,9 @@ createServer(async (req, res) => {
     }
     sendJson(res, 502, { error: err.message });
   }
-}).listen(PORT, () => console.log(`SafeRoute Miami on http://localhost:${PORT}`));
+}
+
+// realpath: argv[1] keeps symlinks while import.meta.filename resolves them.
+if (process.argv[1] && realpathSync(process.argv[1]) === import.meta.filename) {
+  createServer(handler).listen(PORT, () => console.log(`SafeRoute Miami on http://localhost:${PORT}`));
+}
