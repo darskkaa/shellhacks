@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SafeRoute Simulation</title>
+    <meta
+      name="description"
+      content="A robot guide dog leads a blind rider to a waiting Waymo on real Miami streets: obstacles, a signalized crossing, a flooded sidewalk and a safer pickup."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="icon" href="data:," />
+    <!-- Non-blocking font load: text renders in system-ui until Geist arrives. -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@500;600&display=swap" media="print" onload="this.media='all'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@500;600&display=swap" /></noscript>
+    <style>
+      /* Same tokens as the SafeRoute page so the two read as one product. */
+      :root {
+        color-scheme: light;
+        --bg: #eef1f5;
+        --panel: #ffffff;
+        --card: #f6f8fb;
+        --fg: #0d1117;
+        --muted: #5a6472;
+        --line: #e1e5eb;
+        --accent: #007f75;
+        --accent-fg: #fff;
+        --water: #0b5cad;
+        --warn: #9a5b00;
+        --radius: 14px;
+        --shadow: 0 1px 2px rgba(13, 17, 23, 0.06), 0 12px 32px rgba(13, 17, 23, 0.1);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+          color-scheme: dark;
+          --bg: #070a0f;
+          --panel: #0e131a;
+          --card: #141b24;
+          --fg: #eef2f7;
+          --muted: #95a0ae;
+          --line: #212a36;
+          --accent: #2ee6d6;
+          --accent-fg: #04201d;
+          --water: #4fa8ff;
+          --warn: #ffbf47;
+          --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 32px rgba(0, 0, 0, 0.45);
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font: 16px/1.55 "Geist", system-ui, sans-serif;
+      }
+      .skip {
+        position: absolute;
+        left: -9999px;
+      }
+      .skip:focus {
+        left: 16px;
+        top: 16px;
+        z-index: 10;
+        background: var(--accent);
+        color: var(--accent-fg);
+        padding: 10px 14px;
+        border-radius: 10px;
+      }
+      :focus-visible {
+        outline: 3px solid var(--accent);
+        outline-offset: 3px;
+      }
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        background: color-mix(in srgb, var(--bg) 88%, transparent);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--line);
+      }
+      .bar {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 12px 16px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px 20px;
+        justify-content: space-between;
+      }
+      /* A sticky header eats a phone screen, and at 200% zoom most of a laptop one. */
+      @media (max-width: 699px), (max-height: 560px) {
+        header {
+          position: static;
+        }
+      }
+      /* Keeps skip-link targets and tabbed-to controls clear of the sticky header. */
+      html {
+        scroll-padding-top: 96px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .logo {
+        width: 40px;
+        height: 40px;
+        border-radius: 11px;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(135deg, var(--accent), #5b8cff);
+        color: var(--accent-fg);
+        font-weight: 800;
+      }
+      .brand h1 {
+        margin: 0;
+        font-size: 20px;
+        line-height: 1.2;
+      }
+      .engine {
+        font: 600 12px/1.3 "Geist Mono", ui-monospace, monospace;
+        color: var(--muted);
+        letter-spacing: 0.02em;
+      }
+      .engine b {
+        /* Plain accent is 4.4:1 on the light header; nudge it toward the text colour. */
+        color: color-mix(in srgb, var(--accent) 85%, var(--fg));
+        font-weight: 600;
+      }
+      /* Two-state switch between the live routing site and this page. */
+      .modes {
+        display: inline-flex;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 4px;
+      }
+      .modes a {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        padding: 0 18px;
+        border-radius: 999px;
+        color: var(--muted);
+        text-decoration: none;
+        font-weight: 600;
+      }
+      .modes a[aria-current="page"] {
+        background: var(--accent);
+        color: var(--accent-fg);
+      }
+      .modes a:not([aria-current]):hover {
+        color: var(--fg);
+      }
+      main {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 28px 16px 56px;
+        display: grid;
+        gap: 28px;
+      }
+      .intro h2 {
+        margin: 0 0 8px;
+        font-size: clamp(24px, 4vw, 34px);
+        line-height: 1.15;
+      }
+      .intro p {
+        margin: 0;
+        color: var(--muted);
+        max-width: 760px;
+      }
+      .facts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 14px;
+        padding: 0;
+        list-style: none;
+      }
+      .facts li {
+        font-size: 13px;
+        border: 1px solid var(--line);
+        background: var(--panel);
+        border-radius: 999px;
+        padding: 6px 12px;
+        color: var(--muted);
+      }
+      .facts b {
+        color: var(--fg);
+      }
+      .demo {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+      .demo video {
+        width: 100%;
+        height: auto;
+        display: block;
+        background: #000;
+      }
+      .demo .text {
+        padding: 16px 18px 18px;
+        display: grid;
+        gap: 6px;
+      }
+      .demo h3 {
+        margin: 0;
+        font-size: 19px;
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .num {
+        font: 600 13px "Geist Mono", monospace;
+        color: var(--accent);
+      }
+      .demo p {
+        margin: 0;
+        color: var(--muted);
+      }
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 4px;
+      }
+      .tag {
+        font: 600 11px/1 "Geist Mono", monospace;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        padding: 6px 8px;
+        border-radius: 6px;
+        border: 1px solid var(--line);
+        color: var(--muted);
+      }
+      .tag.real {
+        color: var(--accent);
+        border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+      }
+      .tag.illus {
+        color: var(--warn);
+        border-color: color-mix(in srgb, var(--warn) 45%, var(--line));
+      }
+      .costs {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 18px;
+      }
+      .costs h2 {
+        margin: 0 0 12px;
+        font-size: 18px;
+      }
+      .costs ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      }
+      .costs li {
+        display: grid;
+        gap: 4px;
+        align-content: start;
+        padding: 12px;
+        border-radius: 10px;
+        background: var(--card);
+        border: 1px solid var(--line);
+        font-size: 14px;
+      }
+      .costs li.ours {
+        border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+      }
+      .costs .big {
+        font: 700 26px/1.1 "Geist Mono", ui-monospace, monospace;
+        color: var(--accent);
+      }
+      .costs a {
+        color: var(--muted);
+        font-size: 12px;
+        text-underline-offset: 2px;
+        justify-self: start;
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
+        min-width: 44px;
+      }
+      .costs .note {
+        margin: 14px 0 0;
+        color: var(--muted);
+        font-size: 14px;
+        max-width: 820px;
+      }
+      .grid {
+        display: grid;
+        gap: 28px;
+      }
+      @media (min-width: 900px) {
+        .grid {
+          grid-template-columns: 1fr 1fr;
+        }
+        .grid .demo:first-child {
+          grid-column: 1 / -1;
+        }
+        /* Four demos in a 1 + 2 grid would leave the last one orphaned; lay it out sideways instead. */
+        .grid .demo:last-child {
+          grid-column: 1 / -1;
+          display: grid;
+          grid-template-columns: 3fr 2fr;
+          align-items: center;
+        }
+      }
+      .dl {
+        font-size: 13px;
+      }
+      .dl a {
+        color: var(--accent);
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
+        text-underline-offset: 3px;
+      }
+      footer {
+        color: var(--muted);
+        font-size: 13px;
+        border-top: 1px solid var(--line);
+        padding-top: 18px;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          scroll-behavior: auto !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip" href="#demos">Skip to the demos</a>
+    <header>
+      <div class="bar">
+        <div class="brand">
+          <div class="logo" aria-hidden="true">SR</div>
+          <div>
+            <h1>SafeRoute Simulation</h1>
+            <div class="engine">Robot: <b>PyBullet</b> · Car pull-in: <b>Waymo Waymax</b></div>
+          </div>
+        </div>
+        <nav class="modes" aria-label="Switch view">
+          <a href="https://saferoute-miami.vercel.app/">Live routing</a>
+          <a href="./" aria-current="page">Simulation</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="intro" aria-labelledby="intro-h">
+        <h2 id="intro-h">A robot guide dog gets a blind rider safely to their Waymo</h2>
+        <p>
+          Every scene is built from real Edgewater, Miami data. Only the robot hardware is simulated. The dog plans
+          from its own camera: depth for curbs and obstacles, segmentation for water, YOLO for the walk signal.
+        </p>
+        <ul class="facts" aria-label="Data sources">
+          <li><b>OpenStreetMap</b> streets, curbs, crossings</li>
+          <li><b>Miami-Dade 311</b> flood reports</li>
+          <li><b>FDOT</b> work zones and crashes</li>
+          <li><b>NOAA / NWS</b> tide and alerts</li>
+        </ul>
+      </section>
+
+      <section class="costs" aria-labelledby="costs-h">
+        <h2 id="costs-h">What getting around costs today</h2>
+        <ul>
+          <li>
+            <span class="big">1M</span>
+            <span>Americans are blind; 7 million have vision impairment.</span>
+            <a href="https://www.cdc.gov/vision-health/data-research/vision-loss-facts/index.html">CDC</a>
+          </li>
+          <li>
+            <span class="big">$3,600</span>
+            <span>extra per intersection to add accessible (talking) pedestrian signals, $350 per button.</span>
+            <a
+              href="https://www.corada.com/documents/36-cfr-part-1190-NPRM/costs-to-provide-accessible-pedestrian-signals-and-pedestrian-pushbuttons"
+              >U.S. Access Board, 2011</a
+            >
+          </li>
+          <li>
+            <span class="big">$2,500</span>
+            <span>average to fix one curb ramp. Baltimore alone has 37,317 non-compliant ramps.</span>
+            <a
+              href="https://www.baltimorebrew.com/2021/06/30/baltimores-estimate-of-the-cost-of-ada-compliance-a-whopping-657-million/"
+              >Baltimore DOT via Baltimore Brew, 2021</a
+            >
+          </li>
+          <li>
+            <span class="big">$150</span>
+            <span>is all a rider pays The Seeing Eye for a first guide dog; donors cover the rest.</span>
+            <a href="https://seeingeye.org/guide-dogs/admissions/admissions-faq/">The Seeing Eye</a>
+          </li>
+          <li class="ours">
+            <span class="big">$450</span>
+            <span>for the MechDog robot kit this prototype runs on.</span>
+            <a
+              href="https://ozrobotics.com/shop/mechdog-hiwonder-open-source-ai-robot-dog-with-esp32-controller-advanced-kit/"
+              >OzRobotics listing</a
+            >
+          </li>
+        </ul>
+        <p class="note">
+          Infrastructure is fixed one intersection at a time and guide dogs depend on donors. A robot guide travels
+          with the rider and adds its own check at every curb, signal and puddle. It complements these, it doesn't
+          replace them.
+        </p>
+      </section>
+
+      <div class="grid" id="demos">
+        <article class="demo" aria-labelledby="d1">
+          <video
+            controls
+            preload="metadata"
+            playsinline
+            width="1280"
+            height="720"
+            poster="media/escort_obstacles.jpg"
+            aria-labelledby="d1"
+            aria-describedby="d1-desc"
+          >
+            <source src="media/escort_obstacles.webm" type="video/webm" />
+            <source src="media/escort_obstacles.mp4" type="video/mp4" />
+          </video>
+          <div class="text">
+            <h3 id="d1"><span class="num">01</span> Obstacle course to the Waymo</h3>
+            <p id="d1-desc">
+              112 m down Biscayne Blvd and onto NE 21st St. The dog steers around two FDOT work-zone barricades, a
+              bus stop and an e-scooter, then stops the rider beside the car door. The pickup curb was chosen by
+              SafeRoute's risk score.
+            </p>
+            <div class="tags">
+              <span class="tag real">real: OSM, FDOT points</span><span class="tag illus"
+                >illustrative: barricade shape, e-scooter</span
+              >
+            </div>
+            <p class="dl"><a href="media/escort_obstacles.mp4" download aria-describedby="d1">Download MP4</a></p>
+          </div>
+        </article>
+
+        <article class="demo" aria-labelledby="d2">
+          <video
+            controls
+            preload="metadata"
+            playsinline
+            width="1280"
+            height="720"
+            poster="media/crossing.jpg"
+            aria-labelledby="d2"
+            aria-describedby="d2-desc"
+          >
+            <source src="media/crossing.webm" type="video/webm" />
+            <source src="media/crossing.mp4" type="video/mp4" />
+          </video>
+          <div class="text">
+            <h3 id="d2"><span class="num">02</span> Crossing Biscayne Blvd with traffic</h3>
+            <p id="d2-desc">
+              18.1 m, 5 lanes. The dog reads the pedestrian signal with its own camera, waits through DON'T WALK, and
+              crosses only when WALK leaves enough time at a cane user's pace.
+            </p>
+            <div class="tags">
+              <span class="tag real">real: crossing geometry, crashes</span
+              ><span class="tag illus">standard: signal timing</span>
+            </div>
+            <p class="dl"><a href="media/crossing.mp4" download aria-describedby="d2">Download MP4</a></p>
+          </div>
+        </article>
+
+        <article class="demo" aria-labelledby="d3">
+          <video
+            controls
+            preload="metadata"
+            playsinline
+            width="1280"
+            height="720"
+            poster="media/escort_flood.jpg"
+            aria-labelledby="d3"
+            aria-describedby="d3-desc"
+          >
+            <source src="media/escort_flood.webm" type="video/webm" />
+            <source src="media/escort_flood.mp4" type="video/mp4" />
+          </video>
+          <div class="text">
+            <h3 id="d3"><span class="num">03</span> Flooded sidewalk, new path</h3>
+            <p id="d3-desc">
+              At a real 311 flood report on NE 2nd Ave the sidewalk is under water. The dog sees it, replans with the
+              water marked impassable, and leads the rider around the block to the Waymo, dry.
+            </p>
+            <div class="tags">
+              <span class="tag real">real: 311 report, king tide</span
+              ><span class="tag illus">illustrative: water extent</span>
+            </div>
+            <p class="dl"><a href="media/escort_flood.mp4" download aria-describedby="d3">Download MP4</a></p>
+          </div>
+        </article>
+
+        <article class="demo" aria-labelledby="d4">
+          <video
+            controls
+            preload="metadata"
+            playsinline
+            width="960"
+            height="600"
+            poster="media/waymo_pickup.jpg"
+            aria-labelledby="d4"
+            aria-describedby="d4-desc"
+          >
+            <source src="media/waymo_pickup.webm" type="video/webm" />
+            <source src="media/waymo_pickup.mp4" type="video/mp4" />
+          </video>
+          <div class="text">
+            <h3 id="d4"><span class="num">04</span> The Waymo moves to a safer pickup</h3>
+            <p id="d4-desc">
+              Our router drives the safest route, moves the pickup off a flooded curb to NE 21st St, and Waymo's
+              open-source Waymax simulator drives the final pull-in: no off-road, no overlap.
+            </p>
+            <div class="tags">
+              <span class="tag real">real: OSM, SafeRoute data</span><span class="tag">sim: Waymax</span>
+            </div>
+            <p class="dl"><a href="media/waymo_pickup.mp4" download aria-describedby="d4">Download MP4</a></p>
+          </div>
+        </article>
+      </div>
+
+      <footer>
+        Built at ShellHacks 2026. Hazard data is historical and shows patterns, not predictions. Waymax is used under
+        its non-commercial license.
+      </footer>
+    </main>
+  </body>
+</html>
