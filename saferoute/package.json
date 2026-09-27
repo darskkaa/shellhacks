@@ -4,7 +4,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node --env-file=../.env server.mjs",
-    "check": "node check-geo.mjs && node check-rank.mjs && node scripts/check-page.mjs",
+    "check": "node check-geo.mjs && node check-rank.mjs && node check-snapshot.mjs && node scripts/check-page.mjs",
+    "record": "node scripts/record-snapshots.mjs",
     "fetch-data": "node scripts/fetch-data.mjs",
     "load-mongo": "node --env-file=../.env scripts/load-mongo.mjs",
     "lint": "eslint . && prettier --check .",

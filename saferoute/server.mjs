@@ -20,6 +20,7 @@ import {
   polygonBounds,
 } from "./geo.mjs";
 import { rankRoutes, routeEnergyKwh } from "./rank.mjs";
+import { loadSnapshots, parseSnapshotMode, pickSnapshot, routesKey } from "./snapshot.mjs";
 
 const PORT = Number(process.env.PORT ?? 3000);
 const MAPS_KEY = process.env.GOOGLE_MAPS_API_KEY;
@@ -112,6 +113,11 @@ const hazardIndexesAll = hazardsCollection
   : Object.fromEntries(
       await Promise.all(Object.entries(KIND_FILES).map(async ([kind, file]) => [kind, await loadIndex(file)])),
     );
+// Recorded demo answers (README "Recorded demo mode"); the literal URL lets Vercel's tracer find the folder.
+const SNAPSHOT_MODE = parseSnapshotMode(process.env.SNAPSHOT_MODE);
+const snapshots =
+  SNAPSHOT_MODE === "off" ? new Map() : await loadSnapshots(new URL("./data/snapshots/", import.meta.url));
+console.log(`snapshots: mode ${SNAPSHOT_MODE}, ${snapshots.size} recorded trips loaded`);
 console.log(
   `hazards: ${hazardsCollection ? "MongoDB Atlas" : "local GeoJSON"}, ${Object.values(hazardIndexesAll).reduce((n, x) => n + x.size, 0)} points in memory`,
 );
@@ -683,9 +689,9 @@ async function handleRoutes(req, res) {
     return sendJson(res, 400, { error: "Start and destination are the same place." });
 
   // Whole-response cache: page loads and example chips repeat the same few trips, and each miss spends Google quota.
-  const norm = (s) => s.trim().toLowerCase().replace(/\s+/g, " ");
-  const scenario = simulate === "storm" || simulatedCategory ? simulate : "";
-  const responseKey = JSON.stringify([norm(origin), norm(destination), scenario, waterFt]);
+  const responseKey = routesKey({ origin, destination, simulate, waterFt });
+  const snap = pickSnapshot({ mode: SNAPSHOT_MODE, key: responseKey, snapshots });
+  if (snap) return sendSnapshot(res, snap);
   const hit = responses.get(responseKey);
   if (hit && hit.expires > Date.now()) {
     // Re-insert so eviction drops the least recently used trip.
@@ -695,7 +701,30 @@ async function handleRoutes(req, res) {
     return sendJson(res, 200, hit.body, { "Server-Timing": "cache;desc=hit" });
   }
   responses.delete(responseKey);
+  try {
+    return await liveRoutes(res, origin, destination, simulate, simulatedCategory, waterFt, responseKey);
+  } catch (err) {
+    // Google 429 or error, or a timeout: a recorded answer for this exact trip beats an error screen on stage.
+    const fallback = pickSnapshot({ mode: SNAPSHOT_MODE, key: responseKey, snapshots, liveFailed: true });
+    if (!fallback) throw err;
+    console.error(`live routes failed (${err.message}); serving snapshot`);
+    return sendSnapshot(res, fallback);
+  }
+}
 
+// Marked with snapshot.recordedAt so the page labels it "Recorded ... not live"; the recorded Gemini text is re-served.
+function sendSnapshot(res, snap) {
+  if (snap.explanation) explanations.set(snap.body.explainId, Promise.resolve(snap.explanation));
+  console.log(`routes snapshot (${SNAPSHOT_MODE}) recorded ${snap.recordedAt}`);
+  sendJson(
+    res,
+    200,
+    { ...snap.body, snapshot: { recordedAt: snap.recordedAt } },
+    { "Server-Timing": `snapshot;desc=${SNAPSHOT_MODE}` },
+  );
+}
+
+async function liveRoutes(res, origin, destination, simulate, simulatedCategory, waterFt, responseKey) {
   // Stage timings go out as a Server-Timing header (visible in DevTools > Network > Timing) and to the log.
   const timings = [];
   let mark = performance.now();

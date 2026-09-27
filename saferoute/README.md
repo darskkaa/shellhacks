@@ -11,7 +11,8 @@ npm install
 npm run fetch-data                    # downloads hazard data into data/
 npm run load-mongo                    # optional: loads data/ into MongoDB Atlas with a 2dsphere index
 npm start                             # http://localhost:3000
-npm run check                         # geometry, ranking and page self-checks
+npm run check                         # geometry, ranking, snapshot and page self-checks
+npm run record                        # optional: record demo snapshots from a running server (see below)
 ```
 
 Requires Node 20.11+. The Google Cloud project needs **Maps JavaScript API**, **Routes API**, and **Elevation API** enabled.
@@ -42,6 +43,16 @@ Hazard GeoJSON in `data/` is committed, so no build step is needed. With `MONGOD
 | `MONGODB_URI`             | no        | when set, hazards are queried from Atlas (`saferoute.hazards`); otherwise from `data/`                                                                                     |
 | `NWS_CONTACT`             | no        | `User-Agent` contact sent to api.weather.gov                                                                                                                               |
 | `PORT`                    | no        | default 3000; unused on Vercel                                                                                                                                             |
+| `SNAPSHOT_MODE`           | no        | `off` (default), `fallback` or `always`; serves recorded demo answers from `data/snapshots/` (see Recorded demo mode)                                                      |
+
+## Recorded demo mode
+
+So a live demo survives Google's 150/day Routes cap and overnight changes in conditions, the server can answer example trips from recordings, always labeled as such.
+
+- **Record** (spends Routes quota on the recording server): start the server with real keys and `SNAPSHOT_MODE=off`, then `npm run record` (or `npm run record -- https://<host> live,storm` for another server or a subset of scenarios). It reads the example chips and the Conditions select from `public/index.html` and POSTs every trip x scenario (live, flood warning, hurricanes 1-5; `waterFt` unset) one at a time, skipping and reporting failures. Each answer lands in `data/snapshots/<trip>--<scenario>-<hash>.json` as `{key, recordedAt, explanation, body}`, where `key` is the same normalized key as the 15-minute response cache and `body` is the exact `/api/routes` response. The recorder only talks to the server URL; it never reads `.env`.
+- **Serve**: `SNAPSHOT_MODE=fallback` answers from a recording only when the live request fails (Google 429 or other error, or a timeout); `always` answers every recorded trip from its recording without calling Google, and other trips go live. A snapshot is served only for its exact key (trip, scenario, water level), never a neighbor. The startup log names the mode and how many recordings loaded. On Vercel: `npx vercel env add SNAPSHOT_MODE production`, then redeploy (`data/**` is already bundled).
+- **Honesty label**: a served snapshot carries `snapshot: {recordedAt}` and `Server-Timing: snapshot;desc=<mode>`. The page then swaps "Live · 14 public data sources" for "Recorded <local date and time> · not live", titles the conditions panel "Conditions as recorded <time>", shows the recording time in its clock tile, and adds "Recorded <time>, not live data" to the screen-reader status.
+- **Terms**: Google Maps Platform terms restrict caching or storing Routes API results. Recordings are for the hackathon demo only; delete them afterwards and do not ship them in a production deployment.
 
 ## Data
 
@@ -78,7 +89,7 @@ Every upstream call has a timeout, is logged (path and status, never keys), and 
 `public/index.html` is one static page (no build step). Beyond the route cards it has:
 
 - **Why card**: names the concrete difference between the recommended route and Google's fastest (e.g. "Avoids 8 flood reports and 19 crashes for +8 s"), the flood exposure of the route we avoided, and the `ranking.rule` sentence.
-- **Badges and frontier chart**: cards carry Recommended / Safest / Fastest / Most efficient badges; dominated routes are dashed with "Beaten by Route X". An SVG chart plots risk against minutes (bubble size = kWh) with the Pareto frontier drawn; points are keyboard-focusable and a visually hidden table carries the same data for screen readers.
+- **Badges and frontier chart**: cards carry Recommended / Safest / Fastest / Most efficient badges; dominated routes are dashed with "Beaten by Route X". An SVG chart plots risk against minutes (bubble size = kWh) with the Pareto frontier drawn (when one route beats all others, the region it dominates is shaded instead of a line); points are keyboard-focusable and a visually hidden table carries the same data for screen readers.
 - **Flood pins**: 311 flood reports within about 500 m of each other are grouped into numbered pins on every route, including the ones we avoided; low-lying stretches (below 1 m, or below the simulator level) are blue.
 - **Flood demo chip**: "Design District → Legion Park" is the featured example and the trip the page searches on load; Google's fastest there passes 8 flood reports that the recommended route avoids for about 8 s.
 - **Accessibility**: 44 px touch targets, visible focus, `aria-live` loading and results, a skip link, light and dark themes. Checked with axe-core (0 violations, desktop and phone) and Lighthouse (accessibility 100).
@@ -100,4 +111,4 @@ Every upstream call has a timeout, is logged (path and status, never keys), and 
 
 `GET /api/explain?id=<explainId>` returns `{explanation}` once Gemini answers (404 for unknown ids).
 
-`POST /api/routes` with `{"origin": "...", "destination": "...", "simulate": "storm"?}` returns `{conditions, routes, ranking, explainId}`. Routes follow the ranking above (`ranking` is `{rule, riskTie}`), each with `energyKwh`, `frontier`, `dominatedBy` (letter of a dominating route, or null), `badges` (any of `safest`, `fastest`, `efficient`), `recommended` (exactly one), `extraMinutes` versus the fastest, crash, flood, elevation, work-zone, and school-zone counts, a risk score, an `elevationProfile` of `[lat, lng, meters]` samples, and `hazards` arrays of `[lat, lng, severity, detail]` for the map. `waterFt` (0-12, optional) reroutes around a flat water level. `simulate` accepts `"storm"` (simulated flood warning) or `"hurricane-1"` ... `"hurricane-5"` (simulated hurricane of that category, which activates evacuation zones A through the matching letter and SLOSH surge depth). The response also carries `surgeZones` (active zone polygons along the routes) and `conditions.storms`, `conditions.alertAreas`, `conditions.rainForecast`, `conditions.surgeCategory`.
+`POST /api/routes` with `{"origin": "...", "destination": "...", "simulate": "storm"?}` returns `{conditions, routes, ranking, explainId}`. Routes follow the ranking above (`ranking` is `{rule, riskTie}`), each with `energyKwh`, `frontier`, `dominatedBy` (letter of a dominating route, or null), `badges` (any of `safest`, `fastest`, `efficient`), `recommended` (exactly one), `extraMinutes` versus the fastest, crash, flood, elevation, work-zone, and school-zone counts, a risk score, an `elevationProfile` of `[lat, lng, meters]` samples, and `hazards` arrays of `[lat, lng, severity, detail]` for the map. `waterFt` (0-12, optional) reroutes around a flat water level. `simulate` accepts `"storm"` (simulated flood warning) or `"hurricane-1"` ... `"hurricane-5"` (simulated hurricane of that category, which activates evacuation zones A through the matching letter and SLOSH surge depth). The response also carries `surgeZones` (active zone polygons along the routes) and `conditions.storms`, `conditions.alertAreas`, `conditions.rainForecast`, `conditions.surgeCategory`. When the answer comes from a recording (`SNAPSHOT_MODE`), it also carries `snapshot: {recordedAt}` (ISO time).

@@ -1146,6 +1146,10 @@
         stroke-width: 1.5;
         stroke-dasharray: 5 4;
       }
+      .plot .solo-area {
+        fill: currentColor;
+        fill-opacity: 0.1;
+      }
       .plot .pt {
         cursor: pointer;
         outline: none;
@@ -1459,7 +1463,10 @@
         </div>
         <div>
           <h1>SafeRoute Miami</h1>
-          <span class="eyebrow"><span class="pulse" aria-hidden="true"></span>Live · 14 public data sources</span>
+          <span class="eyebrow" id="source"
+            ><span class="pulse" aria-hidden="true"></span
+            ><span id="sourceText">Live · 14 public data sources</span></span
+          >
         </div>
       </div>
       <nav class="modes" aria-label="Switch view">
@@ -2422,17 +2429,16 @@
           c.liveIncidents == null
             ? tile("siren", "Live crashes", "unavailable")
             : tile("siren", "Live crashes countywide", `${c.liveIncidents} active`);
-        const time = tile(
-          "clock",
-          "Updated",
-          new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
-        );
+        const recorded = recordedLabel();
+        const time = recorded
+          ? tile("clock", "Recorded, not live", esc(recorded), true)
+          : tile("clock", "Updated", new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }));
         const flags = [
           c.stormMode && "storm mode",
           c.highTide?.kingTide && "king tide",
           c.surgeCategory && `surge ${"ABCDE".slice(0, c.surgeCategory)}`,
         ].filter(Boolean);
-        return `<details class="section cond-wrap"><summary>${icon("waves")}Live conditions ${flags.map((f) => `<span class="pill">${esc(f)}</span>`).join(" ")}${icon("arrow-right-left")}</summary>
+        return `<details class="section cond-wrap"><summary>${icon("waves")}${recorded ? `Conditions as recorded ${esc(recorded)}` : "Live conditions"} ${flags.map((f) => `<span class="pill">${esc(f)}</span>`).join(" ")}${icon("arrow-right-left")}</summary>
         <div class="conditions">${tide}${alerts}${storm}${rain}${live}${time}</div></details>`;
       }
 
@@ -2536,10 +2542,21 @@
           .map((_, i) => i)
           .filter((i) => rs[i].frontier)
           .sort((a, b) => mins[a] - mins[b]);
+        // One frontier route beats all others, so there is no line to draw: shade the slower-and-riskier region it
+        // dominates instead, with dashed guides to the chart edges.
+        const solo = front.length === 1 ? front[0] : -1;
+        const [sx, sy] = solo < 0 ? [] : [x(mins[solo]), y(risks[solo])];
         const frontLine =
           front.length > 1
             ? `<polyline class="front" points="${front.map((i) => `${x(mins[i]).toFixed(1)},${y(risks[i]).toFixed(1)}`).join(" ")}" />`
-            : "";
+            : solo < 0
+              ? ""
+              : `<g style="color:${routeColor(solo)}"><rect class="solo-area" x="${sx.toFixed(1)}" y="${T}" width="${(PW - R - sx).toFixed(1)}" height="${(sy - T).toFixed(1)}" />
+            <polyline class="front" points="${PW - R},${sy.toFixed(1)} ${sx.toFixed(1)},${sy.toFixed(1)} ${sx.toFixed(1)},${T}" /></g>`;
+        const soloText =
+          solo < 0
+            ? ""
+            : `Route ${letter(solo)} is safer and faster than every other route, so it alone is the frontier.`;
         const desc = (r) =>
           `${fmtMin(r.durationSec)} min · risk ${r.risk.total}${data.hasEnergy ? ` · ${r.energyKwh.toFixed(2)} kWh` : ""}`;
         const status = (r) =>
@@ -2565,7 +2582,7 @@
           .join("");
         return `<div class="section pareto">
         <h2 class="kicker">${icon("route")}Safety vs time</h2>
-        <p>Every route we compared. Lower is safer, left is faster; the dashed line joins routes no other route beats on safety, time and energy at once.</p>
+        <p>${soloText ? `Every route we compared. Lower is safer, left is faster. ${soloText}` : "Every route we compared. Lower is safer, left is faster; the dashed line joins routes no other route beats on safety, time and energy at once."}</p>
         <div class="plot">
           <svg viewBox="0 0 ${PW} ${PH}" aria-hidden="true" focusable="false">
             ${grid}${xt}
@@ -2582,7 +2599,7 @@
           <span><svg width="16" height="16"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5" /></svg>Recommended (ring)</span>
           ${data.hasEnergy ? "<span>Bigger bubble = more kWh</span>" : ""}
         </div>
-        <div class="sr-only"><table><caption>Routes by time, risk${data.hasEnergy ? " and energy" : ""}</caption><thead><tr><th scope="col">Route</th><th scope="col">Minutes</th><th scope="col">Risk</th>${data.hasEnergy ? `<th scope="col">kWh</th>` : ""}<th scope="col">Status</th></tr></thead><tbody>${rows}</tbody></table></div>
+        <div class="sr-only"><table><caption>Routes by time, risk${data.hasEnergy ? " and energy" : ""}${soloText ? `. ${soloText}` : ""}</caption><thead><tr><th scope="col">Route</th><th scope="col">Minutes</th><th scope="col">Risk</th>${data.hasEnergy ? `<th scope="col">kWh</th>` : ""}<th scope="col">Status</th></tr></thead><tbody>${rows}</tbody></table></div>
       </div>`;
       }
 
@@ -2627,8 +2644,20 @@
       const previewLine = (i) =>
         lines[i]?.setOptions({ strokeColor: routeColor(i), strokeOpacity: 1, strokeWeight: 8, zIndex: 12, icons: [] });
 
+      // A recorded demo answer (server SNAPSHOT_MODE) carries snapshot.recordedAt; it is labeled everywhere as not live.
+      const recordedLabel = () =>
+        data?.snapshot
+          ? new Date(data.snapshot.recordedAt).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })
+          : null;
+
       function render() {
         normalize(data);
+        const recorded = recordedLabel();
+        document.getElementById("sourceText").textContent = recorded
+          ? `Recorded ${recorded} · not live`
+          : "Live · 14 public data sources";
+        document.getElementById("source").classList.toggle("pill", Boolean(recorded));
+        document.querySelector("#source .pulse").hidden = Boolean(recorded);
         const maxRisk = Math.max(...data.routes.map((r) => r.risk.total), 1);
         // Order: the answer and why, the trade-off at a glance, the options, then the tools and context.
         let html = whyHtml() + reroutedHtml() + paretoHtml();
@@ -2735,7 +2764,7 @@
           dataTrip = trip;
           results.classList.remove("stale");
           render();
-          status.textContent = `${plural(data.routes.length, "route")} compared. Recommended: Route ${letter(recIndex())}.`;
+          status.textContent = `${plural(data.routes.length, "route")} compared. Recommended: Route ${letter(recIndex())}.${recordedLabel() ? ` Recorded ${recordedLabel()}, not live data.` : ""}`;
           results.focus({ preventScroll: true });
           if (matchMedia("(max-width: 820px)").matches)
             document
