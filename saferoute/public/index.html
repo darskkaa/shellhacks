@@ -2506,7 +2506,7 @@
         plot.querySelectorAll(".pt").forEach((g) => {
           const i = Number(g.dataset.i);
           const show = () => {
-            tip.innerHTML = `<b>Route ${letter(i)} · ${esc(g.dataset.status)}</b>${esc(g.dataset.tip)}`;
+            tip.innerHTML = `<b>Route ${letter(i)} · ${esc(g.dataset.status)}</b><br />${esc(g.dataset.tip)}`;
             tip.style.left = `${Math.min(Math.max((g.dataset.x / PW) * 100, 22), 78)}%`;
             tip.style.top = `${(g.dataset.y / PH) * 100}%`;
             tip.hidden = false;

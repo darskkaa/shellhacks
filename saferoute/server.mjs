@@ -655,7 +655,8 @@ async function handleRoutes(req, res) {
     return sendJson(res, 400, { error: "Body must be JSON" });
   }
   const { origin, destination, simulate } = input ?? {};
-  const waterFt = Number.isFinite(input?.waterFt) ? Math.min(Math.max(input.waterFt, 0), 12) : 0;
+  // Snapped to the slider's 0.5 ft step so arbitrary decimals can't fill the response cache.
+  const waterFt = Number.isFinite(input?.waterFt) ? Math.round(Math.min(Math.max(input.waterFt, 0), 12) * 2) / 2 : 0;
   const simulatedCategory = /^hurricane-[1-5]$/.test(simulate ?? "") ? Number(simulate.slice(-1)) : 0;
   const valid = (s) => typeof s === "string" && s.trim().length > 0 && s.length <= 200;
   if (!valid(origin) || !valid(destination))
@@ -815,7 +816,8 @@ async function handleRoutes(req, res) {
     ranking,
     explainId,
   };
-  responses.set(responseKey, { body, expires: Date.now() + RESPONSE_TTL_MS });
+  // A response built while a live feed was down would otherwise pin the degraded view for the whole TTL.
+  if (!conditions.unavailable.length) responses.set(responseKey, { body, expires: Date.now() + RESPONSE_TTL_MS });
   if (responses.size > RESPONSE_CACHE_MAX) responses.delete(responses.keys().next().value);
   sendJson(res, 200, body, { "Server-Timing": serverTiming });
 }
