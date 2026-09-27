@@ -1377,20 +1377,29 @@
         body {
           height: auto;
         }
-        aside {
-          position: static;
-          width: auto;
-          margin: 0;
-          border-radius: 0;
-          border: 0;
-          border-bottom: 1px solid var(--line);
-          box-shadow: none;
+        /* Phones: flatten the panel so the map sits between the form and the results, not below everything. */
+        body {
+          display: flex;
+          flex-direction: column;
           padding: 18px 16px;
-          overflow: visible;
+          background: var(--panel);
+        }
+        aside {
+          display: contents;
         }
         main {
           position: relative;
-          height: 72vh;
+          order: 1;
+          flex: none;
+          height: 50vh;
+          margin: 16px -16px 0;
+        }
+        #results,
+        footer {
+          order: 2;
+        }
+        #results {
+          margin-top: 16px;
         }
         .legend {
           left: 12px;
@@ -2637,6 +2646,10 @@
           render();
           status.textContent = `${plural(data.routes.length, "route")} compared. Recommended: Route ${letter(recIndex())}.`;
           results.focus({ preventScroll: true });
+          if (matchMedia("(max-width: 820px)").matches)
+            document
+              .querySelector("main")
+              .scrollIntoView({ block: "nearest", behavior: REDUCED_MOTION ? "auto" : "smooth" });
           loadExplanation(data.explainId);
         } catch (err) {
           status.className = "error";
