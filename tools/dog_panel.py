@@ -473,7 +473,7 @@ async function crosswalk(){try{const j=await (await fetch(XW+"/state")).json();u
  xwd.textContent=`walk ${j.walk} · don't walk ${j.stop} · conflict ${j.conflict} · streak ${j.streak} · ${j.ms} ms · drive ${j.drive?"ON":"off"}`;
  seen.textContent="camera: crosswalk checker (blind-escort model)"}
  catch(e){useSrc(false)}setTimeout(crosswalk,250)}crosswalk();
-async function vision(){if(xwUp){setTimeout(vision,400);return}try{const v=await (await fetch("http://localhost:8001/detections")).json();
+async function vision(){if(xwUp){setTimeout(vision,400);return}try{const v=await (await fetch("http://127.0.0.1:8001/detections")).json();
  seen.textContent="vision "+v.fps.toFixed(1)+" fps · "+(v.dets.length?v.dets.map(o=>o.label+" "+Math.round(o.conf*100)+"%").join(", "):"nothing detected")}
  catch(e){seen.textContent="vision stream offline (run tools/vision_stream.py)"}setTimeout(vision,400)}vision();
 </script></body></html>"""

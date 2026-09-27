@@ -1,0 +1,1123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Live Crossing</title>
+    <meta
+      name="description"
+      content="SafeRoute Live Crossing: a MechDog guide robot waits for the pedestrian WALK signal, confirmed by Gemini, then crosses."
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><rect width=%2232%22 height=%2232%22 rx=%229%22 fill=%22%2300b3a4%22/><path d=%22M16 7l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9v-6z%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222.4%22/><path d=%22M12.5 16l2.5 2.5 4.5-5%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222.4%22 stroke-linecap=%22round%22/></svg>"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@500;600&display=swap"
+    />
+    <!-- ElevenLabs voice via Puter.js (free; the listener signs in to Puter). Rolling URL, so no SRI hash. -->
+    <script src="https://js.puter.com/v2/"></script>
+    <style>
+      /* Tokens copied from index.html so both pages read as one product. */
+      :root {
+        --bg: #eef1f5;
+        --panel: #ffffff;
+        --card: #f6f8fb;
+        --fg: #0d1117;
+        --muted: #5a6472;
+        --line: #e1e5eb;
+        --accent: #007f75;
+        --accent-2: #2f6bff;
+        --accent-fg: #fff;
+        --safe: #0f9d58;
+        --mid: #e6a100;
+        --risk: #e5383b;
+        --live: #b5179e;
+        --risk-text: #b3121c;
+        --safe-text: #0b6e3b;
+        --shadow: 0 1px 2px rgba(13, 17, 23, 0.06), 0 12px 32px rgba(13, 17, 23, 0.1);
+        --radius: 14px;
+        --stage: #0b0f15;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+          --bg: #070a0f;
+          --panel: #0e131a;
+          --card: #141b24;
+          --fg: #eef2f7;
+          --muted: #95a0ae;
+          --line: #212a36;
+          --accent: #2ee6d6;
+          --accent-2: #5b8cff;
+          --accent-fg: #04201d;
+          --safe: #34d399;
+          --mid: #fbbf24;
+          --risk: #ff5a5f;
+          --live: #f15bb5;
+          --risk-text: #ff8a8d;
+          --safe-text: #5eead4;
+          --shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 16px 40px rgba(0, 0, 0, 0.45);
+          --stage: #05070b;
+        }
+      }
+      :root[data-theme="dark"] {
+        --bg: #070a0f;
+        --panel: #0e131a;
+        --card: #141b24;
+        --fg: #eef2f7;
+        --muted: #95a0ae;
+        --line: #212a36;
+        --accent: #2ee6d6;
+        --accent-2: #5b8cff;
+        --accent-fg: #04201d;
+        --safe: #34d399;
+        --mid: #fbbf24;
+        --risk: #ff5a5f;
+        --live: #f15bb5;
+        --risk-text: #ff8a8d;
+        --safe-text: #5eead4;
+        --shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 16px 40px rgba(0, 0, 0, 0.45);
+        --stage: #05070b;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+      }
+      body {
+        font:
+          15px/1.45 Geist,
+          system-ui,
+          sans-serif;
+        background: var(--bg);
+        color: var(--fg);
+        -webkit-font-smoothing: antialiased;
+      }
+      .mono,
+      .stat b,
+      .clock {
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-variant-numeric: tabular-nums;
+      }
+      .i {
+        width: 16px;
+        height: 16px;
+        flex: none;
+        vertical-align: -3px;
+      }
+      .k {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font:
+          600 11px/1 "Geist Mono",
+          monospace;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      /* Stage: the live camera, full-bleed behind the panel, like the map on the route planner. */
+      main {
+        position: fixed;
+        inset: 0;
+        background: var(--stage);
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+      }
+      #cam {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: filter 0.4s;
+      }
+      main.state-wait #cam,
+      main.state-hazard #cam,
+      main.state-paused #cam {
+        filter: saturate(0.75) brightness(0.8);
+      }
+      main::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        box-shadow: inset 0 0 0 0 transparent;
+        transition: box-shadow 0.35s;
+      }
+      main.state-walk::after {
+        box-shadow: inset 0 0 0 6px var(--safe), inset 0 0 120px color-mix(in srgb, var(--safe) 35%, transparent);
+      }
+      main.state-hazard::after {
+        box-shadow: inset 0 0 0 6px var(--risk), inset 0 0 120px color-mix(in srgb, var(--risk) 35%, transparent);
+      }
+      .cam-empty {
+        position: relative;
+        color: #95a0ae;
+        text-align: center;
+        max-width: 420px;
+        padding: 24px;
+        display: none;
+      }
+      main.no-cam .cam-empty {
+        display: block;
+      }
+      main.no-cam #cam {
+        visibility: hidden;
+      }
+      .cam-empty code {
+        display: inline-block;
+        margin-top: 8px;
+        padding: 6px 10px;
+        border-radius: 8px;
+        background: #141b24;
+        color: #eef2f7;
+        font: 500 13px "Geist Mono", monospace;
+      }
+
+      /* The one thing the room should read from across the stage. */
+      .signal {
+        position: absolute;
+        top: 28px;
+        left: calc(50% + 236px);
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 26px 14px 18px;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--panel) 88%, transparent);
+        border: 1px solid var(--line);
+        box-shadow: var(--shadow);
+        color: var(--fg);
+        white-space: nowrap;
+      }
+      .signal .lamp {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: var(--risk);
+        box-shadow: 0 0 0 6px color-mix(in srgb, var(--risk) 22%, transparent);
+      }
+      .signal b {
+        font:
+          800 30px/1 Geist,
+          sans-serif;
+        letter-spacing: -0.02em;
+      }
+      .signal small {
+        display: block;
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 3px;
+      }
+      main.state-walk .signal .lamp {
+        background: var(--safe);
+        box-shadow: 0 0 0 6px color-mix(in srgb, var(--safe) 25%, transparent);
+        animation: beat 1s ease-in-out infinite;
+      }
+      main.state-celebrate .signal .lamp,
+      main.state-arrived .signal .lamp {
+        background: var(--accent);
+        box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 25%, transparent);
+      }
+      main.state-paused .signal .lamp,
+      main.state-offline .signal .lamp {
+        background: var(--muted);
+        box-shadow: none;
+      }
+      @keyframes beat {
+        50% {
+          box-shadow: 0 0 0 12px color-mix(in srgb, var(--safe) 10%, transparent);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        main.state-walk .signal .lamp {
+          animation: none;
+        }
+      }
+
+      .hud {
+        position: absolute;
+        right: 24px;
+        bottom: 24px;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        max-width: calc(100% - 520px);
+      }
+      .hud span {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--panel) 88%, transparent);
+        border: 1px solid var(--line);
+        font:
+          600 12px/1 "Geist Mono",
+          monospace;
+        color: var(--fg);
+      }
+
+      /* Panel: same floating card as the route planner. */
+      aside {
+        position: fixed;
+        z-index: 5;
+        top: 16px;
+        left: 16px;
+        bottom: 16px;
+        width: 440px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        box-shadow: var(--shadow);
+        overflow-y: auto;
+        padding: 22px 22px 24px;
+        scrollbar-width: thin;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .logo {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        background: linear-gradient(135deg, #00b3a4, #2f6bff);
+        box-shadow: 0 6px 18px rgba(0, 179, 164, 0.35);
+      }
+      .logo .i {
+        width: 22px;
+        height: 22px;
+      }
+      h1 {
+        margin: 0;
+        font-size: 22px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        background: linear-gradient(90deg, var(--fg) 40%, var(--accent));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      .pulse {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--muted);
+      }
+      .pulse.on {
+        background: var(--safe);
+      }
+      .tagline {
+        color: var(--muted);
+        margin: 12px 0 16px;
+      }
+      .tagline strong {
+        color: var(--fg);
+      }
+      .back {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 14px;
+        color: var(--accent);
+        font-weight: 600;
+        font-size: 13.5px;
+        text-decoration: none;
+      }
+      .back:hover {
+        text-decoration: underline;
+      }
+      section {
+        margin-top: 14px;
+      }
+
+      .verdict {
+        border-radius: var(--radius);
+        padding: 16px 18px;
+        background: var(--card);
+        border: 1px solid var(--line);
+        transition:
+          background 0.3s,
+          border-color 0.3s;
+      }
+      .verdict .big {
+        font-size: 28px;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        margin: 8px 0 2px;
+      }
+      .verdict .sub {
+        color: var(--muted);
+      }
+      .verdict.walk {
+        background: linear-gradient(135deg, color-mix(in srgb, var(--safe) 18%, var(--card)), var(--card) 70%);
+        border-color: color-mix(in srgb, var(--safe) 40%, var(--line));
+      }
+      .verdict.walk .k {
+        color: var(--safe-text);
+      }
+      .verdict.hazard,
+      .verdict.wait {
+        background: linear-gradient(135deg, color-mix(in srgb, var(--risk) 12%, var(--card)), var(--card) 70%);
+        border-color: color-mix(in srgb, var(--risk) 30%, var(--line));
+      }
+      .verdict.hazard .k,
+      .verdict.wait .k {
+        color: var(--risk-text);
+      }
+      .verdict.arrived {
+        background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 16%, var(--card)), var(--card) 70%);
+        border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 8px;
+      }
+      .stat {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 10px 12px;
+      }
+      .stat b {
+        display: block;
+        font-size: 20px;
+        font-weight: 600;
+        margin-top: 6px;
+      }
+      .stat small {
+        color: var(--muted);
+        font-size: 12.5px;
+      }
+      .meter {
+        height: 6px;
+        border-radius: 999px;
+        background: var(--line);
+        margin-top: 8px;
+        overflow: hidden;
+      }
+      .meter i {
+        display: block;
+        height: 100%;
+        width: 0;
+        border-radius: inherit;
+        background: var(--accent);
+        transition: width 0.25s;
+      }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 12px 14px;
+      }
+      .card p {
+        margin: 6px 0 0;
+      }
+      .card .muted {
+        color: var(--muted);
+        font-size: 13.5px;
+      }
+      .pipeline {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-top: 8px;
+        font-size: 13px;
+      }
+      .pipeline span {
+        padding: 5px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: var(--panel);
+      }
+      .pipeline .arrow {
+        border: 0;
+        background: none;
+        padding: 0;
+        color: var(--muted);
+      }
+
+      label {
+        font:
+          600 11px/1 "Geist Mono",
+          monospace;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      .controls {
+        display: grid;
+        grid-template-columns: 1fr 96px;
+        gap: 8px;
+        margin-top: 10px;
+      }
+      .controls .wide {
+        grid-column: 1 / -1;
+      }
+      .field {
+        display: grid;
+        gap: 4px;
+      }
+      select,
+      input[type="number"] {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--panel);
+        color: var(--fg);
+        font: inherit;
+      }
+      .check {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 10px;
+        font-size: 13.5px;
+        color: var(--fg);
+      }
+
+      .shot img {
+        display: block;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        object-fit: cover;
+        margin-top: 8px;
+        border-radius: 10px;
+        background: var(--stage);
+        border: 3px solid transparent;
+      }
+      .shot img[hidden] {
+        display: none;
+      }
+      .shot.go img {
+        border-color: var(--safe);
+      }
+      .shot p {
+        margin-top: 8px;
+      }
+      .shot.go #shotCaption {
+        color: var(--safe-text);
+        font-weight: 600;
+      }
+      .seg {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 10px;
+      }
+      .trim {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 10px;
+      }
+      .trim span {
+        flex: 1;
+      }
+      .trim button {
+        padding: 6px 12px;
+        font-size: 14px;
+      }
+      .trim b {
+        min-width: 76px;
+        text-align: center;
+        font: 600 14px "Geist Mono", monospace;
+      }
+      .seg button {
+        padding: 10px;
+        font-size: 14px;
+      }
+      .seg button.on {
+        border-color: var(--accent);
+        box-shadow: inset 0 0 0 1px var(--accent);
+        color: var(--accent);
+      }
+      .kbd {
+        font: 600 11px/1 "Geist Mono", monospace;
+        padding: 3px 6px;
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.2);
+      }
+      .hint {
+        grid-column: 1 / -1;
+        margin: 0;
+        color: var(--muted);
+        font-size: 12.5px;
+      }
+      .buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      button {
+        font:
+          700 15px/1 Geist,
+          sans-serif;
+        border-radius: 12px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 13px;
+      }
+      .go {
+        border: 0;
+        color: var(--accent-fg);
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      }
+      .go.stop {
+        color: #fff;
+        background: linear-gradient(135deg, var(--risk), #b3121c);
+      }
+      .ghost {
+        border: 1px solid var(--line);
+        background: var(--card);
+        color: var(--fg);
+      }
+      button:disabled {
+        opacity: 0.6;
+        cursor: default;
+      }
+      button:focus-visible,
+      select:focus-visible,
+      input:focus-visible,
+      a:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+
+      #log {
+        list-style: none;
+        margin: 8px 0 0;
+        padding: 0;
+        display: grid;
+        gap: 6px;
+      }
+      #log li {
+        display: grid;
+        grid-template-columns: 58px 1fr;
+        gap: 8px;
+        font-size: 13.5px;
+      }
+      #log .clock {
+        color: var(--muted);
+        font-size: 12px;
+        padding-top: 1px;
+      }
+      #log .say::before {
+        content: "“";
+      }
+      #log .say::after {
+        content: "”";
+      }
+      #log .ev {
+        color: var(--muted);
+      }
+      .banner {
+        display: none;
+        margin-top: 12px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid color-mix(in srgb, var(--risk) 35%, var(--line));
+        background: color-mix(in srgb, var(--risk) 10%, var(--card));
+        color: var(--fg);
+        font-size: 13.5px;
+      }
+      .banner code {
+        font: 500 12.5px "Geist Mono", monospace;
+      }
+      .banner.show {
+        display: block;
+      }
+      footer {
+        margin-top: 18px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      @media (max-width: 900px) {
+        aside {
+          top: auto;
+          left: 8px;
+          right: 8px;
+          bottom: 8px;
+          width: auto;
+          max-height: 58vh;
+          padding: 16px;
+        }
+        .signal {
+          left: 50%;
+          top: 16px;
+          padding: 10px 18px 10px 14px;
+        }
+        .signal b {
+          font-size: 22px;
+        }
+        .hud {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main id="stage" class="state-offline no-cam">
+      <img id="cam" alt="Live camera from the guide robot, with detection boxes" />
+      <div class="cam-empty">
+        <strong style="color: #eef2f7">Camera offline</strong>
+        <p>Start the robot's camera on this machine:</p>
+        <code>python tools/vision_stream.py --cam 1 --no-browser</code>
+      </div>
+      <div class="signal" role="status" aria-live="assertive">
+        <span class="lamp" aria-hidden="true"></span>
+        <div><b id="signalWord">Offline</b><small id="signalSub">Waiting for the robot</small></div>
+      </div>
+      <div class="hud" aria-hidden="true">
+        <span id="hudSteer">steer –</span><span id="hudSonar">sonar –</span><span id="hudGemini">Gemini –</span
+        ><span id="hudLink">link –</span>
+      </div>
+    </main>
+
+    <aside>
+      <a class="back" href="/"><svg class="i" aria-hidden="true"><use href="icons.svg#route" /></svg>Plan a route</a>
+      <div class="brand">
+        <div class="logo" aria-hidden="true"><svg class="i"><use href="icons.svg#shield-check" /></svg></div>
+        <div>
+          <h1>Live Crossing</h1>
+          <span class="k"><span class="pulse" id="pulse" aria-hidden="true"></span><span id="eyebrow">Connecting…</span></span>
+        </div>
+      </div>
+      <p class="tagline">
+        The last 50 feet. The robot finds you, walks up and offers its paw, then leads you to the crossing:
+        <strong>Gemini watches the signal</strong>, and on WALK it crosses on its own, stops by sonar, and celebrates.
+      </p>
+
+      <section class="verdict wait" id="verdict">
+        <div class="k"><svg class="i" aria-hidden="true"><use href="icons.svg#navigation" /></svg>Robot</div>
+        <div class="big" id="stateBig">Offline</div>
+        <div class="sub" id="stateSub">Start the agent to connect.</div>
+      </section>
+
+      <div class="banner" id="offline" role="alert">
+        The robot agent isn't running. Start it on this machine:<br />
+        <code>python tools/gemini_dog_agent.py --serial COM4 --go-signal</code>
+      </div>
+
+      <div class="stats">
+        <div class="stat">
+          <span class="k">Sonar</span><b id="sonar">–</b>
+          <div class="meter"><i id="sonarBar"></i></div>
+        </div>
+        <div class="stat">
+          <span class="k">Crossing</span><b id="walked">–</b><small id="stride">stride –</small>
+        </div>
+      </div>
+
+      <section class="card">
+        <div class="k"><svg class="i" aria-hidden="true"><use href="icons.svg#sparkles" /></svg>Gemini sees</div>
+        <p id="gemini">–</p>
+        <div class="pipeline" aria-label="How a decision is made">
+          <span>Brio camera</span><span class="arrow">→</span><span>Gemini Flash-Lite</span><span class="arrow">→</span
+          ><span>MechDog</span>
+        </div>
+      </section>
+
+      <section class="card shot" id="shotCard">
+        <div class="k"><svg class="i" aria-hidden="true"><use href="icons.svg#sparkles" /></svg>What Gemini saw</div>
+        <img id="shot" alt="The last camera frame Gemini checked for a GO signal" hidden />
+        <p id="shotCaption" class="muted">Nothing checked yet. Arm detection and Gemini starts looking.</p>
+      </section>
+
+      <section class="card">
+        <div class="k"><svg class="i" aria-hidden="true"><use href="icons.svg#navigation" /></svg>Where it stops</div>
+        <div class="seg" role="group" aria-label="Crossing mode">
+          <button class="ghost" id="modeDevice" type="button">Device demo</button>
+          <button class="ghost" id="modeStreet" type="button">Street</button>
+        </div>
+        <p class="muted" id="modeInfo">–</p>
+        <div class="trim" role="group" aria-label="Straight trim">
+          <span class="muted">Straight trim</span>
+          <button class="ghost" id="trimLeft" type="button" aria-label="Trim more to the left">◀</button>
+          <b id="trimV" aria-live="polite">–</b>
+          <button class="ghost" id="trimRight" type="button" aria-label="Trim more to the right">▶</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="k"><svg class="i" aria-hidden="true"><use href="icons.svg#triangle-alert" /></svg>What starts a crossing</div>
+        <p class="muted">
+          The walk signal is read by Gemini. Pick an object instead (a phone, a person, a cup…) and YOLO26 finds it
+          on-device; the robot walks to it the same way.
+        </p>
+        <div class="controls">
+          <div class="field">
+            <label for="target">Target</label>
+            <select id="target"><option value="walk_signal">Walk signal · Gemini</option></select>
+          </div>
+          <div class="field">
+            <label for="min_conf">YOLO min conf</label>
+            <input id="min_conf" type="number" min="0.1" max="0.95" step="0.05" />
+          </div>
+        </div>
+        <p class="muted" style="margin-top: 10px">YOLO26 sees: <span id="yolo">–</span></p>
+        <label class="check"
+          ><input id="hazard_stop" type="checkbox" /> Stop for traffic in view (car, truck, bus, motorcycle, bicycle)</label
+        >
+      </section>
+
+      <section class="buttons">
+        <button class="go stop" id="endBtn" disabled>Stop <span class="kbd">Space</span></button>
+        <button class="ghost" id="pause" disabled>Arm detection</button>
+        <p class="hint">Hold <span class="kbd">A</span> / <span class="kbd">D</span> to nudge its heading while it walks.</p>
+        <button class="ghost" id="voice" style="grid-column: 1 / -1">
+          <svg class="i" aria-hidden="true"><use href="icons.svg#siren" /></svg>Enable voice
+        </button>
+      </section>
+
+      <section class="card">
+        <div class="k"><svg class="i" aria-hidden="true"><use href="icons.svg#clock" /></svg>What the rider hears</div>
+        <ol id="log"><li><span class="clock">–</span><span class="ev">Nothing yet.</span></li></ol>
+      </section>
+
+      <footer>
+        Voice by ElevenLabs via Puter (falls back to the browser voice). The robot stops by itself if it loses contact
+        for 1.5 s or its battery runs low; Stop (Space) always works.
+      </footer>
+    </aside>
+
+    <script>
+      const $ = (id) => document.getElementById(id);
+      const STATES = {
+        wait: { word: "Don't walk", sub: "Looking for a GO signal", big: "Looking for GO" },
+        walk: { word: "Walk", sub: "Crossing now", big: "Crossing" },
+        celebrate: { word: "Across!", sub: "We made it", big: "We made it across" },
+        arrived: { word: "Across", sub: "Arrived safely", big: "Arrived" },
+        hazard: { word: "Stop", sub: "Hazard ahead", big: "Hazard: holding" },
+        paused: { word: "Standby", sub: "Detection off", big: "Standby" },
+        offline: { word: "Offline", sub: "Waiting for the robot", big: "Offline" },
+      };
+      let after = 0,
+        voiceOn = false,
+        settings = {},
+        classesLoaded = false,
+        lastState = null;
+
+      const clock = () => new Date().toLocaleTimeString([], { hour12: false });
+      function logLine(text, kind) {
+        const ol = $("log");
+        if (ol.firstElementChild?.querySelector(".ev")?.textContent === "Nothing yet.") ol.innerHTML = "";
+        const li = document.createElement("li");
+        const t = document.createElement("span");
+        t.className = "clock";
+        t.textContent = clock();
+        const m = document.createElement("span");
+        m.className = kind;
+        m.textContent = text;
+        li.append(t, m);
+        ol.prepend(li);
+        while (ol.children.length > 12) ol.lastChild.remove();
+      }
+
+      // Camera: MJPEG through the SafeRoute server. A multipart stream doesn't reliably fire load/error, so camera
+      // health comes from a snapshot probe; the stream is (re)attached whenever the camera comes back.
+      const cam = $("cam");
+      let camUp = false;
+      async function checkCam() {
+        let ok = false;
+        try {
+          const r = await fetch("/api/dog/snapshot.jpg", { cache: "no-store" });
+          // vision_stream answers 200 with its HTML viewer until the first frame exists.
+          ok = r.ok && (r.headers.get("content-type") || "").startsWith("image/");
+        } catch {}
+        if (ok && !camUp) cam.src = "/api/dog/stream.mjpg?" + Date.now();
+        if (!ok) cam.removeAttribute("src");
+        camUp = ok;
+        $("stage").classList.toggle("no-cam", !ok);
+        setTimeout(checkCam, ok ? 5000 : 2000);
+      }
+      checkCam();
+
+      async function post(patch) {
+        try {
+          const r = await fetch("/api/dog/settings", { method: "POST", body: JSON.stringify(patch) });
+          if (r.ok) settings = await r.json();
+        } catch {}
+      }
+      $("target").onchange = (e) => post({ target: e.target.value });
+      $("min_conf").onchange = (e) => post({ min_conf: parseFloat(e.target.value) });
+      $("hazard_stop").onchange = (e) => post({ hazard_stop: e.target.checked });
+      $("pause").onclick = () => post({ paused: !settings.paused });
+      // The robot runs itself. The operator only has Stop (Space) and, while it walks, a small A / D nudge to its
+      // heading (e.g. before it drifts off a table edge); the nudge never ends the autonomous walk.
+      const command = (cmd, extra = {}) =>
+        fetch("/api/dog/command", { method: "POST", body: JSON.stringify({ cmd, ...extra }) }).catch(() => {});
+      $("endBtn").onclick = () => command("end");
+      const NUDGE_DEG = 15;
+      let nudgeDir = 0,
+        nudgeTimer = null;
+      function setNudge(dir) {
+        if (dir === nudgeDir) return;
+        nudgeDir = dir;
+        clearInterval(nudgeTimer);
+        command("drive", { stride: 0, angle: dir * NUDGE_DEG });
+        if (dir) nudgeTimer = setInterval(() => command("drive", { stride: 0, angle: nudgeDir * NUDGE_DEG }), 150);
+      }
+      const typing = () => ["INPUT", "SELECT", "TEXTAREA"].includes(document.activeElement?.tagName);
+      addEventListener("keydown", (e) => {
+        if (typing() || e.repeat) return;
+        const k = e.key.toLowerCase();
+        if (k === "s" || k === " ") {
+          e.preventDefault();
+          setNudge(0);
+          command("end");
+        } else if (k === "a") setNudge(1);
+        else if (k === "d") setNudge(-1);
+      });
+      addEventListener("keyup", (e) => {
+        const k = e.key.toLowerCase();
+        if ((k === "a" && nudgeDir === 1) || (k === "d" && nudgeDir === -1)) setNudge(0);
+      });
+      addEventListener("blur", () => setNudge(0));
+
+      // Device demo: meet the person / object (handshake), then walk to the crossing signal on GO and celebrate;
+      // stop 25 cm short by sonar and never walk more than 8 s (table edge);
+      // detection starts it, so the timer is off. Street: walk until Stop, full celebration.
+      $("modeDevice").onclick = () =>
+        post({ target: "walk_signal", finish_cm: 25, cross_max_s: 60, go_timer_s: 0, reverse: false });
+      $("modeStreet").onclick = () => post({ finish_cm: 0, cross_max_s: 180, celebration: "paw" });
+      let lastShotAt = null;
+      // Straight trim: a constant small turn while it walks "straight", to cancel this dog's drift. + = left.
+      const trimText = (t) => (!t ? "0° straight" : t > 0 ? `${t}° left` : `${-t}° right`);
+      const setTrim = (d) => post({ trim: Math.max(-15, Math.min(15, (settings.trim || 0) + d)) });
+      $("trimLeft").onclick = () => setTrim(1);
+      $("trimRight").onclick = () => setTrim(-1);
+
+      // Voice: ElevenLabs through Puter.js, browser speech as the fallback. The voice follows the robot: every fixed
+      // line is generated once when voice is enabled, so it plays the moment its event happens (no 1-2 s TTS wait),
+      // and a new event cuts off whatever is still playing, so it never narrates something that already finished.
+      const PHRASES = [
+        "Voice guidance ready.",
+        "I'm watching the crossing signal.",
+        "The signal says wait. I'll tell you when it's safe.",
+        "Walk signal detected! Crossing now, stay with me.",
+        "Crossing now, stay with me.",
+        "We made it across!",
+        "Paw five!",
+        "Stopping.",
+        "Stopping here.",
+        "I can't walk: my battery is low.",
+      ];
+      const clips = new Map(); // text -> Promise of an ElevenLabs <audio>
+      let playing = null,
+        elevenOK = false,
+        sayId = 0;
+      function tts(text) {
+        if (!clips.has(text))
+          clips.set(
+            text,
+            puter.ai
+              .txt2speech(text, { provider: "elevenlabs", model: "eleven_flash_v2_5", voice: "21m00Tcm4TlvDq8ikWAM" })
+              .catch((e) => {
+                clips.delete(text);
+                throw e;
+              }),
+          );
+        return clips.get(text);
+      }
+      function hush() {
+        if (playing) {
+          playing.pause();
+          playing.currentTime = 0;
+          playing = null;
+        }
+        speechSynthesis.cancel();
+      }
+      async function say(text) {
+        const id = ++sayId;
+        hush(); // a newer event makes older speech stale
+        if (elevenOK) {
+          try {
+            const audio = await tts(text);
+            if (id !== sayId) return; // an even newer line arrived while this one was generating
+            playing = audio;
+            audio.currentTime = 0;
+            await audio.play();
+            return;
+          } catch {}
+        }
+        if (id === sayId) speechSynthesis.speak(new SpeechSynthesisUtterance(text));
+      }
+      $("voice").onclick = async () => {
+        voiceOn = true;
+        $("voice").disabled = true;
+        $("voice").lastChild.textContent = "Signing in…";
+        try {
+          if (!puter.auth.isSignedIn()) await puter.auth.signIn();
+          elevenOK = true;
+          $("voice").lastChild.textContent = "Loading voice…";
+          await Promise.allSettled(PHRASES.map(tts));
+          $("voice").lastChild.textContent = "Voice on · ElevenLabs";
+        } catch {
+          $("voice").lastChild.textContent = "Voice on · browser";
+        }
+        say("Voice guidance ready.");
+      };
+
+      function render(s) {
+        const st = s.status || {};
+        const state = STATES[st.state] ? st.state : "wait";
+        const view = STATES[state];
+        const stage = $("stage");
+        stage.className = stage.className.replace(/state-\w+/, "state-" + state);
+        $("signalWord").textContent = view.word;
+        $("signalSub").textContent = st.label && state !== "paused" ? st.label : view.sub;
+        $("verdict").className = "verdict " + state;
+        $("stateBig").textContent = view.big;
+        $("stateSub").textContent =
+          state === "walk"
+            ? `${st.label || "Heading to target"}${st.go_by ? " · started by " + st.go_by : ""}.`
+            : state === "wait"
+              ? settings.paused
+                ? "Detection is off. Arm it at the curb."
+                : st.label === "Waiting for it to leave view"
+                  ? "Arrived. It re-arms once the target leaves the view."
+                  : settings.target === "walk_signal"
+                    ? "Standby: it goes on its own the moment Gemini sees a GO signal."
+                    : `Standby: it walks to the ${settings.target} as soon as it sees it.`
+              : state === "arrived"
+                ? "Back to waiting in a few seconds."
+                : st.label || view.sub;
+
+        const d = st.sonar_cm;
+        // 6553.5 is the sonar's "no echo" value (0xFFFF / 10): nothing within its ~4 m range.
+        $("sonar").textContent = d == null ? "–" : d > 400 ? "clear" : `${d.toFixed(0)} cm`;
+        $("sonarBar").style.width = d == null ? "0" : `${Math.max(3, Math.min(100, (d / 200) * 100))}%`;
+        $("sonarBar").style.background = d != null && d <= 45 ? "var(--risk)" : "var(--accent)";
+        $("walked").textContent = st.walking_s == null ? "–" : `${st.walking_s.toFixed(1)} s`;
+        $("stride").textContent =
+          st.stride == null ? "not moving" : `stride ${st.stride} mm · ~${((Math.abs(st.stride) / 120) * 0.25).toFixed(2)} m/s · ~${(st.est_distance_m ?? 0).toFixed(1)} m`;
+        const steerTxt = !st.angle ? "straight" : st.angle > 0 ? `left ${st.angle}°` : `right ${-st.angle}°`;
+        $("hudSteer").textContent = `steer ${steerTxt}`;
+        $("gemini").textContent = st.gemini || "–";
+        $("yolo").textContent = st.yolo || "–";
+        $("hudSonar").textContent = `sonar ${d == null ? "–" : d > 400 ? "clear" : d.toFixed(0) + " cm"}`;
+        // Off while disarmed; otherwise what Gemini's latest check said (the shot it just analysed).
+        const shotAge = s.shot ? Date.now() / 1000 - s.shot.at : Infinity;
+        $("hudGemini").textContent = `Gemini ${
+          (s.settings || settings).paused ? "off" : shotAge < 8 ? (s.shot.go ? "GO" : "hold") : "checking…"
+        }`;
+        // Below 6.6 V the bridge refuses to walk; ~3.5 V means the board is on USB power with the battery cut off.
+        const batt = st.batt_v == null ? "" : ` · ${st.batt_v.toFixed(1)} V${st.batt_v < 6.6 ? " LOW" : ""}`;
+        $("hudLink").textContent = `robot ${st.link || "–"}${st.target ? " · " + st.target : ""}${batt}`;
+
+        const live = st.link === "connected";
+        if (!live) $("stateSub").textContent = "Robot not connected: plug in its USB cable and switch it on.";
+        $("pulse").classList.toggle("on", live);
+        $("eyebrow").textContent = live ? `Live · robot on ${st.target}` : "Robot connecting…";
+
+        settings = s.settings || settings;
+        $("trimV").textContent = trimText(settings.trim || 0);
+        const device = !!settings.finish_cm;
+        $("modeDevice").classList.toggle("on", device);
+        $("modeStreet").classList.toggle("on", !device);
+        $("modeInfo").textContent = device
+          ? settings.target === "walk_signal"
+            ? `Walks straight to the crossing signal once it shows GO, stops ${settings.finish_cm} cm short, plays a jingle and raises its paw.`
+            : `Walks to the ${settings.target}, shakes hands, then heads for the crossing signal: on GO it walks to it and celebrates.`
+          : `Crosses until you press Stop (max ${settings.cross_max_s} s), then celebrates.`;
+        if (s.shot && s.shot.at !== lastShotAt) {
+          lastShotAt = s.shot.at;
+          $("shot").src = "/api/dog/gemini.jpg?" + s.shot.at;
+          $("shot").hidden = false;
+          $("shotCard").classList.toggle("go", !!s.shot.go);
+          const when = new Date(s.shot.at * 1000).toLocaleTimeString([], { hour12: false });
+          $("shotCaption").textContent = `${s.shot.go ? "GO" : "Hold"} · ${s.shot.seen || s.shot.phase || ""} (${when})`;
+        }
+        if (!classesLoaded && s.classes?.length) {
+          const sel = $("target");
+          // Likely demo targets first (only those the model knows), then every YOLO26 class.
+          const NAMES = { "cell phone": "Phone (iPhone)", person: "Person", "teddy bear": "Teddy bear" };
+          const TOP = ["cell phone", "person", "bottle", "cup", "laptop", "book", "teddy bear", "backpack", "sports ball"];
+          const top = document.createElement("optgroup");
+          top.label = "Walk to an object · YOLO26";
+          for (const c of TOP.filter((c) => s.classes.includes(c)))
+            top.append(new Option(`${NAMES[c] || c[0].toUpperCase() + c.slice(1)} · YOLO26`, c));
+          const all = document.createElement("optgroup");
+          all.label = "All YOLO26 objects";
+          for (const c of s.classes) all.append(new Option(`${c} · YOLO26`, c));
+          sel.append(top, all);
+          classesLoaded = true;
+        }
+        for (const id of ["target", "min_conf"])
+          if (document.activeElement !== $(id) && settings[id] != null) $(id).value = settings[id];
+        $("hazard_stop").checked = !!settings.hazard_stop;
+        $("pause").disabled = false;
+        $("pause").textContent = settings.paused ? "Arm detection" : "Disarm";
+        $("endBtn").disabled = state !== "walk" && state !== "hold";
+
+        if (state !== lastState && lastState !== null) logLine(view.big, "ev");
+        lastState = state;
+        let newest = null;
+        for (const m of s.lines || []) {
+          after = m.id;
+          logLine(m.text, "say");
+          newest = m.text;
+        }
+        // Several lines in one poll: only the latest describes what is happening now.
+        if (voiceOn && newest) say(newest);
+      }
+
+      function renderOffline() {
+        const stage = $("stage");
+        stage.className = stage.className.replace(/state-\w+/, "state-offline");
+        $("signalWord").textContent = "Offline";
+        $("signalSub").textContent = "Robot agent not running";
+        $("verdict").className = "verdict";
+        $("stateBig").textContent = "Offline";
+        $("stateSub").textContent = "Start the agent to connect.";
+        $("pulse").classList.remove("on");
+        $("eyebrow").textContent = "Robot offline";
+        $("pause").disabled = true;
+        $("endBtn").disabled = true;
+        lastState = null;
+      }
+
+      async function poll() {
+        try {
+          const r = await fetch("/api/dog/status?after=" + after, { cache: "no-store" });
+          const s = await r.json();
+          $("offline").classList.toggle("show", !r.ok);
+          if (r.ok) render(s);
+          else renderOffline();
+        } catch {
+          $("offline").classList.add("show");
+          renderOffline();
+        }
+        setTimeout(poll, 250);
+      }
+      poll();
+    </script>
+  </body>
+</html>

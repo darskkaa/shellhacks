@@ -7,3 +7,11 @@ __pycache__/
 !.env.example
 node_modules/
 .venv/
+
+# Local Gemini key drop file
+key_gemnei.txt
+# Files copied off the dog (config.py holds WiFi credentials)
+robot_dump/device_backup/
+api_maps.txt
+# Serena MCP local state
+.serena/

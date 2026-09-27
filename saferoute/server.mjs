@@ -1,6 +1,6 @@
 // SafeRoute Miami: scores Google route alternatives by crash, flood, and school-zone exposure.
 // Run: npm start (reads keys from the repo-root .env)
-import { createServer } from "node:http";
+import { createServer, get as httpGet } from "node:http";
 import { gzipSync } from "node:zlib";
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
@@ -25,7 +25,12 @@ const MAPS_KEY = process.env.GOOGLE_MAPS_API_KEY;
 const BROWSER_MAPS_KEY = process.env.GOOGLE_MAPS_BROWSER_KEY || MAPS_KEY;
 const GEMINI_KEY = process.env.GEMINI_API_KEY;
 const NWS_CONTACT = process.env.NWS_CONTACT ?? "saferoute-miami hackathon demo";
-if (!MAPS_KEY) throw new Error("GOOGLE_MAPS_API_KEY missing from .env");
+// Without a Maps key the route planner is off, but the Live Crossing demo (crossing.html) still runs.
+if (!MAPS_KEY) console.warn("GOOGLE_MAPS_API_KEY missing from .env: route planning disabled, /crossing.html still works");
+// Live Crossing: the MechDog agent (tools/gemini_dog_agent.py --go-signal, control page on :8002) and the camera
+// (tools/vision_stream.py, :8001) run on this machine; proxied here so crossing.html talks to a single origin.
+const DOG_PANEL_URL = process.env.DOG_PANEL_URL ?? "http://127.0.0.1:8002";
+const DOG_VISION_URL = process.env.DOG_VISION_URL ?? "http://127.0.0.1:8001";
 
 const CRASH_RADIUS_M = 40;
 const FLOOD_RADIUS_M = 60;
@@ -638,6 +643,7 @@ async function scoreRoute(route, path, indexes, conditions, liveIndex, surge, wa
 }
 
 async function handleRoutes(req, res) {
+  if (!MAPS_KEY) return sendJson(res, 503, { error: "Route planning needs GOOGLE_MAPS_API_KEY in the repo-root .env." });
   let input;
   try {
     input = JSON.parse(await readBody(req));
@@ -876,12 +882,62 @@ async function serveStatic(req, res) {
   }
 }
 
+// Dog agent status / settings, or 503 {offline} when the agent isn't running.
+async function handleDog(req, res, path, search) {
+  const route = { "/api/dog/settings": "/settings", "/api/dog/command": "/command" }[path] ?? "/status";
+  const target = `${DOG_PANEL_URL}${route}${search}`;
+  try {
+    const init = req.method === "POST" ? { method: "POST", body: await readBody(req) } : {};
+    const upstream = await fetch(target, { ...init, signal: AbortSignal.timeout(2000) });
+    sendJson(res, upstream.status, await upstream.json(), { "Cache-Control": "no-store" });
+  } catch {
+    sendJson(res, 503, { offline: true, error: "Dog agent not running: python tools/gemini_dog_agent.py --go-signal" });
+  }
+}
+
+// Camera: the annotated MJPEG stream (or one JPEG), piped through untouched.
+function handleDogCamera(req, res, path) {
+  const upstream = httpGet(`${DOG_VISION_URL}${path === "/api/dog/snapshot.jpg" ? "/snapshot.jpg" : "/stream.mjpg"}`, (up) => {
+    res.writeHead(up.statusCode ?? 502, {
+      "Content-Type": up.headers["content-type"] ?? "application/octet-stream",
+      "Cache-Control": "no-store",
+    });
+    up.pipe(res);
+  });
+  upstream.on("error", () => {
+    if (!res.headersSent) sendJson(res, 503, { offline: true, error: "Camera not running: python tools/vision_stream.py" });
+    else res.end();
+  });
+  res.on("close", () => upstream.destroy());
+}
+
+// The last frame Gemini checked for a GO image (the agent keeps it in memory), for the "What Gemini saw" panel.
+function handleDogShot(req, res) {
+  const upstream = httpGet(`${DOG_PANEL_URL}/gemini.jpg`, (up) => {
+    res.writeHead(up.statusCode ?? 502, {
+      "Content-Type": up.headers["content-type"] ?? "application/octet-stream",
+      "Cache-Control": "no-store",
+    });
+    up.pipe(res);
+  });
+  upstream.on("error", () => {
+    if (!res.headersSent) sendJson(res, 503, { offline: true, error: "Dog agent not running" });
+    else res.end();
+  });
+  res.on("close", () => upstream.destroy());
+}
+
 createServer(async (req, res) => {
   // 8. Route on the path only, so query strings do not change which handler runs.
   const path = new URL(req.url, "http://localhost").pathname;
   try {
     if (req.method === "POST" && path === "/api/routes") return await handleRoutes(req, res);
     if (req.method === "GET" && path === "/api/explain") return await handleExplain(req, res);
+    if (path === "/api/dog/status" || path === "/api/dog/settings" || path === "/api/dog/command")
+      return await handleDog(req, res, path, new URL(req.url, "http://localhost").search);
+    if (req.method === "GET" && (path === "/api/dog/stream.mjpg" || path === "/api/dog/snapshot.jpg"))
+      return handleDogCamera(req, res, path);
+    if (req.method === "GET" && path === "/api/dog/gemini.jpg") return handleDogShot(req, res);
     if (req.method === "GET") return await serveStatic(req, res);
     sendJson(res, 405, { error: "method not allowed" });
   } catch (err) {

@@ -1,6 +1,6 @@
-# MechDog WiFi command bridge — MicroPython main.py for the Hiwonder MechDog ESP32 controller.
+# MechDog WiFi/BLE command bridge — MicroPython main.py for the Hiwonder MechDog ESP32 controller.
 #
-# Implements PROTOCOL.md (newline-delimited JSON over TCP, and over the USB-serial REPL port) on top of Hiwonder's stock motion library so the
+# Implements PROTOCOL.md (newline-delimited JSON over TCP or BLE, and over the USB-serial REPL port) on top of Hiwonder's stock motion library so the
 # Arduino UNO Q can drive the dog without touching servo wiring or calibration. Back up the factory main.py
 # before uploading this file (see README.md in this folder).
 
@@ -25,6 +25,19 @@ try:
     HW_AVAILABLE = True
 except ImportError:
     HW_AVAILABLE = False
+
+
+def mem_log(tag):
+    """With config.MEM_LOG_S > 0, print the IDF heap (what WiFi/BLE buffers come from) and the MicroPython heap."""
+    if not getattr(config, "MEM_LOG_S", 0):
+        return
+    try:
+        import esp32
+        h = esp32.idf_heap_info(esp32.HEAP_DATA)
+        idf = "idf free=%d largest=%d" % (sum(x[1] for x in h), max([x[2] for x in h] or [0]))
+    except Exception:
+        idf = "idf ?"
+    print("MEM %s: %s mp_free=%d mp_used=%d" % (tag, idf, gc.mem_free(), gc.mem_alloc()))
 
 
 def clamp(v, lo, hi):
@@ -94,6 +107,7 @@ class DogHAL:
         self._pose_z = 0
         self._roll = 0
         self._pitch = 0
+        self._shift = 0     # body shift along the walking axis, mm (transform pos[0])
         if not HW_AVAILABLE:
             return
         self.dog = MechDog()
@@ -107,6 +121,10 @@ class DogHAL:
         self.caps["posture"] = "transform" if has_tf else None
         # Battery is a module function returning millivolts, not a MechDog method.
         self.caps["battery"] = self._probe(Hiwonder, ("Battery_power", "battery_power", "get_battery"))
+        if not getattr(config, "LOW_POWER_BEEP", True) and hasattr(Hiwonder, "disableLowPowerAlarm"):
+            # Hiwonder's firmware beeps continuously below its own voltage threshold. The bridge still stops
+            # walking below LOW_BATTERY_V and reports a low_battery event, so the rider isn't left unwarned.
+            Hiwonder.disableLowPowerAlarm()
         try:
             iic1 = Hiwonder_IIC.IIC(1)
             self.sonar = Hiwonder_IIC.I2CSonar(iic1)
@@ -164,7 +182,10 @@ class DogHAL:
         if not self.caps.get("height") and not self.caps.get("posture"):
             return False
         try:
-            self.dog.transform([0, 0, self._pose_z], [self._roll, self._pitch, 0], ms)
+            # Hiwonder's own example (7.change_Pitch_Roll.py): transform(pos, [pitch, roll, yaw], ms). This used to
+            # pass [roll, pitch, 0], so "pitch" tilted the body sideways (2026-09-27). pos[0] shifts the body along the
+            # walking axis (move()'s speed_x), moving its weight between the front and back feet.
+            self.dog.transform([self._shift, 0, self._pose_z], [self._pitch, self._roll, 0], ms)
             return True
         except Exception:
             return False
@@ -173,9 +194,10 @@ class DogHAL:
         self._pose_z = clamp(int(mm) - self.HEIGHT_NOMINAL_MM, self.HEIGHT_Z_MIN, self.HEIGHT_Z_MAX)
         return self._transform()
 
-    def posture(self, x, y):
+    def posture(self, x, y, shift=0):
         self._roll = clamp(int(x), -self.TILT_MAX_DEG, self.TILT_MAX_DEG)
         self._pitch = clamp(int(y), -self.TILT_MAX_DEG, self.TILT_MAX_DEG)
+        self._shift = clamp(int(shift), -25, 25)
         return self._transform()
 
     # -- sensors --
@@ -310,8 +332,48 @@ class UsbLink:
         pass
 
 
+class BleLink:
+    """Hiwonder_BLE's serial service (FFE0: write FFE1, notify FFE2) as a permanent bridge client, used instead of
+    WiFi when config.WIFI_MODE == "ble". The ESP32 has too little IDF heap left for WiFi to transmit once the
+    bridge runs (~3 KB); BLE started before WiFi leaves ~18 KB. Host writes arrive at most 20 bytes at a time, so
+    hosts split lines into 20-byte writes and this link reassembles them into the bridge's newline framing.
+    Notifications of up to ~240 bytes reach the host whole; longer lines are split."""
+    MAX_NOTIFY = 200
+
+    def __init__(self):
+        from Hiwonder_BLE import BLE
+        name = getattr(config, "BLE_NAME", "MechDog")
+        self.ble = BLE(BLE.MODE_BLE_SLAVE, name)
+        self.was_connected = False
+        print("BLE advertising as", name)
+
+    def connected_now(self):
+        """True exactly once per new host connection, so the bridge can send hello."""
+        c = self.ble.is_connected()
+        new = c and not self.was_connected
+        self.was_connected = c
+        return new
+
+    def pending(self):
+        return self.ble.is_connected() and self.ble.has_data()
+
+    def recv(self, n):
+        d = self.ble.read_buffer()
+        return bytes(d) if d else b""
+
+    def send(self, data):
+        if not self.ble.is_connected():
+            return
+        text = data.decode()
+        for i in range(0, len(text), self.MAX_NOTIFY):
+            self.ble.send_data(text[i:i + self.MAX_NOTIFY])
+
+    def close(self):
+        pass
+
+
 class Bridge:
-    def __init__(self, hal):
+    def __init__(self, hal, ble=None):
         self.hal = hal
         self.mode = "idle"
         self.stride = 0
@@ -328,25 +390,34 @@ class Bridge:
         self.imu_ang = None
         self.low_batt_sent = False
         self.fallen = False
+        self._tilt_polls = 0      # consecutive IMU polls past FALL_DEG (check_fall)
         self.sonar_filter = SonarFilter()
         self.clients = []
         self.bufs = {}
         self.running = True
         self.poller = select.poll()
-        self.srv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.srv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.srv.bind(("0.0.0.0", config.PORT))
-        self.srv.listen(2)
-        self.srv.setblocking(False)
-        self.poller.register(self.srv, select.POLLIN)
+        self.ble = ble
+        self.srv = None
+        self.port = config.PORT
+        if ble is None and config.WIFI_MODE != "none":  # BLE / USB-only modes have no network, so no TCP server
+            self.srv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.srv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            self.srv.bind(("0.0.0.0", config.PORT))
+            self.srv.listen(2)
+            self.srv.setblocking(False)
+            self.poller.register(self.srv, select.POLLIN)
+            try:
+                self.port = self.srv.getsockname()[1]
+            except Exception:
+                pass
         self.usb = UsbLink()
-        self.clients.append(self.usb)
-        self.bufs[id(self.usb)] = b""
+        self.permanent = [self.usb]
+        if ble is not None:
+            self.permanent.append(ble)
+        for c in self.permanent:
+            self.clients.append(c)
+            self.bufs[id(c)] = b""
         self.poller.register(sys.stdin, select.POLLIN)
-        try:
-            self.port = self.srv.getsockname()[1]
-        except Exception:
-            self.port = config.PORT
 
     def uptime(self):
         return time.ticks_diff(time.ticks_ms(), self.t0)
@@ -372,8 +443,8 @@ class Bridge:
             self.send(c, msg)
 
     def drop(self, c):
-        if c is self.usb:
-            return  # never unplug the UART client; the watchdog covers a dead cable
+        if c in self.permanent:
+            return  # never unplug the UART or BLE client; the watchdog covers a dead cable or lost radio link
         if c in self.clients:
             self.clients.remove(c)
             self.bufs.pop(id(c), None)
@@ -385,7 +456,7 @@ class Bridge:
                 c.close()
             except Exception:
                 pass
-        if not any(x is not self.usb for x in self.clients):
+        if not any(x not in self.permanent for x in self.clients):
             self.safe_stop("link_lost")
 
     def hello(self, c):
@@ -471,7 +542,7 @@ class Bridge:
             if self.fallen:
                 ack(False, msg="fallen")
                 return
-            self.stride = cl("stride", -100, 100)
+            self.stride = cl("stride", -120, 120)  # Hiwonder's own app walks full speed at move(120, 0)
             self.angle = cl("angle", -30, 30)
             self.hal.move(self.stride, self.angle)
             self.mode = "walk" if (self.stride or self.angle) else "idle"
@@ -500,7 +571,7 @@ class Bridge:
             ok = self.hal.gait(cl("lift_ms", 50, 1000, 200), cl("contact_ms", 50, 1000, 300), cl("lift_mm", 5, 40, 20))
             ack(ok)
         elif t == "posture":
-            ack(self.hal.posture(cl("x", -20, 20), cl("y", -20, 20)))
+            ack(self.hal.posture(cl("x", -20, 20), cl("y", -20, 20), cl("shift", -25, 25)))
         elif t == "rgb":
             self.hal.rgb(cl("r", 0, 255), cl("g", 0, 255), cl("b", 0, 255))
             ack()
@@ -510,10 +581,62 @@ class Bridge:
         elif t == "sub":
             self.tel_hz = cl("hz", 0, 50)
             ack(hz=self.tel_hz)
+        elif t in ("fopen", "fwrite", "fclose", "reset"):
+            self.file_cmd(t, msg, ack)
         else:
             self.send(c, {"t": "err", "msg": "unknown type %s" % t})
 
     # -- periodic --
+    def file_cmd(self, t, msg, ack):
+        """Upload files over any link (used over BLE by tools/dog_flash.py --ble), so the dog can be reprogrammed
+        without USB. fopen NAME -> fwrite base64 chunks -> fclose SIZE writes NAME.tmp and only then renames it over
+        NAME, so a dropped link never leaves a half-written main.py. reset reboots into the new code."""
+        import os
+        import ubinascii
+        if self.mode == "walk":
+            ack(False, msg="stop the dog first")
+            return
+        if t == "fopen":
+            name = str(msg.get("name", ""))
+            if not name or "/" in name or name.startswith("."):
+                ack(False, msg="bad name")
+                return
+            if getattr(self, "upload", None):
+                self.upload[1].close()
+            self.upload = [name, open(name + ".tmp", "wb"), 0]
+            ack(name=name)
+        elif t == "fwrite":
+            if not getattr(self, "upload", None):
+                ack(False, msg="no open file")
+                return
+            data = ubinascii.a2b_base64(msg.get("d", ""))
+            self.upload[1].write(data)
+            self.upload[2] += len(data)
+            ack(size=self.upload[2])
+        elif t == "fclose":
+            up = getattr(self, "upload", None)
+            if not up:
+                ack(False, msg="no open file")
+                return
+            up[1].close()
+            self.upload = None
+            name, size = up[0], up[2]
+            if size != num(msg.get("size"), -1):
+                os.remove(name + ".tmp")
+                ack(False, msg="size mismatch: got %d" % size)
+                return
+            try:
+                os.remove(name)
+            except OSError:
+                pass
+            os.rename(name + ".tmp", name)
+            ack(name=name, size=size)
+        elif t == "reset":
+            ack()
+            time.sleep_ms(300)  # let the ack leave the radio before rebooting
+            import machine
+            machine.reset()
+
     def safe_stop(self, reason):
         if self.mode == "walk":
             self.stride = self.angle = 0
@@ -556,7 +679,11 @@ class Bridge:
         if not ang or len(ang) < 2:
             return
         roll, pitch = abs(ang[0]), abs(ang[1])
-        if not self.fallen and max(roll, pitch) > config.FALL_DEG:
+        # read_angle is accelerometer tilt: at full stride the footfalls shake it to +/-40 deg (spikes past 50) every
+        # step, and treating one spike as a fall cut the legs mid-stride over and over, so the dog lurched and spun
+        # instead of walking (2026-09-27). A real fall stays tilted, so it must hold for FALL_POLLS polls in a row.
+        self._tilt_polls = self._tilt_polls + 1 if max(roll, pitch) > config.FALL_DEG else 0
+        if not self.fallen and self._tilt_polls >= getattr(config, "FALL_POLLS", 8):
             self.fallen = True
             self.stride = self.angle = 0
             self.hal.stop()
@@ -574,9 +701,19 @@ class Bridge:
         self.broadcast(msg)
 
     def run(self):
-        print("bridge listening on", config.PORT, "and USB serial")
+        print("bridge listening on", "BLE" if self.ble else config.PORT, "and USB serial")
         self.hello(self.usb)
+        mem_log("bridge running")
+        last_mem = time.ticks_ms()
         while self.running:
+            if getattr(config, "MEM_LOG_S", 0) and time.ticks_diff(time.ticks_ms(), last_mem) > config.MEM_LOG_S * 1000:
+                last_mem = time.ticks_ms()
+                mem_log("t=%ds" % (self.uptime() // 1000))
+            if self.ble is not None:  # Hiwonder_BLE is not pollable; check it every loop
+                if self.ble.connected_now():
+                    self.hello(self.ble)
+                if self.ble.pending():
+                    self.read(self.ble)
             for sock, ev in self.poller.poll(config.LOOP_MS):
                 if sock is self.srv:
                     self.accept()
@@ -592,12 +729,21 @@ class Bridge:
 
 
 def main():
+    mem_log("main start")
     hal = DogHAL()
     print("HAL caps:", hal.caps)
-    wifi_up()
+    mem_log("after HAL")
+    ble = None
+    if config.WIFI_MODE == "ble":
+        ble = BleLink()  # must start before anything else claims the IDF heap; WiFi is never brought up
+    elif config.WIFI_MODE != "none":  # "none": USB serial only, no radio, nothing to fail at boot
+        wifi_up()
+    mem_log("after radio")
     hal.rgb(0, 40, 0)
     hal.beep(1500, 80)
-    Bridge(hal).run()
+    bridge = Bridge(hal, ble)
+    mem_log("after Bridge()")
+    bridge.run()
 
 
 if __name__ == "__main__":

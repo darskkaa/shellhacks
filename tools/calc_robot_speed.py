@@ -16,17 +16,16 @@ GAITS = {
 def compute_mechdog_speed(stride_mm=50, lift_ms=150, contact_ms=200, slip_factor=0.85):
     """
     Computes theoretical and real-world ground velocity for Hiwonder MechDog.
-    Formula:
-      T_cycle = (lift_ms + contact_ms) / 1000.0  (seconds per trot phase)
-      freq_hz = 1.0 / T_cycle
-      v_ideal = (stride_mm / 1000.0) * freq_hz
-      v_real = v_ideal * slip_factor
+    Formula (Hiwonder: move(stride_mm, turn_deg), set_gait_params(air_ms, ground_ms, lift_mm)):
+      A foot on the ground carries the body one stride during its ground phase, so
+      v_ideal = (stride_mm / 1000.0) / (contact_ms / 1000.0)
+      v_real = v_ideal * slip_factor  (slip_factor is a guess until measured, e.g. with the sonar against a wall)
     """
     stride_m = stride_mm / 1000.0
     t_step_s = (lift_ms + contact_ms) / 1000.0
     freq_hz = 1.0 / t_step_s if t_step_s > 0 else 0
 
-    v_ideal = stride_m * freq_hz
+    v_ideal = stride_m / (contact_ms / 1000.0) if contact_ms > 0 else 0
     v_real = v_ideal * slip_factor
 
     return {

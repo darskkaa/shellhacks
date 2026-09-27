@@ -29,7 +29,7 @@ R = "\033[91m"
 C = "\033[96m"
 W = "\033[0m"
 
-VISION_URL = "http://localhost:8001/detections"
+VISION_URL = "http://127.0.0.1:8001/detections"
 VISION_MIN_CONF = 0.45
 WALK_CLASSES = {"ped_signal_walk", "ped_signal_stop"}
 STOP_CLASSES = {"curb_drop_off_hazard", "conflict_vehicle_cyclist"}
@@ -61,11 +61,94 @@ def seen_labels(dets, min_conf=VISION_MIN_CONF):
     return {det_label(d) for d in dets if det_conf(d) >= min_conf}
 
 
+BLE_WRITE_UUID = "0000ffe1-0000-1000-8000-00805f9b34fb"   # Hiwonder_BLE serial service: host -> dog
+BLE_NOTIFY_UUID = "0000ffe2-0000-1000-8000-00805f9b34fb"  # dog -> host
+
+
+class BleSerial:
+    """The dog's Bluetooth LE serial service (robot_dump/main.py BleLink, WIFI_MODE = "ble") behind the small
+    pyserial surface BridgeLink uses (read / in_waiting / write / close), so BLE is just another serial port.
+    The dog accepts at most 20 bytes per write, so writes are split. bleak is async: it gets its own loop thread."""
+    CHUNK = 20
+
+    def __init__(self, name="MechDog", timeout=1.0, scan_s=10.0):
+        import asyncio
+        self.asyncio = asyncio
+        self.timeout = timeout
+        self.rx = bytearray()
+        self.cond = threading.Condition()
+        self.alive = True
+        self.client = None
+        self.loop = asyncio.new_event_loop()
+        threading.Thread(target=self.loop.run_forever, daemon=True).start()
+        try:
+            self._run(self._connect(name, scan_s), scan_s + 15)
+        except BaseException:
+            self.close()
+            raise
+
+    def _run(self, coro, timeout):
+        return self.asyncio.run_coroutine_threadsafe(coro, self.loop).result(timeout)
+
+    async def _connect(self, name, scan_s):
+        from bleak import BleakClient, BleakScanner
+        dev = await BleakScanner.find_device_by_name(name, timeout=scan_s)
+        if dev is None:
+            raise OSError(f"no Bluetooth device named {name!r} (is the dog on with WIFI_MODE = \"ble\"?)")
+        self.client = BleakClient(dev, disconnected_callback=lambda _c: self._lost())
+        await self.client.connect()
+        await self.client.start_notify(BLE_NOTIFY_UUID, self._on_notify)
+
+    def _on_notify(self, _handle, data):
+        with self.cond:
+            self.rx += data
+            self.cond.notify_all()
+
+    def _lost(self):
+        with self.cond:
+            self.alive = False
+            self.cond.notify_all()
+
+    @property
+    def in_waiting(self):
+        return len(self.rx)
+
+    def read(self, n=1):
+        with self.cond:
+            if not self.rx and self.alive:
+                self.cond.wait(self.timeout)
+            if not self.rx and not self.alive:
+                raise OSError("Bluetooth link lost")
+            out = bytes(self.rx[:n])
+            del self.rx[:n]
+            return out
+
+    def write(self, data):
+        if not self.alive:
+            raise OSError("Bluetooth link lost")
+        self._run(self._write(data), 5.0)
+
+    async def _write(self, data):
+        for i in range(0, len(data), self.CHUNK):
+            await self.client.write_gatt_char(BLE_WRITE_UUID, data[i:i + self.CHUNK], response=True)
+
+    def close(self):
+        self._lost()
+        if self.client is not None:
+            try:
+                self._run(self.client.disconnect(), 5.0)
+            except Exception:
+                pass
+        self.loop.call_soon_threadsafe(self.loop.stop)
+
+
 class BridgeLink:
-    """Newline-JSON link to the MechDog bridge over TCP or USB serial. A background thread reads lines and
+    """Newline-JSON link to the MechDog bridge over TCP, USB serial, or Bluetooth LE (serial_port "ble" or
+    "ble:NAME", see BleSerial). A background thread reads lines and
     reopens the link every RECONNECT_S after any drop. on_ready(first) fires on each bridge "hello", i.e. on
     every (re)connect and whenever the ESP32 reboots, so callers can redo their setup."""
     RECONNECT_S = 1.0
+    HELLO_RETRY_S = 2.0  # serial only: re-ask for hello until the bridge answers (a lone request can be lost)
 
     def __init__(self, host="127.0.0.1", port=5005, serial_port=None, on_msg=None, on_ready=None, tag="Link"):
         self.host = host
@@ -78,6 +161,8 @@ class BridgeLink:
         self.conn = None
         self.alive = True
         self.hellos = 0
+        self.ready = False
+        self.hello_asked_at = 0.0
         self.lock = threading.Lock()
 
     def start(self):
@@ -91,7 +176,10 @@ class BridgeLink:
 
     def _open(self, verbose=False):
         try:
-            if self.serial_port:
+            if self.serial_port and self.serial_port.lower().startswith("ble"):
+                name = self.serial_port.split(":", 1)[1] if ":" in self.serial_port else "MechDog"
+                c = BleSerial(name)
+            elif self.serial_port:
                 import serial
                 c = serial.Serial()
                 c.port, c.baudrate, c.timeout, c.write_timeout = self.serial_port, 115200, 1.0, 1.0
@@ -106,9 +194,14 @@ class BridgeLink:
                 print(f"{R}[{self.tag}] Cannot open {self.target}: {e}{W}")
             return
         self.conn = c
+        self.ready = False
         print(f"{G}[{self.tag}] Link open to {self.target}, waiting for bridge hello{W}")
         if self.serial_port:
-            self.send({"t": "hello"})  # a UART has no connect event; TCP accept sends hello unprompted
+            self._ask_hello()  # a UART has no connect event; TCP accept sends hello unprompted
+
+    def _ask_hello(self):
+        self.hello_asked_at = time.monotonic()
+        self.send({"t": "hello"})
 
     def _drop(self, c, why):
         with self.lock:
@@ -147,6 +240,8 @@ class BridgeLink:
                     buf = b""
                     self._open()
                 continue
+            if self.serial_port and not self.ready and time.monotonic() - self.hello_asked_at > self.HELLO_RETRY_S:
+                self._ask_hello()
             try:
                 if self.serial_port:
                     data = c.read(c.in_waiting or 1)  # b"" on timeout
@@ -173,6 +268,7 @@ class BridgeLink:
                     continue
                 try:
                     if msg.get("t") == "hello":
+                        self.ready = True
                         self.hellos += 1
                         print(f"{G}[{self.tag}] MechDog bridge ready ({msg.get('fw')}){W}")
                         if self.on_ready:
@@ -362,7 +458,7 @@ def main():
     parser = argparse.ArgumentParser(description="Real-World MechDog Escort Controller")
     parser.add_argument("--wifi", default="127.0.0.1", help="Dog IP (use 192.168.4.1 for real dog AP mode, 127.0.0.1 for local/sim)")
     parser.add_argument("--port", type=int, default=5005, help="Bridge TCP port")
-    parser.add_argument("--serial", metavar="DEV", help="Drive over USB serial instead of WiFi (e.g. /dev/ttyUSB0, COM3)")
+    parser.add_argument("--serial", metavar="DEV", help="Drive over USB serial instead of WiFi (e.g. /dev/ttyUSB0, COM3), or Bluetooth with \"ble\" / \"ble:NAME\"")
     parser.add_argument("--max-stride", type=int, default=40, help="Max safe walking stride (10-50)")
     parser.add_argument("--min-sonar", type=int, default=35, help="Minimum obstacle stop distance in cm")
     parser.add_argument("--gemini", action="store_true", help="Enable Gemini 2.5 Flash autonomous reasoning")

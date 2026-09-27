@@ -2,7 +2,11 @@
 
 # "ap": MechDog creates its own network (most reliable at a demo venue).
 # "sta": MechDog joins an existing network (set STA_SSID / STA_PASSWORD).
+# "none": USB serial only. No radio at all, so nothing can fail at boot (use this away from the hotspot).
+# "ble": no WiFi; the bridge talks over Hiwonder's Bluetooth LE serial service instead (host: --serial ble).
+#        Use this when WiFi can't send: once the bridge runs, WiFi is left ~3 KB of IDF heap and TX fails.
 WIFI_MODE = "sta"
+BLE_NAME = "MechDog"
 
 AP_SSID = "MechDog_wifi"
 AP_PASSWORD = "12345678"
@@ -14,6 +18,8 @@ STA_CONNECT_TIMEOUT_S = 20
 PORT = 5005
 WATCHDOG_MS = 1500
 LOW_BATTERY_V = 6.6
+# Hiwonder's own continuous low-voltage beep. False silences it; walking still stops below LOW_BATTERY_V.
+LOW_POWER_BEEP = False
 OBSTACLE_STOP_CM = 20
 OBSTACLE_GUARD = True
 # Unit returned by Hiwonder_IIC.I2CSonar.getDistance(). Confirmed cm by reading the stock main.py off this

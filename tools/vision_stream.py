@@ -27,7 +27,14 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ONNX_MODEL = os.path.join(ROOT, "blind_escort_yolo", "weights", "yolo11n_blind_escort.onnx")
 PT_MODEL = os.path.join(ROOT, "blind_escort_yolo", "weights", "yolo11n_blind_escort.pt")
 
-if HAVE_ULTRALYTICS and os.path.exists(PT_MODEL):
+YOLO26_MODEL = os.path.join(ROOT, "models", "yolo26n.pt")
+
+# YOLO26 (COCO) is the default: the crossing agent reads these detections as its backup GO trigger, so the boxes on
+# the stream are exactly what can start a crossing. The custom escort model reports stairs and curb ramps in empty
+# rooms; pass --model blind_escort_yolo/weights/yolo11n_blind_escort.pt to use it anyway.
+if HAVE_ULTRALYTICS and os.path.exists(YOLO26_MODEL):
+    DEFAULT_MODEL = YOLO26_MODEL
+elif HAVE_ULTRALYTICS and os.path.exists(PT_MODEL):
     DEFAULT_MODEL = PT_MODEL
 elif os.path.exists(ONNX_MODEL):
     DEFAULT_MODEL = ONNX_MODEL
@@ -44,14 +51,37 @@ if os.path.exists(TAXONOMY_PATH):
     except Exception:
         pass
 
+STREAM_WIDTH = 960  # the viewing stream only; detection and /raw.jpg keep the camera's full resolution
+CAMERA_STUCK_S = 3.0  # no usable (non-black) frame for this long -> reopen the camera
+
+
+def draw_boxes(frame, dets):
+    """Boxes and labels on a STREAM_WIDTH copy of the frame. Drawing and JPEG-encoding the full 1080p frame
+    (ultralytics' r.plot()) cost more than inference and held the stream near 1.5 fps."""
+    h, w = frame.shape[:2]
+    k = STREAM_WIDTH / w if w > STREAM_WIDTH else 1.0
+    out = cv2.resize(frame, (int(w * k), int(h * k))) if k < 1 else frame.copy()
+    for d in dets:
+        x1, y1, x2, y2 = (int(v * k) for v in d["box"])
+        cv2.rectangle(out, (x1, y1), (x2, y2), (214, 230, 46), 2)
+        cv2.putText(out, "%s %d%%" % (d["label"], int(d["conf"] * 100)), (x1, max(16, y1 - 6)),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.55, (214, 230, 46), 2)
+    return out
+
+
 ap = argparse.ArgumentParser()
 ap.add_argument("--cam", type=int, default=1, help="camera index (1 = Brio 105, 0 = laptop webcam, 2 = external)")
 ap.add_argument("--model", default=DEFAULT_MODEL)
-ap.add_argument("--imgsz", type=int, default=640)
-ap.add_argument("--conf", type=float, default=0.55)
+# 960 rather than 640 so small, distant objects (a signal across the street, a phone held up) survive the resize.
+ap.add_argument("--imgsz", type=int, default=960)
+ap.add_argument("--conf", type=float, default=0.3)
 ap.add_argument("--port", type=int, default=8001)
+# 1080p: a pedestrian signal across the street is only a few pixels, so resolution is detection range (~9 m -> ~13 m).
+ap.add_argument("--width", type=int, default=1920)
+ap.add_argument("--height", type=int, default=1080)
 ap.add_argument("--no-browser", action="store_true")
 args = ap.parse_args()
+MODEL_TAG = os.path.splitext(os.path.basename(args.model))[0]
 
 
 class Camera:
@@ -66,36 +96,67 @@ class Camera:
         for c_idx in unique_cands:
             cap = cv2.VideoCapture(c_idx, backend)
             if cap.isOpened():
-                cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-                cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+                cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))  # uncompressed 1080p drops to ~5 fps
+                cap.set(cv2.CAP_PROP_FRAME_WIDTH, args.width)
+                cap.set(cv2.CAP_PROP_FRAME_HEIGHT, args.height)
                 cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
                 ok, test_frame = cap.read()
                 if ok and test_frame is not None:
                     self.cap = cap
                     self.index = c_idx
                     opened = True
-                    print(f"[Camera] Successfully opened camera index {c_idx}", flush=True)
+                    print(f"[Camera] Successfully opened camera index {c_idx} at "
+                          f"{test_frame.shape[1]}x{test_frame.shape[0]}", flush=True)
                     break
                 cap.release()
 
         if not opened:
             raise SystemExit("No working camera found across indices %s" % unique_cands)
         self.frame = None
+        self.frame_t = 0.0
         self.lock = threading.Lock()
         threading.Thread(target=self._loop, daemon=True).start()
 
+    def _reopen(self):
+        """The Brio sometimes keeps "delivering" all-black frames, or none, after a USB hiccup (e.g. the dog's cable
+        being plugged into the same hub). Only closing and reopening the device brings the picture back."""
+        print("[Camera] no picture for %.0f s; reopening camera %d" % (CAMERA_STUCK_S, self.index), flush=True)
+        self.cap.release()
+        time.sleep(1.0)
+        cap = cv2.VideoCapture(self.index, cv2.CAP_DSHOW if sys.platform.startswith("win") else cv2.CAP_ANY)
+        cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, args.width)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, args.height)
+        cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+        self.cap = cap
+
     def _loop(self):
+        good_at = time.time()
         while True:
             ok, f = self.cap.read()
-            if ok:
+            now = time.time()
+            # A stuck Brio sends frames that are exactly 0; a dark street at night still has sensor noise and street
+            # lights, so only a near-perfect black counts (a higher cut-off made it reopen the camera at night).
+            if ok and f is not None and f[::16, ::16].mean() >= 0.5:
+                good_at = now
                 with self.lock:
-                    self.frame = f
+                    self.frame, self.frame_t = f, now
             else:
-                time.sleep(0.05)
+                if now - good_at > CAMERA_STUCK_S:
+                    with self.lock:
+                        self.frame = None  # stop detecting on (and serving) a stale or black picture
+                    self._reopen()
+                    good_at = time.time()
+                if not ok:
+                    time.sleep(0.05)
 
     def latest(self):
         with self.lock:
             return self.frame
+
+    def latest_with_time(self):
+        with self.lock:
+            return self.frame, self.frame_t
 
 
 class Detector:
@@ -118,14 +179,18 @@ class Detector:
         self.fps = 0.0
         self.infer_ms = 0.0
         self.seq = 0
+        self.frame_t = 0.0   # capture time of the frame self.dets came from (0 = none yet)
         self.cond = threading.Condition()
         threading.Thread(target=self._loop, daemon=True).start()
 
     def _loop(self):
         last = time.time()
         while True:
-            frame = self.cam.latest()
+            frame, frame_t = self.cam.latest_with_time()
             if frame is None:
+                with self.cond:
+                    self.dets = []  # camera down: no detections rather than the last ones forever
+                    self.jpeg = None  # and no frozen picture: the Live Crossing page shows "camera offline"
                 time.sleep(0.05)
                 continue
             h, w = frame.shape[:2]
@@ -206,13 +271,14 @@ class Detector:
                         "box": [round(x1), round(y1), round(x2), round(y2)],
                         "cx": round((x1 + x2) / 2 / w, 3),
                         "area": round((x2 - x1) * (y2 - y1) / (w * h), 4),
+                        "nbox": [round(x1 / w, 4), round(y1 / h, 4), round(x2 / w, 4), round(y2 / h, 4)],
                     })
-                annotated = r.plot()
+                annotated = draw_boxes(frame, dets)
 
             now = time.time()
             self.fps = 0.8 * self.fps + 0.2 * (1 / max(now - last, 1e-3))
             last = now
-            cv2.putText(annotated, "YOLO11n-BlindEscort [%s] %.1f fps %d ms" % (self.backend, self.fps, self.infer_ms),
+            cv2.putText(annotated, "%s [%s] %.1f fps %d ms" % (MODEL_TAG, self.backend, self.fps, self.infer_ms),
                         (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
             if time.time() < self.injected_until:
                 dets = list(self.injected_dets) + dets
@@ -223,6 +289,7 @@ class Detector:
             with self.cond:
                 self.jpeg = buf.tobytes()
                 self.dets = dets
+                self.frame_t = frame_t
                 self.seq += 1
                 self.cond.notify_all()
 
@@ -291,20 +358,35 @@ class Handler(BaseHTTPRequestHandler):
                 self.det.injected_until = time.time() + dur
             body = json.dumps({"status": "ok", "injected": label, "duration_s": dur}).encode()
             ctype = "application/json"
+        elif self.path.startswith("/classes"):
+            names = self.det.class_names or {}
+            body = json.dumps([names[i] for i in sorted(names)]).encode()
+            ctype = "application/json"
         elif self.path.startswith("/detections"):
             body = json.dumps({"fps": round(self.det.fps, 1), "infer_ms": round(self.det.infer_ms),
-                               "dets": self.det.dets, "ts": time.time()}).encode()
+                               "dets": self.det.dets, "ts": time.time(),
+                               # seconds since the detected frame was captured: a frozen camera shows as a growing age
+                               "age": round(time.time() - self.det.frame_t, 2) if self.det.frame_t else None,
+                               }).encode()
             ctype = "application/json"
         elif self.path.startswith("/snapshot.jpg") and self.det.jpeg:
             body, ctype = self.det.jpeg, "image/jpeg"
+        elif self.path.startswith("/raw.jpg") and self.det.cam.latest() is not None:
+            # Full-resolution frame without boxes or labels: for Gemini, where a distant signal is only a few
+            # pixels and an overlay would cover it.
+            ok, buf = cv2.imencode(".jpg", self.det.cam.latest(), [cv2.IMWRITE_JPEG_QUALITY, 90])
+            body, ctype = buf.tobytes(), "image/jpeg"
         else:
             body, ctype = PAGE.encode(), "text/html; charset=utf-8"
-        self.send_response(200)
-        self.send_header("Content-Type", ctype)
-        self.send_header("Content-Length", str(len(body)))
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.end_headers()
-        self.wfile.write(body)
+        try:
+            self.send_response(200)
+            self.send_header("Content-Type", ctype)
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(body)
+        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+            pass  # the client gave up (a page reload); nothing to do
 
     def log_message(self, *a):
         pass
