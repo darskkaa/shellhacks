@@ -6,3 +6,4 @@ pillow==12.3.0
 onnxruntime==1.30.0
 opencv-python-headless==4.11.0.86
 imageio-ffmpeg==0.6.0
+trimesh==5.1.0

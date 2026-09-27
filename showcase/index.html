@@ -364,8 +364,9 @@
       <section class="intro" aria-labelledby="intro-h">
         <h2 id="intro-h">A robot guide dog gets a blind rider safely to their Waymo</h2>
         <p>
-          Every scene is built from real Edgewater, Miami data. Only the robot hardware is simulated. The dog plans
-          from its own camera: depth for curbs and obstacles, segmentation for water, YOLO for the walk signal.
+          Every scene is built from real Edgewater, Miami data. Streets, curbs, crossings and hazard locations are
+          real data; the dog, rider, cars and anything tagged illustrative are simulated. The dog's depth and water
+          sensing come from the simulator's ground truth; a trained YOLO model reads the walk signal.
         </p>
         <ul class="facts" aria-label="Data sources">
           <li><b>OpenStreetMap</b> streets, curbs, crossings</li>
@@ -469,7 +470,9 @@
             <h3 id="d2"><span class="num">02</span> Crossing Biscayne Blvd with traffic</h3>
             <p id="d2-desc">
               18.1 m, 5 lanes. The dog reads the pedestrian signal with its own camera, waits through DON'T WALK, and
-              crosses only when WALK leaves enough time at a cane user's pace.
+              crosses only when WALK leaves enough time at a cane user's pace. It walks at a production escort's
+              0.9 m/s; today's $450 MechDog (0.42 m/s) could not finish this crossing in time (43.0 s needed vs
+              23.9 s of WALK + clearance).
             </p>
             <div class="tags">
               <span class="tag real">real: crossing geometry, crashes</span
@@ -525,7 +528,7 @@
             <h3 id="d4"><span class="num">04</span> The Waymo moves to a safer pickup</h3>
             <p id="d4-desc">
               Our router drives the safest route, moves the pickup off a flooded curb to NE 21st St, and Waymo's
-              open-source Waymax simulator drives the final pull-in: no off-road, no overlap.
+              open-source Waymax simulator drives the final pull-in: no off-road; no other traffic simulated.
             </p>
             <div class="tags">
               <span class="tag real">real: OSM, SafeRoute data</span><span class="tag">sim: Waymax</span>
@@ -536,8 +539,12 @@
       </div>
 
       <footer>
-        Built at ShellHacks 2026. Hazard data is historical and shows patterns, not predictions. Waymax is used under
-        its non-commercial license.
+        Built at ShellHacks 2026. Hazard data is historical and shows patterns, not predictions. The final approach
+        was made using the Waymax Licensed Materials, provided by Waymo LLC under the Waymax License Agreement for
+        Non-Commercial Use, available at
+        <a href="https://github.com/waymo-research/waymax/blob/main/LICENSE">https://github.com/waymo-research/waymax/blob/main/LICENSE</a>.
+        Your access and use of the Waymax Licensed Materials are governed by the terms and conditions contained
+        therein.
       </footer>
     </main>
   </body>

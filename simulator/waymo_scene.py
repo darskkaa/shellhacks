@@ -13,12 +13,12 @@ The ground is one heightfield textured with a top-down render of the same raster
 
 import heapq
 import math
+import tempfile
+from pathlib import Path
 
 import numpy as np
 import pybullet as p
 from PIL import Image, ImageDraw
-
-from simulator.real_block import DATA_DIR
 
 CURB_H = 0.15
 LANE_W = 3.3
@@ -90,9 +90,10 @@ class RealBlock:
         zmid = (float(self.height.max()) + float(self.height.min())) / 2
         body = p.createMultiBody(0, shape, basePosition=[(self.x0 + self.x1) / 2, (self.y0 + self.y1) / 2, zmid])
         # The heightfield texture runs x right-to-left and y bottom-to-top relative to the raster.
-        tex_path = DATA_DIR / "edgewater_ground.png"
-        self.texture.transpose(Image.FLIP_LEFT_RIGHT).transpose(Image.FLIP_TOP_BOTTOM).save(tex_path)
-        p.changeVisualShape(body, -1, textureUniqueId=p.loadTexture(str(tex_path)), rgbaColor=[1, 1, 1, 1])
+        with tempfile.TemporaryDirectory() as tmp:
+            tex_path = Path(tmp) / "ground.png"
+            self.texture.transpose(Image.FLIP_LEFT_RIGHT).transpose(Image.FLIP_TOP_BOTTOM).save(tex_path)
+            p.changeVisualShape(body, -1, textureUniqueId=p.loadTexture(str(tex_path)), rgbaColor=[1, 1, 1, 1])
         return body
 
     def walkable(self, res):

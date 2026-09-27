@@ -4,6 +4,9 @@
 The dog sees the water with its own camera, replans the whole walking route with that water marked
 impassable, and leads the rider round the building to the Waymo.
 
+Streets, curbs, crossings and hazard locations are real data; the dog, rider, cars and anything tagged illustrative are simulated.
+The dog's depth and water sensing come from the simulator's ground truth; a trained YOLO model reads the walk signal.
+
 ```
 .venv/bin/python -m simulator.escort_flood_video --offline
 # -> simulator/artifacts/escort_flood/escort_flood.{webm,mp4}, report.json, mid_frame.png
@@ -42,12 +45,12 @@ Long straight stretches are fast-forwarded 4x and labelled on screen. Events pla
 |---|---|
 | Streets, lane counts, curbs, sidewalks, service alleys, buildings (footprints and heights) | OpenStreetMap (`real_block.py` cache) |
 | Water location: curb drain in front of 2100 NE 2nd Ave | Miami-Dade 311 ticket 23-10236820, "drain clogged / cleaning" (SafeRoute layer) |
-| King tide 2.8 ft at 10:08 today, NWS Coastal Flood Statement | SafeRoute conditions cached in `data/pickup.json` |
+| King tide on Sep 27 2026 (2.8 ft at 10:08), NWS Coastal Flood Statement | SafeRoute conditions cached in `data/pickup.json` |
 | Waymo curb on NE 21st St | `pickup_choice.py`: risk 4.1 vs 25.1 at the requested pin, 0 flood reports within 60 m |
 | Other 311 drain puddles (1.6 m) | `waymo_scene.build_scene` |
 | **Extent of the standing water** | **Illustrative.** The report is a point. The pool is drawn from the curb drain to the building wall, 3 m straight plus rounded ends (about 8.5 m long), so it closes the sidewalk. It is labelled on screen. |
 | **Rider start** | **Illustrative**: 20 m north of the 311 pin on the same sidewalk (pickup.json's start is inside the pool) |
-| Robot dog and rider | Simulated (PyBullet, not Gazebo) |
+| Robot dog and rider | Simulated (PyBullet) |
 
 ## Why the pickup stays on NE 21st St
 

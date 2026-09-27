@@ -4,7 +4,7 @@ Runs the unchanged demo (same checks, report, gif) and, through its frame hook, 
 0.1 s of simulated time. Adds the dog-camera inset with the map-guided signal ROI and the model's WALK / DON'T WALK
 confidence, the time-left countdown, a caption bar, a title card and an end card. Writes crossing.webm + .mp4.
 
-    .venv/bin/python -m simulator.crossing_video --assets /tmp/shellhack-sim-publish/simulator/artifacts/assets < /dev/null
+    .venv/bin/python -m simulator.crossing_video < /dev/null  # needs the meshes from ASSETS.md
 """
 
 import argparse

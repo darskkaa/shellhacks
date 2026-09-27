@@ -536,7 +536,7 @@ def main():
         (f"replanned with it marked impassable and walked {walked:.0f} m (+{walked - planned_m:.0f} m) round the building.", 24,
          (230, 235, 240)),
         (f"Rider's closest approach to water {min_handler_water:.2f} m  |  max single-step drop {max_drop:.3f} m"
-         "  |  roadway steps 0", 22, (190, 200, 210)),
+         f"  |  roadway steps {road_steps}", 22, (190, 200, 210)),
         (f"Waymo: the NE 21st St curb pickup_choice picked (risk {cho['total']} vs {pickup['requested']['total']} "
          f"at the requested pin, {cho['floods']} flood reports", 22, (190, 200, 210)),
         ("within 60 m); the new route reaches it from the west, along the sidewalk, so it stayed the pickup.", 22,

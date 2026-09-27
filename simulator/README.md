@@ -9,16 +9,19 @@ See [guide-dog crossing gated by the blind-escort YOLO model](ESCORT.md) for the
 
 Built from one real Edgewater, Miami block: OpenStreetMap geometry plus SafeRoute Miami's hazard layers
 (Miami-Dade 311 flooding, FDOT work zones and crashes), cached in `simulator/data/` by `real_block.py`.
-Only the robot hardware is simulated (PyBullet); the car's final pull-in runs in Waymo's Waymax.
-Install with `uv pip install --python .venv/bin/python -r simulator/requirements-real.txt`.
+Streets, curbs, crossings and hazard locations are real data; the dog, rider, cars and anything tagged illustrative
+are simulated. The dog's depth and water sensing come from the simulator's ground truth; a trained YOLO model reads
+the walk signal. The simulation runs in PyBullet; the car's final pull-in runs in Waymo's Waymax.
+Install with `uv pip install --python .venv/bin/python -r simulator/requirements-real.txt`. For these demos its pins
+(numpy 2.x) supersede `requirements.txt`'s.
 
 | Demo | Run (`.venv/bin/python -m ...`) | Doc | Output (`simulator/artifacts/`) |
 |---|---|---|---|
-| Pickup curb scoring | `simulator.pickup_choice` | this section | `data/pickup.json` |
+| Pickup curb scoring (regenerates `data/pickup.json`; live tide/alerts need the SafeRoute server on :3000, offline it reuses the saved conditions) | `simulator.pickup_choice` | this section | `data/pickup.json` |
 | Walk to the Waymo | `simulator.gemini_waymo_sim --offline` | module docstring | `waymo_escort/` |
 | Obstacle course video | `simulator.escort_obstacles_video --offline` | [ESCORT_OBSTACLES.md](ESCORT_OBSTACLES.md) | `escort_obstacles/` |
 | Flooded sidewalk video | `simulator.escort_flood_video --offline` | [ESCORT_FLOOD.md](ESCORT_FLOOD.md) | `escort_flood/` |
-| Signalized crossing video | `simulator.crossing_video --assets <dir> < /dev/null` | [REAL_CROSSWALK.md](REAL_CROSSWALK.md) | `real_crosswalk/` |
+| Signalized crossing video (build assets per [ASSETS.md](ASSETS.md) first) | `simulator.crossing_video < /dev/null` | [REAL_CROSSWALK.md](REAL_CROSSWALK.md) | `real_crosswalk/` |
 | Waymo pickup + Waymax | `simulator.waymo_pickup_sim` | [PICKUP.md](PICKUP.md) | `waymo_pickup/` |
 
 `simulator/video.py` writes WebM and MP4 with the ffmpeg bundled in `imageio-ffmpeg`. The rendered videos

@@ -557,8 +557,6 @@ def main():
 
     durations[-1] = 2500
     last = frames[-1].convert("RGB")
-    for o in obstacles:
-        o["cleared"] = o["cleared"] or o["announced"]
     min_dog = min(o["clearance"] for o in obstacles)
     min_handler = min(o["handler_clearance"] for o in obstacles)
     avoided = sum(o["announced"] and o["cleared"] for o in obstacles)

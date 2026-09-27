@@ -32,6 +32,8 @@ reroutes to it. Waymax simulates the last 80 m. Output goes to `simulator/artifa
   - Crash within 40 m: 1 point, plus 3 per serious injury and 10 per death.
   - 311 flood report within 60 m: 5 points times the flood multiplier.
   - FDOT work zone within 30 m: 15 points per project.
+  - These are the route weights in `road_network.py`; the curb scorer in `pickup_choice.py` folds deaths
+    into serious injuries, so it charges 3 points per death, not 10.
 
   The flood multiplier is SafeRoute's rule, applied per point (`pickup_choice.flood_multiplier`): x4 inside
   an NWS flood-alert polygon, x2 on a king tide, otherwise x1. It is x2 here.

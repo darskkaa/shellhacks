@@ -126,12 +126,12 @@ The start rule (`TimedEscort`):
 
 ```sh
 uv pip install --python .venv/bin/python --only-binary=:all: onnxruntime==1.30.0 opencv-python-headless==4.11.0.86
-.venv/bin/python -m simulator.real_crosswalk_demo --assets /tmp/shellhack-sim-publish/simulator/artifacts/assets
+.venv/bin/python -m simulator.real_crosswalk_demo
 ```
 
-`--assets` must point at a folder with the converted car and person meshes
-([ASSETS.md](ASSETS.md)). The default is `simulator/artifacts/assets`, which this worktree
-does not have, so the command above uses an existing converted copy.
+`--assets` must point at a folder with the converted car and person meshes. Build them first
+as described in [ASSETS.md](ASSETS.md); that writes them to the default,
+`simulator/artifacts/assets`, so `--assets` can be omitted.
 
 Options: `--seconds` (5-120, default 40), `--model`, `--walk-conf` (default 0.4),
 `--output`.
@@ -150,7 +150,7 @@ The process exits 1 if any check fails.
 ### Video
 
 ```sh
-.venv/bin/python -m simulator.crossing_video --assets /tmp/shellhack-sim-publish/simulator/artifacts/assets < /dev/null
+.venv/bin/python -m simulator.crossing_video < /dev/null
 ```
 
 `crossing_video.py` runs the same demo with the same options and checks, and writes the same
