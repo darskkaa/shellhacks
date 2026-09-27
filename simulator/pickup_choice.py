@@ -131,6 +131,12 @@ def choose():
     start = rider_start(world)
     dist = world.walk_distances(start, WALK_RES)
     conditions = live_conditions(REQUESTED["address"])
+    if conditions is None and PICKUP_JSON.exists():
+        # Offline: keep the last live conditions rather than silently scoring floods at x1.
+        cached = json.loads(PICKUP_JSON.read_text()).get("conditions")
+        if cached:
+            print("using the live conditions saved in pickup.json")
+            conditions = {"conditions": cached}
     scored = []
     for c in curb_candidates(block):
         walk = walk_to(dist, world, c["xy"]) if world.inside(c["xy"]) else math.inf
