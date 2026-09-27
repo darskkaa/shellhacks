@@ -5,6 +5,25 @@ See [rendered-camera YOLO experiment](VISION.md) for person/car assets and visio
 Start here: [traffic simulation run instructions](RUN_TRAFFIC.md), including NixOS setup.
 See [guide-dog crossing gated by the blind-escort YOLO model](ESCORT.md) for the WALK-signal escort demo.
 
+## Real Miami data demos
+
+Built from one real Edgewater, Miami block: OpenStreetMap geometry plus SafeRoute Miami's hazard layers
+(Miami-Dade 311 flooding, FDOT work zones and crashes), cached in `simulator/data/` by `real_block.py`.
+Only the robot hardware is simulated (PyBullet); the car's final pull-in runs in Waymo's Waymax.
+Install with `uv pip install --python .venv/bin/python -r simulator/requirements-real.txt`.
+
+| Demo | Run (`.venv/bin/python -m ...`) | Doc | Output (`simulator/artifacts/`) |
+|---|---|---|---|
+| Pickup curb scoring | `simulator.pickup_choice` | this section | `data/pickup.json` |
+| Walk to the Waymo | `simulator.gemini_waymo_sim --offline` | module docstring | `waymo_escort/` |
+| Obstacle course video | `simulator.escort_obstacles_video --offline` | [ESCORT_OBSTACLES.md](ESCORT_OBSTACLES.md) | `escort_obstacles/` |
+| Flooded sidewalk video | `simulator.escort_flood_video --offline` | [ESCORT_FLOOD.md](ESCORT_FLOOD.md) | `escort_flood/` |
+| Signalized crossing video | `simulator.crossing_video --assets <dir> < /dev/null` | [REAL_CROSSWALK.md](REAL_CROSSWALK.md) | `real_crosswalk/` |
+| Waymo pickup + Waymax | `simulator.waymo_pickup_sim` | [PICKUP.md](PICKUP.md) | `waymo_pickup/` |
+
+`simulator/video.py` writes WebM and MP4 with the ffmpeg bundled in `imageio-ffmpeg`. The rendered videos
+are published on the static page in `showcase/`.
+
 PyBullet's bundled eight-motor Minitaur is an **uncalibrated MechDog surrogate**.
 The scene exercises motors, contact and rendering. It does not reproduce MechDog
 walking/action groups, the frozen Hiwonder library, or the ESP32 firmware image.

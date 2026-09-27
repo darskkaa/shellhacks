@@ -177,6 +177,9 @@ class Runtime:
             self.hal = self.firmware.DogHAL()
             self.hal.caps["simulation"] = True
             self.bridge = self.firmware.Bridge(self.hal)
+            # The simulator has no USB serial cable: stdin is the host terminal. Mapping it to UsbLink would
+            # spin forever at EOF (UsbLink.recv polls stdin, which stays readable at EOF), so stop polling it.
+            self.bridge.poller.unregister(sys.stdin)
             p.resetDebugVisualizerCamera(1.1, 45, -25, [0, 0, 0.15])
         except BaseException:
             p.disconnect(self.client)
