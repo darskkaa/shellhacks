@@ -41,7 +41,7 @@ def live_conditions(destination):
     try:
         with urllib.request.urlopen(req, timeout=60) as resp:
             return json.loads(resp.read())
-    except OSError as e:
+    except (OSError, json.JSONDecodeError) as e:
         print(f"SafeRoute server unavailable ({e}); flood multiplier 1")
         return None
 

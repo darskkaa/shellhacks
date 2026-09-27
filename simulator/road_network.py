@@ -23,16 +23,13 @@ import argparse
 import heapq
 import json
 import math
-import urllib.error
-import urllib.parse
-import urllib.request
 from itertools import pairwise
 from pathlib import Path
 
 import numpy as np
 
 from simulator.pickup_choice import CRASH_R, FLOOD_R, WORK_R, flood_multiplier
-from simulator.real_block import DATA_DIR, OVERPASS, ssl_context, to_xy
+from simulator.real_block import DATA_DIR, overpass_json, to_xy
 
 ROOT = Path(__file__).resolve().parents[1]
 DRIVE_CACHE = DATA_DIR / "drive_osm.json"
@@ -53,19 +50,9 @@ def fetch():
     hw = "|".join(DEFAULT_MPH)
     b = f"({SOUTH},{WEST},{NORTH},{EAST})"
     query = f'[out:json][timeout:90];(way["highway"~"^({hw})$"]{b};nwr["name"="Wynwood Walls"]{b};);out body;>;out skel qt;'
-    body = urllib.parse.urlencode({"data": query}).encode()
-    for i, url in enumerate(OVERPASS):
-        # Overpass rejects requests without a descriptive User-Agent (HTTP 406).
-        req = urllib.request.Request(url, data=body, headers={"User-Agent": "shellhack-guide-dog-sim/1.0"})
-        try:
-            with urllib.request.urlopen(req, timeout=120, context=ssl_context()) as resp:
-                osm = json.loads(resp.read())
-            DRIVE_CACHE.write_text(json.dumps(osm))
-            return osm
-        except urllib.error.HTTPError as e:
-            if e.code not in (429, 502, 503, 504) or i == len(OVERPASS) - 1:
-                raise
-            print(f"{url} answered {e.code}; trying the mirror")
+    osm = overpass_json(query)
+    DRIVE_CACHE.write_text(json.dumps(osm))
+    return osm
 
 
 def load_hazards(conditions, pad=0.002):

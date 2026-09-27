@@ -76,18 +76,24 @@ out body;
 out skel qt;"""
 
 
-def fetch_osm():
-    body = urllib.parse.urlencode({"data": _overpass_query()}).encode()
+def overpass_json(query):
+    """Run an Overpass query, falling back to the mirror when the main instance is overloaded or unreachable."""
+    body = urllib.parse.urlencode({"data": query}).encode()
     for i, url in enumerate(OVERPASS):
         # Overpass rejects requests without a descriptive User-Agent (HTTP 406).
         req = urllib.request.Request(url, data=body, headers={"User-Agent": "shellhack-guide-dog-sim/1.0"})
         try:
             with urllib.request.urlopen(req, timeout=120, context=ssl_context()) as resp:
                 return json.loads(resp.read())
-        except urllib.error.HTTPError as e:
-            if e.code not in (429, 502, 503, 504) or i == len(OVERPASS) - 1:
+        except (urllib.error.URLError, TimeoutError) as e:
+            code = getattr(e, "code", None)  # HTTPError has a status; network failures don't
+            if (code is not None and code not in (429, 502, 503, 504)) or i == len(OVERPASS) - 1:
                 raise
-            print(f"{url} answered {e.code}; trying the mirror")
+            print(f"{url} failed ({code or e}); trying the mirror")
+
+
+def fetch_osm():
+    return overpass_json(_overpass_query())
 
 
 def cut_hazards():

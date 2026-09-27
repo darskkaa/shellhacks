@@ -42,7 +42,8 @@ def write_video(frames, durations_ms, base, fps=FPS):
             for _ in range(n):
                 proc.stdin.write(data)
         proc.stdin.close()
-        assert proc.wait() == 0, f"ffmpeg failed writing {out}"
+        if proc.wait(timeout=600) != 0:
+            raise RuntimeError(f"ffmpeg failed writing {out}")
         written.append(out)
     return written
 

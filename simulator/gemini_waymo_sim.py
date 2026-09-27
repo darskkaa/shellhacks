@@ -167,8 +167,9 @@ class DogMap:
         keep = (z_lin < SENSE_RANGE) & (d < 0.999)
         wet = np.isin(seg[vs, us], list(water_ids))[keep]
         pts = pts[keep]
-        ix = ((pts[:, 0] - X0) / RES).astype(int)
-        iy = ((pts[:, 1] - Y0) / RES).astype(int)
+        # floor, not truncation toward zero: points just outside the window must not land in cell 0.
+        ix = np.floor((pts[:, 0] - X0) / RES).astype(int)
+        iy = np.floor((pts[:, 1] - Y0) / RES).astype(int)
         ok = (ix >= 0) & (ix < NX) & (iy >= 0) & (iy < NY)
         ix, iy, z, wet = ix[ok], iy[ok], pts[ok, 2], wet[ok]
         i0, i1, j0, j1 = self.patch(dog)
