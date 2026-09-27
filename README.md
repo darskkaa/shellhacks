@@ -32,7 +32,7 @@ npm install
 npm start                      # http://localhost:3000
 ```
 
-Full docs, data sources and the demo script are in [`saferoute/README.md`](saferoute/README.md) and [`saferoute/docs/`](saferoute/docs/).
+Full docs, data sources and the demo script are in [`saferoute/README.md`](saferoute/README.md) and [`saferoute/docs/`](saferoute/docs/). To host it publicly, deploy it as its own Vercel project with Root Directory `saferoute` ([Deploy to Vercel](saferoute/README.md#deploy-to-vercel)).
 
 ## Hardware
 

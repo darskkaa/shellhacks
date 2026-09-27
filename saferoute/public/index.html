@@ -60,6 +60,13 @@
         --ground: #c9d1db;
         --ground-line: #8d99a8;
         --water-text: #0b5cad;
+        --violet: #7c3aed;
+        --fast-bg: #2f6bff;
+        --fast-fg: #fff;
+        --eff-bg: #4d7c0f;
+        --eff-fg: #fff;
+        --pin: #1565c0;
+        --tap: 44px;
       }
       @media (prefers-color-scheme: dark) {
         :root:not([data-theme="light"]) {
@@ -92,6 +99,11 @@
           --ground: #27313d;
           --ground-line: #5c6878;
           --water-text: #7cc0ff;
+          --violet: #a78bfa;
+          --fast-bg: #5b8cff;
+          --fast-fg: #04112e;
+          --eff-bg: #a3e635;
+          --eff-fg: #1a2e05;
         }
       }
       * {
@@ -112,10 +124,8 @@
         -webkit-font-smoothing: antialiased;
       }
       .mono,
-      .stat b,
-      .time,
-      .cond .v,
-      .verdict .big {
+      .metric b,
+      .cond .v {
         font-family: "Geist Mono", ui-monospace, monospace;
         font-variant-numeric: tabular-nums;
       }
@@ -124,6 +134,33 @@
         height: 16px;
         flex: none;
         vertical-align: -3px;
+      }
+      /* Two-state switch between this live routing page and the simulation showcase site. */
+      .modes {
+        display: flex;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 4px;
+        margin: 4px 0 2px;
+      }
+      .modes a {
+        flex: 1;
+        min-height: var(--tap);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        color: var(--muted);
+        text-decoration: none;
+        font-weight: 600;
+      }
+      .modes a[aria-current="page"] {
+        background: var(--accent);
+        color: var(--accent-fg);
+      }
+      .modes a:not([aria-current]):hover {
+        color: var(--fg);
       }
       .skip {
         position: absolute;
@@ -134,8 +171,10 @@
         top: 16px;
         z-index: 20;
         background: var(--panel);
-        padding: 8px 12px;
+        padding: 13px 14px;
         border-radius: 8px;
+        color: var(--fg);
+        outline: 2px solid var(--accent);
       }
 
       /* Layout: full-bleed map with a floating panel (solid fill, no backdrop-filter over the live map). */
@@ -272,12 +311,21 @@
         background-size: 5px 5px;
         background-repeat: no-repeat;
       }
+      a:focus-visible,
       select:focus-visible,
-      input[type="text"]:focus-visible,
+      input:focus-visible,
       button:focus-visible,
-      .route:focus-visible {
+      summary:focus-visible {
         outline: 2px solid var(--accent);
         outline-offset: 2px;
+      }
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
       }
       .chips {
         display: flex;
@@ -288,7 +336,8 @@
         border: 1px solid var(--line);
         background: var(--card);
         color: var(--fg);
-        padding: 6px 11px;
+        min-height: var(--tap);
+        padding: 6px 14px;
         border-radius: 999px;
         font:
           500 13px/1.2 Geist,
@@ -297,6 +346,26 @@
       }
       .chip:hover {
         border-color: var(--accent);
+      }
+      .chip.featured {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: 600;
+        color: var(--water-text);
+        border-color: color-mix(in srgb, var(--water) 55%, var(--line));
+        background: color-mix(in srgb, var(--water) 12%, var(--card));
+      }
+      .chip .tag {
+        font:
+          700 10px/1 "Geist Mono",
+          monospace;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        padding: 4px 6px;
+        border-radius: 999px;
+        background: var(--pin);
+        color: #fff;
       }
 
       /* Shimmer button: gradient sweep while scoring (pattern popularized by Magic UI's ShimmerButton, written from scratch). */
@@ -307,6 +376,7 @@
         align-items: center;
         justify-content: center;
         gap: 8px;
+        min-height: 48px;
         padding: 13px;
         border: 0;
         border-radius: 12px;
@@ -336,12 +406,18 @@
       }
       #status.error {
         color: var(--risk-text);
+        padding: 10px 12px;
+        border-radius: 10px;
+        font-weight: 600;
+        background: color-mix(in srgb, var(--risk) 10%, var(--card));
+        border: 1px solid color-mix(in srgb, var(--risk) 45%, var(--line));
       }
       #results:focus {
         outline: none;
       }
-      #results.stale {
-        opacity: 0.4;
+      #results.stale,
+      #results.loading {
+        opacity: 0.45;
         pointer-events: none;
       }
       .section {
@@ -369,17 +445,56 @@
         color: var(--safe-text);
       }
       .verdict .big {
-        font-size: 28px;
-        font-weight: 600;
-        letter-spacing: -0.03em;
-        margin: 8px 0 2px;
+        font-size: 21px;
+        line-height: 1.25;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        margin: 10px 0 4px;
         color: var(--fg);
+        text-wrap: balance;
       }
       .verdict .sub {
         color: var(--muted);
       }
       .verdict .sub b {
         color: var(--fg);
+      }
+      .verdict .avoid {
+        display: flex;
+        gap: 8px;
+        align-items: flex-start;
+        margin-top: 12px;
+        padding: 9px 11px;
+        border-radius: 10px;
+        font-size: 13.5px;
+        color: var(--water-text);
+        background: color-mix(in srgb, var(--water) 12%, var(--panel));
+        border: 1px solid color-mix(in srgb, var(--water) 40%, var(--line));
+      }
+      .verdict .avoid .i {
+        margin-top: 2px;
+      }
+      .verdict .avoid b {
+        color: var(--fg);
+      }
+      .rule {
+        display: flex;
+        gap: 8px;
+        align-items: flex-start;
+        margin: 12px 0 0;
+        padding-top: 10px;
+        border-top: 1px dashed color-mix(in srgb, var(--safe) 30%, var(--line));
+        font-size: 12.5px;
+        color: var(--muted);
+      }
+      .rule .i {
+        margin-top: 1px;
+        width: 14px;
+        height: 14px;
+      }
+      .rule b {
+        color: var(--fg);
+        font-weight: 600;
       }
 
       .conditions {
@@ -392,10 +507,14 @@
         background: var(--card);
         border: 1px solid var(--line);
         border-radius: var(--radius);
-        padding: 12px 14px;
+        padding: 2px 14px;
+      }
+      details.cond-wrap .conditions {
+        margin-bottom: 12px;
       }
       details.cond-wrap summary {
         cursor: pointer;
+        min-height: var(--tap);
         display: flex;
         align-items: center;
         gap: 8px;
@@ -423,6 +542,9 @@
       }
       details.more summary {
         cursor: pointer;
+        display: flex;
+        align-items: center;
+        min-height: var(--tap);
         margin-top: 10px;
         color: var(--accent);
         font-weight: 600;
@@ -453,6 +575,7 @@
         align-items: center;
         justify-content: center;
         gap: 8px;
+        min-height: var(--tap);
         padding: 10px;
         border-radius: 10px;
         border: 1px solid var(--water);
@@ -543,7 +666,7 @@
         initial-value: 0deg;
         inherits: false;
       }
-      .route.safest::before {
+      .route.rec::before {
         content: "";
         position: absolute;
         inset: -1px;
@@ -569,7 +692,27 @@
         justify-content: space-between;
         gap: 8px;
       }
-      .route h2 {
+      .pick {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-height: var(--tap);
+        margin: -10px 0;
+        padding: 0;
+        border: 0;
+        background: none;
+        color: inherit;
+        font: inherit;
+        cursor: pointer;
+      }
+      .route:has(.pick:focus-visible) {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+      .pick:focus-visible {
+        outline: none;
+      }
+      .route h3 {
         margin: 0;
         font-size: 16px;
         font-weight: 700;
@@ -601,20 +744,112 @@
         width: 12px;
         height: 12px;
       }
-      .time {
-        font-weight: 600;
-        white-space: nowrap;
-        font-size: 15px;
+      .badge.rec {
+        background: var(--accent);
+        color: var(--accent-fg);
       }
-      .time small {
-        color: var(--muted);
-        font-weight: 500;
-        font-size: 12px;
+      .badge.fastest {
+        background: var(--fast-bg);
+        color: var(--fast-fg);
+      }
+      .badge.efficient {
+        background: var(--eff-bg);
+        color: var(--eff-fg);
+      }
+      .badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin-top: 8px;
       }
       .via {
         color: var(--muted);
         font-size: 13px;
-        margin: 4px 0 10px;
+        margin: 6px 0 0;
+      }
+      .metrics {
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: 1fr;
+        gap: 1px;
+        margin: 12px 0 10px;
+        background: var(--line);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      .metric {
+        background: var(--panel);
+        padding: 8px 4px;
+        text-align: center;
+        min-width: 0;
+      }
+      .metric b {
+        display: block;
+        font-size: 16px;
+        font-weight: 600;
+      }
+      .metric > span {
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .metric.best b {
+        color: var(--safe-text);
+      }
+      .metric.best > span:not(.sr-only)::after {
+        content: " ★";
+        color: var(--safe-text);
+      }
+      .floodline {
+        display: flex;
+        gap: 8px;
+        align-items: flex-start;
+        margin-top: 10px;
+        padding: 8px 10px;
+        border-radius: 10px;
+        font-size: 13px;
+        color: var(--muted);
+        border: 1px solid var(--line);
+      }
+      .floodline .i {
+        margin-top: 1px;
+      }
+      .floodline.wet {
+        color: var(--water-text);
+        font-weight: 600;
+        background: color-mix(in srgb, var(--water) 11%, var(--card));
+        border-color: color-mix(in srgb, var(--water) 40%, var(--line));
+      }
+      .hz {
+        display: flex;
+        gap: 8px;
+        align-items: flex-start;
+        margin-top: 8px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .hz .i {
+        margin-top: 1px;
+      }
+      .hz b {
+        color: var(--fg);
+        font-weight: 600;
+      }
+      .beaten {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        margin-top: 10px;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--muted);
+      }
+      .route.dominated {
+        background: transparent;
+        border-style: dashed;
+      }
+      .route.dominated .swatch {
+        filter: saturate(0.35);
       }
       .bar {
         display: flex;
@@ -626,24 +861,6 @@
       .bar span {
         display: block;
         height: 100%;
-      }
-      .stats {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 4px;
-        margin-top: 12px;
-      }
-      .stat {
-        text-align: center;
-      }
-      .stat b {
-        display: block;
-        font-size: 17px;
-        font-weight: 600;
-      }
-      .stat span {
-        font-size: 10.5px;
-        color: var(--muted);
       }
       .flag {
         display: flex;
@@ -706,7 +923,7 @@
       .flood input[type="range"] {
         width: 100%;
         accent-color: var(--water);
-        height: 28px;
+        height: var(--tap);
         cursor: ew-resize;
       }
       .ticks {
@@ -836,9 +1053,6 @@
       .flood-top > div:first-child {
         flex: 1;
       }
-      .stat.uw b {
-        color: var(--water-text);
-      }
       .skeleton {
         height: 118px;
         border-radius: var(--radius);
@@ -865,6 +1079,180 @@
       .sources .i {
         margin-top: 2px;
         color: var(--accent);
+      }
+      .kicker {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin: 0 0 4px;
+        font:
+          600 11px/1 "Geist Mono",
+          monospace;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+
+      /* Pareto chart: minutes vs risk, bubble area by energy. */
+      .pareto {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 14px;
+      }
+      .pareto > p {
+        margin: 0 0 6px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .plot {
+        position: relative;
+      }
+      .plot .pts {
+        position: absolute;
+        inset: 0;
+      }
+      .plot svg {
+        display: block;
+        width: 100%;
+        height: auto;
+        overflow: visible;
+      }
+      .plot .grid {
+        stroke: var(--line);
+      }
+      .plot .axis {
+        font:
+          500 9.5px "Geist Mono",
+          monospace;
+        fill: var(--muted);
+      }
+      .plot .front {
+        fill: none;
+        stroke: var(--fg);
+        stroke-opacity: 0.45;
+        stroke-width: 1.5;
+        stroke-dasharray: 5 4;
+      }
+      .plot .pt {
+        cursor: pointer;
+        outline: none;
+      }
+      .plot .hit {
+        fill: transparent;
+      }
+      .plot .b {
+        fill: currentColor;
+        stroke: var(--panel);
+        stroke-width: 2;
+      }
+      .plot .dom .b {
+        fill: color-mix(in srgb, currentColor 22%, var(--card));
+        stroke: currentColor;
+        stroke-dasharray: 3 2;
+      }
+      .plot .halo {
+        fill: none;
+        stroke: var(--fg);
+        stroke-width: 1.5;
+        opacity: 0;
+      }
+      .plot .rec .halo {
+        opacity: 1;
+      }
+      .plot .pt.sel .b {
+        stroke: var(--fg);
+        stroke-width: 2.5;
+      }
+      .plot .pt:focus-visible .halo {
+        opacity: 1;
+        stroke: var(--accent);
+        stroke-width: 3;
+      }
+      .plot .pt text {
+        font:
+          700 10.5px Geist,
+          sans-serif;
+        fill: #fff;
+        pointer-events: none;
+      }
+      .plot .dom text {
+        fill: var(--fg);
+      }
+      .tip {
+        position: absolute;
+        z-index: 3;
+        transform: translate(-50%, calc(-100% - 16px));
+        padding: 7px 10px;
+        border-radius: 8px;
+        background: var(--fg);
+        color: var(--panel);
+        font-size: 12px;
+        line-height: 1.35;
+        white-space: nowrap;
+        pointer-events: none;
+        box-shadow: var(--shadow);
+      }
+      .tip b {
+        display: block;
+      }
+      .plegend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 14px;
+        margin-top: 8px;
+        font-size: 11.5px;
+        color: var(--muted);
+      }
+      .plegend span {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .plegend svg {
+        flex: none;
+      }
+
+      /* Flood report pins on the map: 44px hit area around a pulsing count. */
+      .fpin {
+        position: absolute;
+        width: var(--tap);
+        height: var(--tap);
+        margin: calc(var(--tap) / -2) 0 0 calc(var(--tap) / -2);
+        padding: 0;
+        border: 0;
+        background: none;
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+      }
+      .fpin span {
+        position: relative;
+        display: grid;
+        place-items: center;
+        min-width: 26px;
+        height: 26px;
+        padding: 0 5px;
+        border-radius: 13px;
+        border: 2px solid #fff;
+        background: var(--pin);
+        color: #fff;
+        font:
+          700 12px/1 "Geist Mono",
+          monospace;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+      }
+      .fpin span::before {
+        content: "";
+        position: absolute;
+        inset: -2px;
+        border-radius: inherit;
+        border: 2px solid var(--pin);
+        opacity: 0;
+      }
+      .fpin:focus-visible {
+        outline: 3px solid #fff;
+        outline-offset: -4px;
       }
 
       .legend {
@@ -909,7 +1297,7 @@
         .go:disabled::after {
           animation: sweep 1.2s infinite;
         }
-        .route.safest::before {
+        .route.rec::before {
           animation: beam 4s linear infinite;
         }
         .skeleton {
@@ -926,6 +1314,25 @@
         }
         .gauge .liquid::before {
           animation: drift 2.4s linear infinite;
+        }
+        .fpin span::before {
+          animation: ripple 1.8s ease-out infinite;
+        }
+        #results {
+          transition: opacity 0.2s;
+        }
+        .tip {
+          transition: opacity 0.12s;
+        }
+      }
+      @keyframes ripple {
+        from {
+          transform: scale(1);
+          opacity: 0.9;
+        }
+        to {
+          transform: scale(2.1);
+          opacity: 0;
         }
       }
       @keyframes pulse {
@@ -987,8 +1394,12 @@
         }
         .legend {
           left: 12px;
-          right: auto;
+          right: 12px;
           bottom: 24px;
+          grid-template-columns: 1fr 1fr;
+          gap: 4px 10px;
+          font-size: 11px;
+          padding: 8px 10px;
         }
       }
     </style>
@@ -1005,10 +1416,14 @@
           <span class="eyebrow"><span class="pulse" aria-hidden="true"></span>Live · 14 public data sources</span>
         </div>
       </div>
+      <nav class="modes" aria-label="Switch view">
+        <a href="./" aria-current="page">Live routing</a>
+        <a href="https://saferoute-sim.vercel.app/">Simulation</a>
+      </nav>
       <p class="tagline">
-        The fastest route isn't always the safest. We score every alternative on
-        <strong>crash history, flooding, construction, live crashes and hurricane surge</strong>, then pick the one
-        you'd want a trusted driver to take.
+        Google picks the fastest route. We pick the <strong>safest</strong>: every alternative is scored on
+        <strong>crashes, flooding, construction and hurricane surge</strong>, and only then on
+        <strong>time and EV battery</strong>.
       </p>
 
       <form id="form">
@@ -1023,7 +1438,7 @@
                 required
                 maxlength="200"
                 autocomplete="off"
-                value="Coconut Grove, Miami, FL"
+                value="Miami Design District, Miami, FL"
               />
             </div>
           </div>
@@ -1037,12 +1452,21 @@
                 required
                 maxlength="200"
                 autocomplete="off"
-                value="Wynwood Walls, Miami, FL"
+                value="Legion Park, Miami, FL"
               />
             </div>
           </div>
         </div>
         <div class="chips" role="group" aria-label="Example trips">
+          <button
+            type="button"
+            class="chip featured"
+            data-o="Miami Design District, Miami, FL"
+            data-d="Legion Park, Miami, FL"
+          >
+            <svg class="i" aria-hidden="true"><use href="icons.svg#droplets" /></svg>Design District → Legion Park
+            <span class="tag">flood demo</span>
+          </button>
           <button type="button" class="chip" data-o="Coconut Grove, Miami, FL" data-d="Wynwood Walls, Miami, FL">
             Coconut Grove → Wynwood
           </button>
@@ -1079,7 +1503,8 @@
           </div>
         </div>
         <button class="go" id="go">
-          <svg class="i" aria-hidden="true"><use href="icons.svg#route" /></svg>Find the safest route
+          <svg class="i" aria-hidden="true"><use href="icons.svg#route" /></svg
+          ><span id="goLabel">Find the safest route</span>
         </button>
       </form>
       <p id="status" role="status" aria-live="polite"></p>
@@ -1137,8 +1562,26 @@
           ></i
           >Google's fastest
         </div>
+        <div>
+          <i style="background: var(--water); border-radius: 3px; height: 6px; width: 16px; opacity: 0.8"></i>Low-lying
+          road (under 1 m)
+        </div>
+        <div>
+          <i
+            style="
+              background: var(--pin);
+              border: 1.5px solid #fff;
+              width: 16px;
+              height: 16px;
+              color: #fff;
+              font: 700 9px/13px monospace;
+              text-align: center;
+              font-style: normal;
+            "
+            >3</i
+          >311 flood reports (count)
+        </div>
         <div><i style="background: var(--risk)"></i>Injury / fatal crash</div>
-        <div><i style="background: var(--water)"></i>Flooding report</div>
         <div><i style="background: var(--work)"></i>Active construction</div>
         <div><i style="background: var(--live)"></i>Crash happening now</div>
         <div><i style="background: var(--zone-a); border-radius: 2px"></i>Surge evacuation zone</div>
@@ -1147,7 +1590,6 @@
 
     <script>
       const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
-      const ROUTE_COLORS = () => [css("--safe"), css("--mid"), css("--risk")];
       const REDUCED_MOTION = matchMedia("(prefers-reduced-motion: reduce)").matches;
       const DARK_MAP = [
         { elementType: "geometry", stylers: [{ color: "#0f141b" }] },
@@ -1164,7 +1606,11 @@
         selected = 0,
         lines = [],
         floodLines = [],
-        cursorMark = null;
+        cursorMark = null,
+        pins = [],
+        FloodPin = null;
+      // Samples below this elevation count as low-lying road (matches the server's LOW_ELEVATION_M).
+      const LOW_M = 1;
       // Flood simulator water level in feet above mean sea level; survives re-renders.
       let waterFt = 3;
       // Water level the current routes were planned around (0 = not rerouting for water).
@@ -1185,18 +1631,12 @@
           zoomControlOptions: { position: google.maps.ControlPosition.RIGHT_TOP },
           styles: dark ? DARK_MAP : [{ featureType: "poi", stylers: [{ visibility: "off" }] }],
         });
-        // Click a hazard dot to see what it is. textContent keeps upstream text inert.
         info = new google.maps.InfoWindow();
         map.data.addListener("click", (e) => {
           const detail = e.feature.getProperty("detail");
-          if (!detail) return;
-          const box = document.createElement("div");
-          box.style.cssText = "font: 500 13px Geist, sans-serif; color: #0d1117; max-width: 240px";
-          box.textContent = detail;
-          info.setContent(box);
-          info.setPosition(e.latLng);
-          info.open({ map });
+          if (detail) showInfo(e.latLng, [detail]);
         });
+        FloodPin = floodPinClass();
         // Results can arrive before the Maps script finishes loading; draw them once it does.
         if (data) {
           draw(selected);
@@ -1214,9 +1654,107 @@
         arr.forEach((o) => o.setMap(null));
         arr.length = 0;
       };
-      const colorFor = (i, n) => ROUTE_COLORS()[n === 1 ? 0 : Math.round((i / (n - 1)) * 2)];
+      const routeColor = (i) => css(data.routes[i].colorVar ?? "--muted");
       const letter = (i) => String.fromCharCode(65 + i);
-      const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
+      const plural = (n, word) => `${n} ${word}${n === 1 ? "" : word.endsWith("sh") ? "es" : "s"}`;
+      const list = (items) =>
+        items.length < 2 ? items.join("") : `${items.slice(0, -1).join(", ")} and ${items.at(-1)}`;
+      // Route time differences: seconds matter when two routes are this close.
+      const fmtSec = (s) => (Math.abs(s) < 60 ? `${Math.round(Math.abs(s))} s` : `${Math.round(Math.abs(s) / 60)} min`);
+      const ZAP = `<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>`;
+      const BADGES = {
+        rec: ["Recommended", icon("shield-check")],
+        safest: ["Safest", icon("shield-check")],
+        fastest: ["Fastest", icon("clock")],
+        efficient: ["Most efficient", ZAP],
+      };
+      const surgeMi = (r) => Object.values(r.surgeZoneKm).reduce((a, b) => a + b, 0) / 1.609;
+      const lowMi = (r) => ((r.lowElevationPct ?? 0) / 100) * (r.distanceM / 1609.34);
+      const recIndex = () =>
+        Math.max(
+          data.routes.findIndex((r) => r.recommended),
+          0,
+        );
+
+      // Map popups; textContent keeps upstream text inert.
+      function showInfo(latLng, lines) {
+        const box = document.createElement("div");
+        box.style.cssText =
+          "font: 500 13px Geist, sans-serif; color: #0d1117; max-width: 260px; display: grid; gap: 4px";
+        for (const line of lines.slice(0, 6)) box.appendChild(document.createElement("div")).textContent = line;
+        if (lines.length > 6) box.appendChild(document.createElement("div")).textContent = `+${lines.length - 6} more`;
+        info.setContent(box);
+        info.setPosition(latLng);
+        info.open({ map });
+      }
+
+      // HTML marker (so it can pulse and carry a count); defined once the Maps script has loaded.
+      function floodPinClass() {
+        return class extends google.maps.OverlayView {
+          constructor(pos, details) {
+            super();
+            this.pos = new google.maps.LatLng(pos);
+            this.el = document.createElement("button");
+            this.el.type = "button";
+            this.el.className = "fpin";
+            this.el.setAttribute("aria-label", `${plural(details.length, "flooding report")} here`);
+            this.el.appendChild(document.createElement("span")).textContent = details.length;
+            this.el.addEventListener("click", () => showInfo(this.pos, details));
+            this.setMap(map);
+          }
+          onAdd() {
+            google.maps.OverlayView.preventMapHitsAndGesturesFrom(this.el);
+            this.getPanes().overlayMouseTarget.appendChild(this.el);
+          }
+          draw() {
+            const p = this.getProjection().fromLatLngToDivPixel(this.pos);
+            if (p) Object.assign(this.el.style, { left: `${p.x}px`, top: `${p.y}px` });
+          }
+          onRemove() {
+            this.el.remove();
+          }
+        };
+      }
+
+      // Fills the ranking fields an older server does not send, so the page works against either.
+      function normalize(d) {
+        const rs = d.routes;
+        d.hasEnergy = rs.every((r) => Number.isFinite(r.energyKwh));
+        const dims = [(r) => r.risk.total, (r) => r.durationSec, ...(d.hasEnergy ? [(r) => r.energyKwh] : [])];
+        const beats = (a, b) => dims.every((f) => f(a) <= f(b)) && dims.some((f) => f(a) < f(b));
+        const best = (f) => Math.min(...rs.map(f));
+        rs.forEach((r) => {
+          const by = rs.findIndex((o) => beats(o, r));
+          r.frontier ??= by < 0;
+          if (r.dominatedBy === undefined) r.dominatedBy = r.frontier || by < 0 ? null : letter(by);
+          r.badges ??= [
+            r.risk.total === best((o) => o.risk.total) && "safest",
+            r.durationSec === best((o) => o.durationSec) && "fastest",
+            d.hasEnergy && r.energyKwh === best((o) => o.energyKwh) && "efficient",
+          ].filter(Boolean);
+        });
+        if (!rs.some((r) => r.recommended)) rs[0].recommended = true;
+        d.ranking ??= { rule: "Safety first: the lowest-risk route wins, then the faster one." };
+        // Recommended is green; the rest by risk, the riskiest red.
+        const ri = rs.findIndex((r) => r.recommended);
+        const others = rs
+          .map((_, i) => i)
+          .filter((i) => i !== ri)
+          .sort((a, b) => rs[a].risk.total - rs[b].risk.total);
+        others.forEach((i, k) => (rs[i].colorVar = k === others.length - 1 ? "--risk" : ["--mid", "--violet"][k % 2]));
+        rs[ri].colorVar = "--safe";
+      }
+
+      // Flood exposure in words, shared by the verdict and the cards.
+      function floodFacts(r) {
+        const c = data.conditions;
+        return [
+          r.floodReports ? plural(r.floodReports, "flood report") : "no flood reports",
+          r.lowElevationPct != null && `${r.lowElevationPct}% of route below 1 m`,
+          r.inFloodAlertArea && `inside the ${c.alerts[0]?.event ?? "flood alert"} area`,
+          (r.floodReports || r.lowElevationPct) && c.highTide?.kingTide && "king tide today",
+        ].filter(Boolean);
+      }
       // MDPD times are Miami local time without an offset; the viewer is assumed to be in Miami too.
       const ago = (t) => {
         const mins = Math.round((Date.now() - new Date(t)) / 60000);
@@ -1251,6 +1789,10 @@
         r.elevationProfile
           ? r.elevationProfile.filter((p) => p[2] * M_TO_FT <= waterFt).length / r.elevationProfile.length
           : null;
+      const uwText = (r) => {
+        const share = underwaterShare(r);
+        return share == null ? "" : `${Math.round(share * 100)}% under ${waterFt.toFixed(1)} ft of water`;
+      };
 
       // Distance along the profile in miles, using a flat projection that is accurate at city scale.
       function profileMiles(profile) {
@@ -1264,38 +1806,63 @@
         });
       }
 
-      // Blue overlay on the selected route wherever it sits under the water level.
+      // Blue overlay on every route wherever it is low-lying (below 1 m) or under the simulator's water level;
+      // bold on the selected route, a softer halo on the others so the avoided flooding stays visible.
       function drawFlood() {
         clear(floodLines);
-        const r = data?.routes[selected];
-        if (!map || !r?.elevationProfile) return;
-        let run = [];
-        const flush = () => {
-          if (run.length > 1)
-            floodLines.push(
-              new google.maps.Polyline({
-                map,
-                path: run,
-                strokeColor: css("--water"),
-                strokeOpacity: 0.95,
-                strokeWeight: 11,
-                zIndex: 15,
-                clickable: false,
-              }),
-            );
-          run = [];
-        };
-        r.elevationProfile.forEach(([lat, lng, m], i, all) => {
-          if (m * M_TO_FT <= waterFt) {
-            // Start each run at the previous sample so short dips still draw a visible segment.
-            if (!run.length && i) run.push({ lat: all[i - 1][0], lng: all[i - 1][1] });
-            run.push({ lat, lng });
-          } else if (run.length) {
-            run.push({ lat, lng });
-            flush();
-          }
+        if (!map || !data) return;
+        const limitFt = Math.max(LOW_M * M_TO_FT, waterFt);
+        data.routes.forEach((r, ri) => {
+          if (!r.elevationProfile) return;
+          const style =
+            ri === selected
+              ? { strokeOpacity: 0.95, strokeWeight: 11, zIndex: 15 }
+              : { strokeOpacity: 0.75, strokeWeight: 12, zIndex: 4 };
+          let run = [];
+          const flush = () => {
+            if (run.length > 1)
+              floodLines.push(
+                new google.maps.Polyline({ map, path: run, strokeColor: css("--water"), clickable: false, ...style }),
+              );
+            run = [];
+          };
+          r.elevationProfile.forEach(([lat, lng, m], i, all) => {
+            if (m * M_TO_FT <= limitFt) {
+              // Start each run at the previous sample so short dips still draw a visible segment.
+              if (!run.length && i) run.push({ lat: all[i - 1][0], lng: all[i - 1][1] });
+              run.push({ lat, lng });
+            } else if (run.length) {
+              run.push({ lat, lng });
+              flush();
+            }
+          });
+          flush();
         });
-        flush();
+      }
+
+      // 311 flood reports from every route, clustered to ~500 m cells with a count. Shown for every route, so the flooding a rejected route runs through stays on the map.
+      function drawPins() {
+        clear(pins);
+        if (!map || !FloodPin) return;
+        const cells = new Map();
+        data.routes.forEach((r) =>
+          r.hazards.floods.forEach(([lat, lng, , detail]) => {
+            const key = `${Math.round(lat / 0.005)},${Math.round(lng / 0.005)}`;
+            const c = cells.get(key) ?? { lat: 0, lng: 0, seen: new Set(), details: [] };
+            const id = `${lat},${lng},${detail}`;
+            if (!c.seen.has(id)) {
+              c.seen.add(id);
+              c.lat += lat;
+              c.lng += lng;
+              c.details.push(detail);
+            }
+            cells.set(key, c);
+          }),
+        );
+        cells.forEach((c) => {
+          const n = c.details.length;
+          pins.push(new FloodPin({ lat: c.lat / n, lng: c.lng / n }, c.details));
+        });
       }
 
       function chartHtml(r) {
@@ -1350,7 +1917,7 @@
           <div class="gauge" id="gauge" role="img" aria-label="Share of the selected route under water"><div class="liquid"></div><span id="gaugePct">–</span></div>
         </div>
         <p>Drag to raise the water. Blue on the map and chart is road that would be under water. Tap any dot on the map for details.</p>
-        <input id="water" type="range" min="0" max="12" step="0.5" value="${waterFt}" aria-label="Water level in feet above mean sea level" />
+        <input id="water" type="range" min="0" max="12" step="0.5" value="${waterFt}" aria-valuetext="${waterFt.toFixed(1)} feet" aria-label="Water level in feet above mean sea level" />
         <div class="ticks" aria-hidden="true"><span>0 ft</span><span>3</span><span>6</span><span>9</span><span>12 ft</span></div>
         <div id="chart">${chartHtml(data.routes[selected])}</div>
         <div class="readout" id="readout"></div>
@@ -1362,6 +1929,7 @@
       // Everything that depends on the water level, without rebuilding the page.
       function updateFlood() {
         document.getElementById("waterOut").textContent = `${waterFt.toFixed(1)} ft`;
+        document.getElementById("water").setAttribute("aria-valuetext", `${waterFt.toFixed(1)} feet`);
         document.getElementById("rerouteLabel").textContent =
           routedWaterFt === waterFt
             ? `Routed around ${waterFt.toFixed(1)} ft of water`
@@ -1369,9 +1937,8 @@
         document.getElementById("chart").innerHTML = chartHtml(data.routes[selected]);
         bindChart();
         data.routes.forEach((r, i) => {
-          const el = document.querySelector(`.route[data-i="${i}"] .uw b`);
-          const share = underwaterShare(r);
-          if (el) el.textContent = share == null ? "–" : `${Math.round(share * 100)}%`;
+          const el = document.querySelector(`.route[data-i="${i}"] .uw`);
+          if (el) el.textContent = uwText(r);
         });
         const r = data.routes[selected];
         const share = underwaterShare(r);
@@ -1479,7 +2046,6 @@
               .filter((st) => st.threatensMiami && st.cone)
               .map((st) => area(st.cone, { kind: "cone" })),
             ...r.hazards.crashes.map(([lat, lng, sev, detail]) => point(lat, lng, { kind: "crash", sev, detail })),
-            ...r.hazards.floods.map(([lat, lng, , detail]) => point(lat, lng, { kind: "flood", sev: 1, detail })),
             ...r.hazards.construction.map(([lat, lng, , detail]) => point(lat, lng, { kind: "work", sev: 1, detail })),
             ...r.hazards.live.map(([lat, lng, , detail]) => point(lat, lng, { kind: "live", sev: 1, detail })),
           ],
@@ -1566,6 +2132,7 @@
         const panel = document.querySelector("aside").getBoundingClientRect();
         const floating = getComputedStyle(document.querySelector("aside")).position === "fixed";
         map.fitBounds(bounds, floating ? { left: panel.right + 24, top: 48, right: 80, bottom: 48 } : 40);
+        drawPins();
       }
 
       const fastestIndex = () =>
@@ -1575,7 +2142,7 @@
       function lineStyle(i, fastest) {
         if (i === selected)
           return {
-            strokeColor: colorFor(i, data.routes.length),
+            strokeColor: routeColor(i),
             strokeOpacity: 1,
             strokeWeight: 7,
             zIndex: 10,
@@ -1600,10 +2167,18 @@
 
       function select(i) {
         selected = i;
-        document.querySelectorAll(".route").forEach((el, j) => {
-          el.classList.toggle("selected", i === j);
-          el.setAttribute("aria-pressed", String(i === j));
+        document.querySelectorAll(".route, .pt").forEach((el) => {
+          const on = Number(el.dataset.i) === i;
+          const card = el.classList.contains("route");
+          el.classList.toggle(card ? "selected" : "sel", on);
+          (card ? el.querySelector(".pick") : el).setAttribute("aria-pressed", String(on));
         });
+        const card = document.querySelector(`.route[data-i="${i}"]`);
+        const more = card?.closest("details");
+        if (more && !more.open) {
+          more.open = true;
+          card.scrollIntoView({ block: "nearest", behavior: REDUCED_MOTION ? "auto" : "smooth" });
+        }
         draw(i);
         if (document.getElementById("water")) updateFlood();
       }
@@ -1611,7 +2186,7 @@
       // Why the recommendation moved, compared with the previous run of the same trip.
       function reroutedHtml() {
         const c = data.conditions,
-          safest = data.routes[0];
+          safest = data.routes[recIndex()];
         const reasons = [];
         if (c.surgeCategory)
           reasons.push(
@@ -1638,41 +2213,76 @@
       const tripKey = () =>
         `${document.getElementById("origin").value}|${document.getElementById("destination").value}`;
 
-      function verdictHtml(routes) {
-        const safest = routes[0];
-        const fastest = routes[fastestIndex()];
-        const surgeMi = (r) => Object.values(r.surgeZoneKm).reduce((a, b) => a + b, 0) / 1.609;
-        const card = (k, big, sub) =>
-          `<div class="section verdict spot"><div class="k">${icon("shield-check")}${k}</div><div class="big">${big}</div><div class="sub">${sub}</div></div>`;
-        if (routes.length === 1)
+      // The one-line answer: what the pick avoids, and what it costs, against Google's fastest route
+      // (or, when the pick is the fastest, against the riskiest alternative).
+      function whyHtml() {
+        const rs = data.routes,
+          ri = recIndex(),
+          rec = rs[ri],
+          fi = fastestIndex();
+        const rule = `<p class="rule">${icon("route")}<span><b>How we rank:</b> ${esc(data.ranking.rule)}</span></p>`;
+        const card = (k, big, sub, extra = "") =>
+          `<div class="section verdict spot"><div class="k">${icon("shield-check")}${k}</div><div class="big">${big}</div><div class="sub">${sub}</div>${extra}${rule}</div>`;
+        if (rs.length === 1)
           return card(
-            "One route available",
-            `${num(safest.crashes.count)} crashes`,
-            "nearby on the only route found. Hazards are marked on the map.",
+            "One route found",
+            `${plural(rec.crashes.count, "crash")} and ${plural(rec.floodReports, "flood report")} nearby`,
+            "Every hazard along it is marked on the map.",
           );
-        const time =
-          safest === fastest
-            ? "at <b>no extra time</b>"
-            : `for <b>+${safest.extraMinutes} min</b> versus Google's fastest route`;
-        // Lead with the hazard the user is planning around, falling back to crash history.
-        const water = fastest.underwaterMi - safest.underwaterMi;
-        if (routedWaterFt && water >= 0.1)
-          return card("Drier route", `${water.toFixed(1)} fewer mi under water`, `at ${routedWaterFt} ft, ${time}.`);
-        const surge = surgeMi(fastest) - surgeMi(safest);
-        if (data.conditions.surgeCategory && surge >= 0.1)
-          return card("Out of the surge zone", `${surge.toFixed(1)} fewer mi in surge zones`, `${time}.`);
-        const other = safest === fastest ? routes.at(-1) : fastest;
-        const crashes = other.crashes.count - safest.crashes.count;
-        if (crashes > 0)
-          return card(
-            safest === fastest ? "Safest is also fastest" : "Worth the detour",
-            `${num(crashes)} fewer crashes`,
-            `${safest === fastest ? "than the riskiest option" : ""} ${time}.`,
-          );
-        const riskGap = other.risk.total - safest.risk.total;
-        if (riskGap <= 0)
-          return card("Routes are about even", "Similar risk", `${time}. See the cards for what differs.`);
-        return card("Lowest overall risk", `Risk ${num(riskGap)} lower`, `${time}. See the cards for what differs.`);
+        const oi =
+          fi !== ri ? fi : rs.reduce((m, r, i) => (i !== ri && (m < 0 || r.risk.total > rs[m].risk.total) ? i : m), -1);
+        const o = rs[oi];
+        const gain = (f) => f(o) - f(rec);
+        const c = data.conditions;
+        const n = (f) => Math.round(gain(f));
+        const reasons = [
+          routedWaterFt &&
+            gain((r) => r.underwaterMi) >= 0.1 &&
+            `${gain((r) => r.underwaterMi).toFixed(1)} mi under ${routedWaterFt} ft of water`,
+          c.surgeCategory && gain(surgeMi) >= 0.1 && `${gain(surgeMi).toFixed(1)} mi of surge zone`,
+          n((r) => r.floodReports) > 0 &&
+            plural(
+              n((r) => r.floodReports),
+              "flood report",
+            ),
+          n((r) => r.crashes.count) > 0 &&
+            plural(
+              n((r) => r.crashes.count),
+              "crash",
+            ),
+          gain(lowMi) >= 0.1 && `${gain(lowMi).toFixed(1)} mi of road below 1 m`,
+          n((r) => r.liveIncidents.length) > 0 &&
+            plural(
+              n((r) => r.liveIncidents.length),
+              "live crash",
+            ),
+          n((r) => r.workZones.length) > 0 &&
+            plural(
+              n((r) => r.workZones.length),
+              "work zone",
+            ),
+        ]
+          .filter(Boolean)
+          .slice(0, 3);
+        const dt = rec.durationSec - o.durationSec;
+        const cost = ri === fi ? "while also being the fastest" : dt > 0 ? `for +${fmtSec(dt)}` : "at no extra time";
+        const de = data.hasEnergy ? rec.energyKwh - o.energyKwh : 0;
+        // Within the risk tie the pick can be slower but more efficient, so the fallback states the cost too.
+        const big = reasons.length
+          ? `Avoids ${list(reasons)} ${cost}`
+          : rec.risk.total < o.risk.total
+            ? `Risk ${o.risk.total - rec.risk.total} points lower ${cost}`
+            : de < -0.005
+              ? `About as safe and ${Math.abs(de).toFixed(2)} kWh lighter on the battery ${cost}`
+              : `About as safe ${cost}`;
+        const energy = Math.abs(de) >= 0.01 ? ` Uses ${Math.abs(de).toFixed(2)} kWh ${de > 0 ? "more" : "less"}.` : "";
+        const sub = `Compared with <b>Route ${letter(oi)}</b>${oi === fi ? ", Google's fastest" : ""} via ${esc(o.description || "local roads")}.${energy}`;
+        const wetter =
+          o.floodReports > rec.floodReports || gain(lowMi) >= 0.1 || (o.inFloodAlertArea && !rec.inFloodAlertArea);
+        const avoid = wetter
+          ? `<div class="avoid">${icon("droplets")}<span><b>Why not Route ${letter(oi)}:</b> ${esc(floodFacts(o).join(" · "))}</span></div>`
+          : "";
+        return card(`Why Route ${letter(ri)}`, esc(big), sub, avoid);
       }
 
       function conditionsHtml(c) {
@@ -1735,31 +2345,51 @@
         <div class="conditions">${tide}${alerts}${storm}${rain}${live}${time}</div></details>`;
       }
 
-      function routeHtml(r, i, n, maxRisk) {
+      const fmtMin = (sec) => (sec < 1200 ? (sec / 60).toFixed(1) : String(Math.round(sec / 60)));
+
+      function routeHtml(r, i, maxRisk) {
         const pct = (v) => (maxRisk ? (v / maxRisk) * 100 : 0).toFixed(1);
-        const mins = Math.round(r.durationSec / 60);
         const zones = Object.entries(r.surgeZoneKm).sort();
-        return `<div class="route spot ${i === 0 ? "safest" : ""}" role="button" tabindex="0" aria-pressed="false" data-i="${i}">
+        const fi = fastestIndex();
+        const delta = i === fi ? "fastest" : `+${fmtSec(r.durationSec - data.routes[fi].durationSec)}`;
+        const tags = [r.recommended && "rec", ...["safest", "fastest", "efficient"].filter((b) => r.badges.includes(b))]
+          .filter(Boolean)
+          .map((b) => `<span class="badge ${b}">${BADGES[b][1]}${BADGES[b][0]}</span>`)
+          .join("");
+        const metric = (value, label, best) =>
+          `<div class="metric${best ? " best" : ""}"><b>${value}</b><span>${label}</span>${best ? `<span class="sr-only">, best</span>` : ""}</div>`;
+        const facts = floodFacts(r);
+        const wet = r.floodReports > 0 || r.lowElevationPct > 0 || r.inFloodAlertArea;
+        const beater = r.dominatedBy ? data.routes.find((_, j) => letter(j) === r.dominatedBy) : null;
+        const beatenOn = beater
+          ? [
+              beater.risk.total < r.risk.total && "safety",
+              beater.durationSec < r.durationSec && "time",
+              data.hasEnergy && beater.energyKwh < r.energyKwh && "energy",
+            ].filter(Boolean)
+          : [];
+        return `<article class="route spot${r.recommended ? " rec" : ""}${r.frontier ? "" : " dominated"}" data-i="${i}" aria-labelledby="pick${i}">
         <div class="top">
-          <h2><span class="swatch" style="background:${colorFor(i, n)}"></span>Route ${letter(i)} ${i === 0 ? `<span class="badge">${icon("shield-check")}Safest</span>` : ""}</h2>
-          <div class="time">${mins} min ${r.extraMinutes > 0 ? `<small>+${r.extraMinutes}</small>` : "<small>fastest</small>"}</div>
+          <h3><button type="button" class="pick" id="pick${i}" aria-pressed="false"><span class="swatch" style="background:${routeColor(i)}"></span>Route ${letter(i)}</button></h3>
+          <span class="mono muted-line">${delta}</span>
         </div>
-        <div class="via">via ${esc(r.description || "local roads")} · ${(r.distanceM / 1609.34).toFixed(1)} mi · ${plural(r.schoolsNearby.length, "school zone")} · risk <span class="mono">${r.risk.total}</span></div>
+        <div class="via">via ${esc(r.description || "local roads")}${r.schoolsNearby.length ? ` · ${plural(r.schoolsNearby.length, "school zone")}` : ""}</div>
+        ${tags ? `<div class="badges">${tags}</div>` : ""}
+        <div class="metrics">
+          ${metric(fmtMin(r.durationSec), "min", r.badges.includes("fastest"))}
+          ${metric((r.distanceM / 1609.34).toFixed(1), "mi", false)}
+          ${metric(num(r.risk.total), "risk", r.badges.includes("safest"))}
+          ${data.hasEnergy ? metric(r.energyKwh.toFixed(2), "kWh", r.badges.includes("efficient")) : ""}
+        </div>
         <div class="bar" aria-hidden="true">
           <span style="width:${pct(r.risk.crash)}%;background:var(--risk)"></span>
           <span style="width:${pct(r.risk.flood)}%;background:var(--water)"></span>
         </div>
-        <div class="stats">
-          <div class="stat"><b>${num(r.crashes.count)}</b><span>crashes</span></div>
-          <div class="stat"><b>${num(r.crashes.killed)}</b><span>fatal</span></div>
-          <div class="stat"><b>${num(r.floodReports)}</b><span>flood reports</span></div>
-          <div class="stat"><b>${num(r.workZones.length)}</b><span>work zones</span></div>
-          <div class="stat uw"><b>${underwaterShare(r) == null ? "–" : `${Math.round(underwaterShare(r) * 100)}%`}</b><span>under water</span></div>
-        </div>
+        <div class="floodline${wet ? " wet" : ""}">${icon("droplets")}<span>${esc(facts.join(" · "))}${r.elevationProfile ? ` · <span class="uw">${uwText(r)}</span>` : ""}</span></div>
+        <div class="hz">${icon("car-front")}<span><b>${num(r.crashes.count)}</b> ${r.crashes.count === 1 ? "crash" : "crashes"} nearby${r.crashes.killed ? ` · <b>${r.crashes.killed}</b> fatal` : ""}${r.crashes.serious ? ` · ${r.crashes.serious} serious` : ""}</span></div>
         ${zones.length ? `<div class="flag surge">${icon("waves")}<span>Through surge zone${zones.length > 1 ? "s" : ""} ${zones.map(([z, km]) => `${esc(z)} ${(km / 1.609).toFixed(1)} mi`).join(", ")}</span></div>` : ""}
         ${r.maxSurgeFt ? `<div class="flag surge">${icon("droplets")}<span>Up to ${Number(r.maxSurgeFt)} ft of storm surge on this route (NOAA SLOSH)</span></div>` : ""}
         ${r.rain24hMm >= 10 ? `<div class="flag surge">${icon("cloud-rain")}<span>${(r.rain24hMm / 25.4).toFixed(1)} in of rain fell on this route in 24 h</span></div>` : ""}
-        ${r.inFloodAlertArea && !data.conditions.simulated ? `<div class="flag surge">${icon("triangle-alert")}<span>Enters the NWS flood alert area</span></div>` : ""}
         ${r.liveIncidents.length ? `<div class="flag live">${icon("siren")}<span>Now: ${r.liveIncidents.map((x) => `${esc(x.signal.toLowerCase())} at ${esc(x.address)} (${esc(ago(x.createTime))})`).join("; ")}</span></div>` : ""}
         ${
           r.workZones.length
@@ -1769,42 +2399,163 @@
                 .join("; ")}${r.workZones.length > 2 ? ` +${r.workZones.length - 2} more` : ""}</span></div>`
             : ""
         }
+        ${beatenOn.length ? `<div class="beaten">${icon("arrow-right-left")}<span>Beaten by Route ${esc(r.dominatedBy)} on ${list(beatenOn)}</span></div>` : ""}
+      </article>`;
+      }
+
+      // Pareto chart: x = minutes, y = risk (lower is better), bubble area grows with kWh.
+      const PW = 400,
+        PH = 210;
+      function paretoHtml() {
+        const rs = data.routes;
+        if (rs.length < 2) return "";
+        const L = 34,
+          R = 16,
+          T = 16,
+          B = 30;
+        const mins = rs.map((r) => r.durationSec / 60),
+          risks = rs.map((r) => r.risk.total);
+        const span = (v, floor) => {
+          const lo = Math.min(...v),
+            hi = Math.max(...v),
+            pad = Math.max((hi - lo) * 0.2, hi * 0.03, 0.3);
+          return [Math.max(lo - pad, floor), hi + pad];
+        };
+        const [x0, x1] = span(mins, 0),
+          [y0, y1] = span(risks, 0);
+        const x = (v) => L + ((v - x0) / (x1 - x0)) * (PW - L - R);
+        const y = (v) => T + (1 - (v - y0) / (y1 - y0)) * (PH - T - B);
+        const es = data.hasEnergy ? rs.map((r) => r.energyKwh) : [];
+        const eLo = Math.min(...es),
+          eHi = Math.max(...es);
+        const rad = (r) =>
+          data.hasEnergy && eHi > eLo ? 8 + 8 * Math.sqrt(Math.max(0, r.energyKwh - eLo) / (eHi - eLo)) : 11;
+        const ticks = (a, b, digits) => [0.1, 0.5, 0.9].map((t) => Number((a + (b - a) * t).toFixed(digits)));
+        const xd = x1 - x0 < 4 ? 1 : 0;
+        const grid = ticks(y0, y1, 0)
+          .map(
+            (v) =>
+              `<line class="grid" x1="${L}" x2="${PW - R}" y1="${y(v)}" y2="${y(v)}" /><text class="axis" x="${L - 5}" y="${y(v) + 3}" text-anchor="end">${v}</text>`,
+          )
+          .join("");
+        const xt = ticks(x0, x1, xd)
+          .map((v) => `<text class="axis" x="${x(v)}" y="${PH - B + 14}" text-anchor="middle">${v}</text>`)
+          .join("");
+        const front = rs
+          .map((_, i) => i)
+          .filter((i) => rs[i].frontier)
+          .sort((a, b) => mins[a] - mins[b]);
+        const frontLine =
+          front.length > 1
+            ? `<polyline class="front" points="${front.map((i) => `${x(mins[i]).toFixed(1)},${y(risks[i]).toFixed(1)}`).join(" ")}" />`
+            : "";
+        const desc = (r) =>
+          `${fmtMin(r.durationSec)} min · risk ${r.risk.total}${data.hasEnergy ? ` · ${r.energyKwh.toFixed(2)} kWh` : ""}`;
+        const status = (r) =>
+          r.recommended ? "recommended" : r.frontier ? "on the frontier" : `beaten by Route ${r.dominatedBy}`;
+        // Index order keeps the tab order A, B, C; the recommended point carries a ring so overlap cannot hide it.
+        const pts = rs
+          .map((r, i) => {
+            const cx = x(mins[i]).toFixed(1),
+              cy = y(risks[i]).toFixed(1),
+              rr = rad(r);
+            return `<g class="pt${r.frontier ? "" : " dom"}${r.recommended ? " rec" : ""}" data-i="${i}" data-x="${cx}" data-y="${cy}" data-tip="${esc(desc(r))}" data-status="${esc(status(r))}" tabindex="0" role="button" aria-pressed="false" aria-label="Route ${letter(i)}: ${esc(desc(r))}, ${esc(status(r))}" style="color:${routeColor(i)}">
+            <circle class="hit" cx="${cx}" cy="${cy}" r="${Math.max(rr, 30)}" />
+            <circle class="halo" cx="${cx}" cy="${cy}" r="${rr + 5}" />
+            <circle class="b" cx="${cx}" cy="${cy}" r="${rr}" />
+            <text x="${cx}" y="${Number(cy) + 3.8}" text-anchor="middle">${letter(i)}</text></g>`;
+          })
+          .join("");
+        const rows = rs
+          .map(
+            (r, i) =>
+              `<tr><th scope="row">Route ${letter(i)}</th><td>${fmtMin(r.durationSec)}</td><td>${r.risk.total}</td>${data.hasEnergy ? `<td>${r.energyKwh.toFixed(2)}</td>` : ""}<td>${esc(status(r))}</td></tr>`,
+          )
+          .join("");
+        return `<div class="section pareto">
+        <h2 class="kicker">${icon("route")}Safety vs time</h2>
+        <p>Every route we compared. Lower is safer, left is faster; the dashed line joins routes no other route beats on safety, time and energy at once.</p>
+        <div class="plot">
+          <svg viewBox="0 0 ${PW} ${PH}" aria-hidden="true" focusable="false">
+            ${grid}${xt}
+            <text class="axis" x="${L}" y="${T - 6}">risk</text>
+            <text class="axis" x="${PW - R}" y="${PH - 4}" text-anchor="end">minutes →</text>
+            ${frontLine}
+          </svg>
+          <svg class="pts" viewBox="0 0 ${PW} ${PH}" role="group" aria-label="Routes on the chart">${pts}</svg>
+          <div class="tip" id="ptip" role="tooltip" hidden></div>
+        </div>
+        <div class="plegend" aria-hidden="true">
+          <span><svg width="22" height="8"><line x1="1" y1="4" x2="21" y2="4" class="front" stroke="currentColor" stroke-width="1.5" stroke-dasharray="5 4" /></svg>Frontier</span>
+          <span><svg width="14" height="14"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-dasharray="3 2" /></svg>Beaten (dashed)</span>
+          <span><svg width="16" height="16"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5" /></svg>Recommended (ring)</span>
+          ${data.hasEnergy ? "<span>Bigger bubble = more kWh</span>" : ""}
+        </div>
+        <div class="sr-only"><table><caption>Routes by time, risk${data.hasEnergy ? " and energy" : ""}</caption><thead><tr><th scope="col">Route</th><th scope="col">Minutes</th><th scope="col">Risk</th>${data.hasEnergy ? `<th scope="col">kWh</th>` : ""}<th scope="col">Status</th></tr></thead><tbody>${rows}</tbody></table></div>
       </div>`;
       }
 
+      function bindPareto() {
+        const plot = document.querySelector(".plot");
+        if (!plot) return;
+        const tip = plot.querySelector(".tip");
+        const hide = () => {
+          tip.hidden = true;
+          plot.querySelector("[aria-describedby]")?.removeAttribute("aria-describedby");
+        };
+        plot.querySelectorAll(".pt").forEach((g) => {
+          const i = Number(g.dataset.i);
+          const show = () => {
+            tip.innerHTML = `<b>Route ${letter(i)} · ${esc(g.dataset.status)}</b><br />${esc(g.dataset.tip)}`;
+            tip.style.left = `${Math.min(Math.max((g.dataset.x / PW) * 100, 22), 78)}%`;
+            tip.style.top = `${(g.dataset.y / PH) * 100}%`;
+            tip.hidden = false;
+            g.setAttribute("aria-describedby", "ptip");
+          };
+          g.addEventListener("pointerenter", () => {
+            show();
+            previewLine(i);
+          });
+          g.addEventListener("pointerleave", () => {
+            hide();
+            lines[i]?.setOptions(lineStyle(i, fastestIndex()));
+          });
+          g.addEventListener("focus", show);
+          g.addEventListener("blur", hide);
+          g.addEventListener("click", () => select(i));
+          g.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              select(i);
+            } else if (e.key === "Escape") hide();
+          });
+        });
+      }
+
+      // Hovering a card or chart point brings its line to the front without changing the selection.
+      const previewLine = (i) =>
+        lines[i]?.setOptions({ strokeColor: routeColor(i), strokeOpacity: 1, strokeWeight: 8, zIndex: 12, icons: [] });
+
       function render() {
-        const n = data.routes.length;
+        normalize(data);
         const maxRisk = Math.max(...data.routes.map((r) => r.risk.total), 1);
-        // Order: the answer, why, the options, then the tools and context.
-        let html = verdictHtml(data.routes) + reroutedHtml();
+        // Order: the answer and why, the trade-off at a glance, the options, then the tools and context.
+        let html = whyHtml() + reroutedHtml() + paretoHtml();
+        const cards = data.routes.map((r, i) => routeHtml(r, i, maxRisk));
+        html += `<div class="section"><h2 class="sr-only">Route options</h2>${cards.slice(0, 3).join("")}${cards.length > 3 ? `<details class="more"><summary>Show ${cards.length - 3} more routes</summary>${cards.slice(3).join("")}</details>` : ""}</div>`;
         // Filled in by loadExplanation() once Gemini answers; routes do not wait for it.
         html += `<div class="section why" id="why"><div class="k">${icon("sparkles")}Gemini recommendation</div><div id="whyText" class="muted-line">Writing a summary…</div></div>`;
-        const cards = data.routes.map((r, i) => routeHtml(r, i, n, maxRisk));
-        html += `<div class="section">${cards.slice(0, 3).join("")}${cards.length > 3 ? `<details class="more"><summary>Show ${cards.length - 3} more routes</summary>${cards.slice(3).join("")}</details>` : ""}</div>`;
         html += floodHtml() + conditionsHtml(data.conditions);
         const results = document.getElementById("results");
         results.innerHTML = html;
         results.querySelectorAll(".route").forEach((el) => {
           const i = Number(el.dataset.i);
+          // The whole card is clickable; the heading button gives keyboard and screen reader users the same action.
           el.addEventListener("click", () => select(i));
-          // Preview: hovering a card brings its line to the front without changing the selection.
-          el.addEventListener("pointerenter", () =>
-            lines[i]?.setOptions({
-              strokeColor: colorFor(i, data.routes.length),
-              strokeOpacity: 1,
-              strokeWeight: 8,
-              zIndex: 12,
-              icons: [],
-            }),
-          );
+          el.addEventListener("pointerenter", () => previewLine(i));
           el.addEventListener("pointerleave", () => lines[i]?.setOptions(lineStyle(i, fastestIndex())));
-          el.addEventListener("keydown", (e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              select(i);
-            }
-          });
         });
+        bindPareto();
         document.getElementById("reroute").addEventListener("click", () => {
           routedWaterFt = waterFt;
           form.requestSubmit();
@@ -1821,9 +2572,12 @@
           }),
         );
         countUp(results);
-        select(0);
+        select(recIndex());
       }
 
+      // A water reroute belongs to the trip it was asked for; a new trip starts dry.
+      for (const id of ["origin", "destination"])
+        document.getElementById(id).addEventListener("input", () => (routedWaterFt = 0));
       document.querySelectorAll(".chip").forEach((chip) =>
         chip.addEventListener("click", () => {
           routedWaterFt = 0;
@@ -1848,12 +2602,16 @@
       }
 
       const form = document.getElementById("form");
+      const EMPTY_STATE = document.getElementById("results").innerHTML;
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
         const btn = document.getElementById("go"),
           status = document.getElementById("status"),
           results = document.getElementById("results");
         btn.disabled = true;
+        document.getElementById("goLabel").textContent = "Scoring routes…";
+        results.setAttribute("aria-busy", "true");
+        if (data) results.classList.add("loading");
         status.className = "";
         status.textContent = "Scoring routes against 35,000 hazards and live NOAA data…";
         const trip = tripKey();
@@ -1870,24 +2628,27 @@
               waterFt: routedWaterFt || undefined,
             }),
           });
-          const body = await res.json();
-          if (!res.ok) throw new Error(body.error || res.statusText);
-          if (data) lastPlan = { trip: dataTrip, via: data.routes[0].description };
+          const body = await res.json().catch(() => ({}));
+          if (!res.ok || !body.routes?.length) throw new Error(body.error || `the server answered ${res.status}`);
+          if (data) lastPlan = { trip: dataTrip, via: data.routes[recIndex()].description };
           data = body;
           dataTrip = trip;
           results.classList.remove("stale");
-          status.textContent = `${plural(data.routes.length, "route")} compared.`;
           render();
+          status.textContent = `${plural(data.routes.length, "route")} compared. Recommended: Route ${letter(recIndex())}.`;
           results.focus({ preventScroll: true });
           loadExplanation(data.explainId);
         } catch (err) {
           status.className = "error";
-          status.textContent = err.message;
+          status.textContent = `Could not score this trip: ${err.message === "Failed to fetch" ? "no connection to the server" : err.message}`;
           // Old results stay for context but are dimmed so they are not mistaken for this search.
           if (data) results.classList.add("stale");
-          else results.innerHTML = "";
+          else results.innerHTML = EMPTY_STATE;
         } finally {
           btn.disabled = false;
+          document.getElementById("goLabel").textContent = "Find the safest route";
+          results.removeAttribute("aria-busy");
+          results.classList.remove("loading");
         }
       });
       // Switching scenarios reruns the same trip so the change on the map is immediate.
