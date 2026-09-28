@@ -375,13 +375,6 @@
         .grid .demo:first-child {
           grid-column: 1 / -1;
         }
-        /* Four demos in a 1 + 2 grid would leave the last one orphaned; lay it out sideways instead. */
-        .grid .demo:last-child {
-          grid-column: 1 / -1;
-          display: grid;
-          grid-template-columns: 3fr 2fr;
-          align-items: center;
-        }
       }
       .dl {
         font-size: 13px;
@@ -414,9 +407,7 @@
           <div class="logo" aria-hidden="true">SR</div>
           <div>
             <h1>SafeRoute Simulation</h1>
-            <div class="engine">
-              Robot: <b>PyBullet</b> · Car pull-in: <b>Waymo Waymax</b>
-            </div>
+            <div class="engine">Robot: <b>PyBullet</b></div>
           </div>
         </div>
         <nav class="modes" aria-label="Switch view">
@@ -643,56 +634,11 @@
             </p>
           </div>
         </article>
-
-        <article class="demo" aria-labelledby="d4">
-          <video
-            controls
-            preload="metadata"
-            playsinline
-            width="960"
-            height="600"
-            poster="media/waymo_pickup.jpg"
-            aria-labelledby="d4"
-            aria-describedby="d4-desc"
-          >
-            <source src="media/waymo_pickup.mp4" type="video/mp4" />
-            <source src="media/waymo_pickup.webm" type="video/webm" />
-          </video>
-          <div class="text">
-            <h3 id="d4">
-              <span class="num">04</span> The Waymo moves to a safer pickup
-            </h3>
-            <p id="d4-desc">
-              Our router drives the safest route, moves the pickup off a flooded
-              curb to NE 21st St, and Waymo's open-source Waymax simulator
-              drives the final pull-in: no off-road; no other traffic simulated.
-            </p>
-            <div class="tags">
-              <span class="tag real">real: OSM, SafeRoute data</span
-              ><span class="tag">sim: Waymax</span>
-            </div>
-            <p class="dl">
-              <a href="media/waymo_pickup.mp4" download aria-describedby="d4"
-                >Download MP4</a
-              >
-              ·
-              <a href="media/waymo_pickup_2x.mp4" download aria-describedby="d4"
-                >2× speed MP4</a
-              >
-            </p>
-          </div>
-        </article>
       </div>
 
       <footer>
         Built at ShellHacks 2026. Hazard data is historical and shows patterns,
-        not predictions. The final approach was made using the Waymax Licensed
-        Materials, provided by Waymo LLC under the Waymax License Agreement for
-        Non-Commercial Use, available at
-        <a href="https://github.com/waymo-research/waymax/blob/main/LICENSE"
-          >https://github.com/waymo-research/waymax/blob/main/LICENSE</a
-        >. Your access and use of the Waymax Licensed Materials are governed by
-        the terms and conditions contained therein.
+        not predictions.
       </footer>
     </main>
     <script>

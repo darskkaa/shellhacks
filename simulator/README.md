@@ -11,7 +11,7 @@ Built from one real Edgewater, Miami block: OpenStreetMap geometry plus SafeRout
 (Miami-Dade 311 flooding, FDOT work zones and crashes), cached in `simulator/data/` by `real_block.py`.
 Streets, curbs, crossings and hazard locations are real data; the dog, rider, cars and anything tagged illustrative
 are simulated. The dog's depth and water sensing come from the simulator's ground truth; a trained YOLO model reads
-the walk signal. The simulation runs in PyBullet; the car's final pull-in runs in Waymo's Waymax.
+the walk signal. The simulation runs in PyBullet.
 Install with `uv pip install --python .venv/bin/python -r simulator/requirements-real.txt`. For these demos its pins
 (numpy 2.x) supersede `requirements.txt`'s.
 
@@ -22,7 +22,6 @@ Install with `uv pip install --python .venv/bin/python -r simulator/requirements
 | Obstacle course video | `simulator.escort_obstacles_video --offline` | [ESCORT_OBSTACLES.md](ESCORT_OBSTACLES.md) | `escort_obstacles/` |
 | Flooded sidewalk video | `simulator.escort_flood_video --offline` | [ESCORT_FLOOD.md](ESCORT_FLOOD.md) | `escort_flood/` |
 | Signalized crossing video (build assets per [ASSETS.md](ASSETS.md) first) | `simulator.crossing_video < /dev/null` | [REAL_CROSSWALK.md](REAL_CROSSWALK.md) | `real_crosswalk/` |
-| Waymo pickup + Waymax | `simulator.waymo_pickup_sim` | [PICKUP.md](PICKUP.md) | `waymo_pickup/` |
 
 `simulator/video.py` writes WebM and MP4 with the ffmpeg bundled in `imageio-ffmpeg`. The rendered videos
 are published on the static page in `showcase/`.

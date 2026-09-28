@@ -1,5 +1,5 @@
-# Real-data Miami demos (real_block, pickup_choice, the escort videos, real_crosswalk_demo, waymo_pickup_sim).
-# Versions the demos were rendered with. The Waymax pull-in needs extra packages: see PICKUP.md.
+# Real-data Miami demos (real_block, pickup_choice, the escort videos, real_crosswalk_demo).
+# Versions the demos were rendered with.
 pybullet==3.2.7
 numpy==2.4.6
 pillow==12.3.0

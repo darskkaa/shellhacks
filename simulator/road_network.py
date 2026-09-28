@@ -186,7 +186,7 @@ class RoadNetwork:
     def summary(self, edge_ids, end_t=1.0):
         """Polyline, time, length and SafeRoute-style risk for an edge list whose last edge is driven to end_t.
 
-        lanes and speed are per polyline vertex (vertex i > 0 ends edge i - 1), for the Waymax pull-in."""
+        lanes and speed are per polyline vertex (vertex i > 0 ends edge i - 1)."""
         pts = [self.xy[self.edges[edge_ids[0]]["u"]]]
         time = length = 0.0
         for k, ei in enumerate(edge_ids):
