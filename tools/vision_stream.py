@@ -66,15 +66,18 @@ class Camera:
         for c_idx in unique_cands:
             cap = cv2.VideoCapture(c_idx, backend)
             if cap.isOpened():
-                cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-                cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+                cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))
+                cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+                cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
                 cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
                 ok, test_frame = cap.read()
                 if ok and test_frame is not None:
                     self.cap = cap
                     self.index = c_idx
+                    actual_w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+                    actual_h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
                     opened = True
-                    print(f"[Camera] Successfully opened camera index {c_idx}", flush=True)
+                    print(f"[Camera] Successfully opened camera index {c_idx} at {actual_w}x{actual_h} MJPG", flush=True)
                     break
                 cap.release()
 
@@ -96,6 +99,18 @@ class Camera:
     def latest(self):
         with self.lock:
             return self.frame
+
+
+def letterbox(im, new_shape=(640, 640), color=(114, 114, 114)):
+    shape = im.shape[:2]
+    r = min(new_shape[0] / shape[0], new_shape[1] / shape[1])
+    new_unpad = int(round(shape[1] * r)), int(round(shape[0] * r))
+    dw, dh = (new_shape[1] - new_unpad[0]) / 2, (new_shape[0] - new_unpad[1]) / 2
+    im_resized = cv2.resize(im, new_unpad, interpolation=cv2.INTER_LINEAR)
+    top, bottom = int(round(dh - 0.1)), int(round(dh + 0.1))
+    left, right = int(round(dw - 0.1)), int(round(dw + 0.1))
+    im_padded = cv2.copyMakeBorder(im_resized, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color)
+    return im_padded, r, (dw, dh)
 
 
 class Detector:
@@ -132,7 +147,8 @@ class Detector:
             t0 = time.time()
 
             if self.backend == "cv2_dnn":
-                blob = cv2.dnn.blobFromImage(frame, 1/255.0, (args.imgsz, args.imgsz), swapRB=True, crop=False)
+                lb_img, r, (dw, dh) = letterbox(frame, (args.imgsz, args.imgsz))
+                blob = cv2.dnn.blobFromImage(lb_img, 1/255.0, (args.imgsz, args.imgsz), swapRB=True, crop=False)
                 self.net.setInput(blob)
                 out = self.net.forward()
                 self.infer_ms = (time.time() - t0) * 1000
@@ -154,16 +170,13 @@ class Detector:
                 annotated = frame.copy()
 
                 if len(valid_confs) > 0:
-                    scale_x = w / float(args.imgsz)
-                    scale_y = h / float(args.imgsz)
-
                     cv_boxes = []
                     for b in valid_boxes:
                         cx, cy, bw, bh = b
-                        bx1 = int((cx - bw / 2.0) * scale_x)
-                        by1 = int((cy - bh / 2.0) * scale_y)
-                        bw_px = int(bw * scale_x)
-                        bh_px = int(bh * scale_y)
+                        bx1 = int((cx - bw / 2.0 - dw) / r)
+                        by1 = int((cy - bh / 2.0 - dh) / r)
+                        bw_px = int(bw / r)
+                        bh_px = int(bh / r)
                         cv_boxes.append([max(0, bx1), max(0, by1), max(1, bw_px), max(1, bh_px)])
 
                     indices = cv2.dnn.NMSBoxes(cv_boxes, valid_confs.tolist(), args.conf, 0.45)
@@ -269,6 +282,16 @@ class Handler(BaseHTTPRequestHandler):
                     self.wfile.write(b"--frame\r\nContent-Type: image/jpeg\r\nContent-Length: %d\r\n\r\n" % len(jpg))
                     self.wfile.write(jpg + b"\r\n")
             except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+                return
+        if self.path.startswith("/snapshot.jpg"):
+            with self.det.cond:
+                jpg = self.det.jpeg
+            if jpg:
+                self.send_response(200)
+                self.send_header("Content-Type", "image/jpeg")
+                self.send_header("Content-Length", str(len(jpg)))
+                self.end_headers()
+                self.wfile.write(jpg)
                 return
         if self.path.startswith("/inject"):
             label = "ped_signal_walk"
