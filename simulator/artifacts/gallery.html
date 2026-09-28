@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Guide Dog Demos</title>
+    <style>
+      :root {
+        --bg: #0d1117;
+        --panel: #161b22;
+        --text: #e6edf3;
+        --muted: #9aa7b4;
+        --accent: #2dd4bf;
+        --line: #273140;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font: 16px/1.5 system-ui, sans-serif;
+        padding: 24px 16px 48px;
+      }
+      main {
+        max-width: 1100px;
+        margin: 0 auto;
+        display: grid;
+        gap: 28px;
+      }
+      h1 {
+        margin: 0;
+        font-size: 28px;
+      }
+      h1 span {
+        color: var(--accent);
+      }
+      .lead {
+        color: var(--muted);
+        margin: 4px 0 0;
+      }
+      section {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 16px;
+      }
+      h2 {
+        margin: 0 0 4px;
+        font-size: 20px;
+      }
+      p {
+        margin: 0 0 12px;
+        color: var(--muted);
+      }
+      video,
+      img {
+        width: 100%;
+        border-radius: 10px;
+        background: #000;
+        display: block;
+      }
+      .missing {
+        padding: 32px;
+        text-align: center;
+        color: var(--muted);
+        border: 1px dashed var(--line);
+        border-radius: 10px;
+      }
+      footer {
+        color: var(--muted);
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Guide dog to <span>Waymo</span>: simulated demos</h1>
+        <p class="lead">
+          Real Edgewater, Miami streets (OpenStreetMap) and hazards (Miami-Dade 311 flooding, FDOT work zones and
+          crashes). Only the robot hardware is simulated, in PyBullet; the car's final pull-in runs in Waymo's Waymax.
+        </p>
+      </header>
+
+      <section aria-labelledby="v1">
+        <h2 id="v1">1. Obstacle course to the Waymo</h2>
+        <p>The dog steers the rider around sidewalk obstacles to the door of a waiting Waymo.</p>
+        <video controls preload="metadata" src="escort_obstacles/escort_obstacles.webm"></video>
+      </section>
+
+      <section aria-labelledby="v2">
+        <h2 id="v2">2. Crossing Biscayne Blvd with traffic</h2>
+        <p>The dog reads the pedestrian signal with its camera and crosses only on WALK with enough time left.</p>
+        <video controls preload="metadata" src="real_crosswalk/crossing.webm"></video>
+      </section>
+
+      <section aria-labelledby="v3">
+        <h2 id="v3">3. Flooded sidewalk, new path</h2>
+        <p>At a real 311 flood-report spot the sidewalk is under water, so the dog replans and takes another way.</p>
+        <video controls preload="metadata" src="escort_flood/escort_flood.webm"></video>
+      </section>
+
+      <section aria-labelledby="v4">
+        <h2 id="v4">4. The Waymo reroutes to a safer pickup</h2>
+        <p>Our router picks the safe curb away from flood reports; Waymax simulates the final pull-in.</p>
+        <img src="waymo_pickup/waymo_pickup.gif" alt="Map animation of the Waymo rerouting to the NE 21st St curb" />
+      </section>
+
+      <footer>Built at ShellHacks 2026. Hazard data is historical and shows patterns, not predictions.</footer>
+    </main>
+    <script>
+      // A video that hasn't been rendered yet shows a placeholder instead of a broken player.
+      for (const v of document.querySelectorAll("video")) {
+        v.addEventListener("error", () => {
+          const d = document.createElement("div");
+          d.className = "missing";
+          d.textContent = "Rendering… reload when it's ready.";
+          v.replaceWith(d);
+        });
+      }
+    </script>
+  </body>
+</html>

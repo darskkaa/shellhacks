@@ -1,0 +1,6308 @@
+{
+  "completed": true,
+  "passed": true,
+  "checks": {
+    "no_walk_votes_on_dont_walk": true,
+    "crossing_started_on_true_walk": true,
+    "never_started_without_enough_time": true,
+    "in_road_only_while_cars_held_on_red": true,
+    "dog_reached_far_curb": true,
+    "handler_reached_far_curb": true,
+    "handler_stayed_beside_dog": true
+  },
+  "site": {
+    "intersection": "Biscayne Boulevard & Northeast 19th Street, Edgewater, Miami",
+    "crossing_latlon": [
+      25.79496,
+      -80.18902
+    ],
+    "crossing_tags": {
+      "crossing": "traffic_signals",
+      "crossing:markings": "lines",
+      "crossing:signals": "yes",
+      "footway": "crossing",
+      "highway": "footway",
+      "lit": "yes",
+      "surface": "asphalt"
+    },
+    "crossing_length_m": 18.07,
+    "lanes": 5,
+    "lanes_forward": 2,
+    "lanes_backward": 3,
+    "maxspeed": "30 mph",
+    "kerb_to_kerb_m": 18.07,
+    "end_kerbs": [
+      {
+        "kerb": "lowered",
+        "tactile_paving": "yes",
+        "xy": [
+          106.51,
+          -226.56
+        ]
+      },
+      {
+        "kerb": "lowered",
+        "tactile_paving": "yes",
+        "xy": [
+          88.45,
+          -227.14
+        ]
+      }
+    ],
+    "signal_node_xy": [
+      98.29,
+      -239.95
+    ],
+    "buildings": [
+      13.2
+    ],
+    "furniture": [],
+    "flood_reports_in_window": [],
+    "crashes_within_40m": 3,
+    "pedestrian_crashes_within_40m": 0,
+    "crash_years": [
+      2018,
+      2019
+    ],
+    "work_zones_within_30m": [
+      {
+        "distance_m": 17.6,
+        "description": "SR 5/US-1/BISCAYNE BLVD AT VARIOUS INTERSECTIONS - TRAFFIC S IGNALS"
+      },
+      {
+        "distance_m": 20.3,
+        "description": "SR 5/US-1/BISCAYNE BLVD AT VARIOUS INTERSECTIONS - TRAFFIC S IGNALS"
+      }
+    ],
+    "timing_standard_not_measured": {
+      "main_green_s": 20.0,
+      "amber_s": 3.2,
+      "all_red_s": 2.0,
+      "walk_s": 7.0,
+      "ped_clearance_s": 16.89,
+      "car_speed_mps": 13.41,
+      "cycle_s": 51.09
+    },
+    "ped_signal_xy": [
+      87.72,
+      -229.16
+    ],
+    "ped_signal_distance_from_start_m": 18.97
+  },
+  "seconds": 40,
+  "model": "/home/sean/code/shellhack-blind-escort/blind_escort_yolo/weights/yolo11n_blind_escort.onnx",
+  "model_sha256": "6547aee411dd9eccb6cc458bc0cc81e5c55e79157b6ad0f6f7a839e7edfe2d8c",
+  "firmware_sha256": "a9b87f596fdca79009c2556bbfe5074759c4da19bf6caff5e4c1d33249053b9d",
+  "decision_rule": {
+    "walk_conf": 0.4,
+    "margin_over_dont_walk": 0.1,
+    "confirm_frames": 3,
+    "conflict_veto": 0.5
+  },
+  "model_grading_while_waiting": {
+    "frames": 50,
+    "walk_votes_on_walk": 3,
+    "walk_votes_on_dont_walk": 0,
+    "non_walk_votes_on_dont_walk": 47,
+    "non_walk_votes_on_walk": 0
+  },
+  "first_ground_truth_walk_s": 9.2,
+  "crossing_start": {
+    "seconds": 9.8,
+    "ground_truth_walk": true,
+    "ped_phase": "walk",
+    "car_phase": "red",
+    "true_walk_plus_clearance_left_s": 23.29,
+    "dog_estimate_left_s": 23.29,
+    "time_needed_s": 20.08
+  },
+  "detection_latency_s": 0.6,
+  "ped_clearance_end_s": 33.09,
+  "dog_left_road_s": 30.37,
+  "walk_plus_clearance_s": 23.89,
+  "escort_speed_mps": 0.9,
+  "escort_crossing_time_s": 20.08,
+  "mechdog_top_speed_mps": 0.42,
+  "mechdog_crossing_time_s": 43.02,
+  "starts_held_for_lack_of_time": 0,
+  "camera": {
+    "resolution": [
+      1920,
+      1080
+    ],
+    "diagonal_fov_deg": 58.0,
+    "vertical_fov_deg": 30.41,
+    "signal_face_m": 0.45,
+    "roi_margin": 9.0
+  },
+  "mutcd_design_crossing_time_s": 16.89,
+  "seconds_in_road_after_clearance": 0.0,
+  "seconds_in_road_while_cars_not_red": 0.0,
+  "min_car_center_distance_in_road_m": 3.99,
+  "max_handler_gap_m": 0.695,
+  "final_progress_m": 19.35,
+  "trace": [
+    {
+      "seconds": 0.0,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.863,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.863,
+          "box": [
+            715.2,
+            508.3,
+            770.3,
+            564.7
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 0.2,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.856,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "construction_barricade",
+          "class_id": 16,
+          "confidence": 0.415,
+          "box": [
+            382.1,
+            826.6,
+            754.3,
+            1080.0
+          ]
+        },
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.856,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 0.4,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.848,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "construction_barricade",
+          "class_id": 16,
+          "confidence": 0.55,
+          "box": [
+            415.0,
+            824.7,
+            737.5,
+            1079.9
+          ]
+        },
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.848,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 0.6,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "construction_barricade",
+          "class_id": 16,
+          "confidence": 0.29,
+          "box": [
+            386.1,
+            833.5,
+            745.8,
+            1079.9
+          ]
+        },
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 0.8,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 1.0,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 1.2,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 1.4,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 1.6,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.855,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.855,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 1.8,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 2.0,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "standing_puddle_gutter",
+          "class_id": 5,
+          "confidence": 0.485,
+          "box": [
+            1741.8,
+            797.2,
+            1919.8,
+            956.5
+          ]
+        },
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 2.2,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 2.4,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 2.6,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 2.8,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 3.0,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 3.2,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 3.4,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.847,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "crosswalk_zebra",
+          "class_id": 7,
+          "confidence": 0.395,
+          "box": [
+            1329.0,
+            670.0,
+            1920.0,
+            838.1
+          ]
+        },
+        {
+          "class": "crosswalk_zebra",
+          "class_id": 7,
+          "confidence": 0.272,
+          "box": [
+            910.3,
+            674.5,
+            1921.8,
+            838.3
+          ]
+        },
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.847,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 3.6,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 3.8,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 4.0,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 4.2,
+      "ped_phase": "dont_walk",
+      "car_phase": "amber",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 4.4,
+      "ped_phase": "dont_walk",
+      "car_phase": "amber",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 4.6,
+      "ped_phase": "dont_walk",
+      "car_phase": "amber",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 4.8,
+      "ped_phase": "dont_walk",
+      "car_phase": "amber",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 5.0,
+      "ped_phase": "dont_walk",
+      "car_phase": "amber",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 5.2,
+      "ped_phase": "dont_walk",
+      "car_phase": "amber",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 5.4,
+      "ped_phase": "dont_walk",
+      "car_phase": "amber",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 5.6,
+      "ped_phase": "dont_walk",
+      "car_phase": "amber",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 5.8,
+      "ped_phase": "dont_walk",
+      "car_phase": "amber",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 6.0,
+      "ped_phase": "dont_walk",
+      "car_phase": "amber",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 6.2,
+      "ped_phase": "dont_walk",
+      "car_phase": "amber",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 6.4,
+      "ped_phase": "dont_walk",
+      "car_phase": "amber",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 6.6,
+      "ped_phase": "dont_walk",
+      "car_phase": "amber",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 6.8,
+      "ped_phase": "dont_walk",
+      "car_phase": "amber",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 7.0,
+      "ped_phase": "dont_walk",
+      "car_phase": "amber",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 7.2,
+      "ped_phase": "dont_walk",
+      "car_phase": "amber",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 7.4,
+      "ped_phase": "dont_walk",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 7.6,
+      "ped_phase": "dont_walk",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 7.8,
+      "ped_phase": "dont_walk",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 8.0,
+      "ped_phase": "dont_walk",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 8.2,
+      "ped_phase": "dont_walk",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 8.4,
+      "ped_phase": "dont_walk",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 8.6,
+      "ped_phase": "dont_walk",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 8.8,
+      "ped_phase": "dont_walk",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 9.0,
+      "ped_phase": "dont_walk",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 9.2,
+      "ped_phase": "dont_walk",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 0,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": null,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            715.3,
+            508.4,
+            770.2,
+            564.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 9.4,
+      "ped_phase": "walk",
+      "car_phase": "red",
+      "vote": "walk",
+      "walk_conf": 0.647,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 1,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": 23.69,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_walk",
+          "class_id": 8,
+          "confidence": 0.647,
+          "box": [
+            715.2,
+            508.5,
+            770.2,
+            564.8
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 9.6,
+      "ped_phase": "walk",
+      "car_phase": "red",
+      "vote": "walk",
+      "walk_conf": 0.647,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "waiting",
+      "streak": 2,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": 23.49,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_walk",
+          "class_id": 8,
+          "confidence": 0.647,
+          "box": [
+            715.2,
+            508.5,
+            770.2,
+            564.8
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 9.8,
+      "ped_phase": "walk",
+      "car_phase": "red",
+      "vote": "walk",
+      "walk_conf": 0.647,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 23.29,
+      "progress_m": 0.0,
+      "roi": [
+        528,
+        322,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_walk",
+          "class_id": 8,
+          "confidence": 0.647,
+          "box": [
+            715.2,
+            508.5,
+            770.2,
+            564.8
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 10.0,
+      "ped_phase": "walk",
+      "car_phase": "red",
+      "vote": "walk",
+      "walk_conf": 0.641,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 23.09,
+      "progress_m": 0.18,
+      "roi": [
+        524,
+        318,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_walk",
+          "class_id": 8,
+          "confidence": 0.641,
+          "box": [
+            712.8,
+            506.1,
+            768.2,
+            562.8
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 10.2,
+      "ped_phase": "walk",
+      "car_phase": "red",
+      "vote": "walk",
+      "walk_conf": 0.681,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 22.89,
+      "progress_m": 0.36,
+      "roi": [
+        519,
+        314,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "standing_puddle_gutter",
+          "class_id": 5,
+          "confidence": 0.25,
+          "box": [
+            1426.5,
+            728.5,
+            1918.3,
+            816.0
+          ]
+        },
+        {
+          "class": "ped_signal_walk",
+          "class_id": 8,
+          "confidence": 0.681,
+          "box": [
+            710.7,
+            504.0,
+            766.3,
+            561.5
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 10.4,
+      "ped_phase": "walk",
+      "car_phase": "red",
+      "vote": "walk",
+      "walk_conf": 0.473,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 22.69,
+      "progress_m": 0.54,
+      "roi": [
+        515,
+        310,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "standing_puddle_gutter",
+          "class_id": 5,
+          "confidence": 0.276,
+          "box": [
+            1419.7,
+            720.8,
+            1917.4,
+            817.0
+          ]
+        },
+        {
+          "class": "ped_signal_walk",
+          "class_id": 8,
+          "confidence": 0.473,
+          "box": [
+            707.9,
+            501.6,
+            764.5,
+            559.7
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 10.6,
+      "ped_phase": "walk",
+      "car_phase": "red",
+      "vote": "walk",
+      "walk_conf": 0.633,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 22.49,
+      "progress_m": 0.72,
+      "roi": [
+        511,
+        305,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "standing_puddle_gutter",
+          "class_id": 5,
+          "confidence": 0.414,
+          "box": [
+            1450.1,
+            722.1,
+            1915.7,
+            817.7
+          ]
+        },
+        {
+          "class": "ped_signal_walk",
+          "class_id": 8,
+          "confidence": 0.633,
+          "box": [
+            705.7,
+            499.0,
+            762.5,
+            557.8
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 10.8,
+      "ped_phase": "walk",
+      "car_phase": "red",
+      "vote": "walk",
+      "walk_conf": 0.601,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 22.29,
+      "progress_m": 0.9,
+      "roi": [
+        506,
+        301,
+        957,
+        751
+      ],
+      "detections": [
+        {
+          "class": "standing_puddle_gutter",
+          "class_id": 5,
+          "confidence": 0.257,
+          "box": [
+            1413.6,
+            721.8,
+            1918.9,
+            819.4
+          ]
+        },
+        {
+          "class": "ped_signal_walk",
+          "class_id": 8,
+          "confidence": 0.601,
+          "box": [
+            702.9,
+            496.7,
+            760.7,
+            555.8
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 11.0,
+      "ped_phase": "walk",
+      "car_phase": "red",
+      "vote": "walk",
+      "walk_conf": 0.755,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 22.09,
+      "progress_m": 1.08,
+      "roi": [
+        502,
+        297,
+        957,
+        752
+      ],
+      "detections": [
+        {
+          "class": "standing_puddle_gutter",
+          "class_id": 5,
+          "confidence": 0.379,
+          "box": [
+            1406.1,
+            721.2,
+            1919.7,
+            819.7
+          ]
+        },
+        {
+          "class": "ped_signal_walk",
+          "class_id": 8,
+          "confidence": 0.755,
+          "box": [
+            700.3,
+            494.2,
+            758.6,
+            553.3
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 11.2,
+      "ped_phase": "walk",
+      "car_phase": "red",
+      "vote": "walk",
+      "walk_conf": 0.489,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 21.89,
+      "progress_m": 1.26,
+      "roi": [
+        497,
+        292,
+        957,
+        752
+      ],
+      "detections": [
+        {
+          "class": "standing_puddle_gutter",
+          "class_id": 5,
+          "confidence": 0.54,
+          "box": [
+            1490.2,
+            721.5,
+            1920.4,
+            821.0
+          ]
+        },
+        {
+          "class": "ped_signal_walk",
+          "class_id": 8,
+          "confidence": 0.489,
+          "box": [
+            697.6,
+            491.7,
+            756.5,
+            551.7
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 11.4,
+      "ped_phase": "walk",
+      "car_phase": "red",
+      "vote": "walk",
+      "walk_conf": 0.496,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 21.69,
+      "progress_m": 1.44,
+      "roi": [
+        492,
+        287,
+        957,
+        752
+      ],
+      "detections": [
+        {
+          "class": "standing_puddle_gutter",
+          "class_id": 5,
+          "confidence": 0.419,
+          "box": [
+            1500.8,
+            721.2,
+            1920.2,
+            821.8
+          ]
+        },
+        {
+          "class": "ped_signal_walk",
+          "class_id": 8,
+          "confidence": 0.496,
+          "box": [
+            694.9,
+            489.1,
+            754.4,
+            549.7
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 11.6,
+      "ped_phase": "walk",
+      "car_phase": "red",
+      "vote": "walk",
+      "walk_conf": 0.594,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 21.49,
+      "progress_m": 1.62,
+      "roi": [
+        487,
+        282,
+        957,
+        752
+      ],
+      "detections": [
+        {
+          "class": "standing_puddle_gutter",
+          "class_id": 5,
+          "confidence": 0.434,
+          "box": [
+            1467.8,
+            719.8,
+            1920.5,
+            823.8
+          ]
+        },
+        {
+          "class": "ped_signal_walk",
+          "class_id": 8,
+          "confidence": 0.594,
+          "box": [
+            692.2,
+            486.4,
+            752.2,
+            547.9
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 11.8,
+      "ped_phase": "walk",
+      "car_phase": "red",
+      "vote": "walk",
+      "walk_conf": 0.589,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 21.29,
+      "progress_m": 1.8,
+      "roi": [
+        482,
+        278,
+        956,
+        752
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_walk",
+          "class_id": 8,
+          "confidence": 0.589,
+          "box": [
+            689.2,
+            483.6,
+            750.3,
+            545.4
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 12.0,
+      "ped_phase": "walk",
+      "car_phase": "red",
+      "vote": "walk",
+      "walk_conf": 0.618,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 21.09,
+      "progress_m": 1.98,
+      "roi": [
+        477,
+        273,
+        956,
+        752
+      ],
+      "detections": [
+        {
+          "class": "standing_puddle_gutter",
+          "class_id": 5,
+          "confidence": 0.381,
+          "box": [
+            1467.2,
+            719.6,
+            1919.8,
+            828.4
+          ]
+        },
+        {
+          "class": "ped_signal_walk",
+          "class_id": 8,
+          "confidence": 0.618,
+          "box": [
+            686.4,
+            481.0,
+            747.8,
+            543.3
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 12.2,
+      "ped_phase": "walk",
+      "car_phase": "red",
+      "vote": "walk",
+      "walk_conf": 0.432,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 20.89,
+      "progress_m": 2.16,
+      "roi": [
+        472,
+        268,
+        956,
+        752
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_walk",
+          "class_id": 8,
+          "confidence": 0.432,
+          "box": [
+            683.5,
+            478.1,
+            745.4,
+            541.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 12.4,
+      "ped_phase": "walk",
+      "car_phase": "red",
+      "vote": "walk",
+      "walk_conf": 0.454,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 20.69,
+      "progress_m": 2.34,
+      "roi": [
+        467,
+        262,
+        956,
+        752
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_walk",
+          "class_id": 8,
+          "confidence": 0.454,
+          "box": [
+            680.5,
+            475.0,
+            743.3,
+            539.8
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 12.6,
+      "ped_phase": "walk",
+      "car_phase": "red",
+      "vote": "walk",
+      "walk_conf": 0.51,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 20.49,
+      "progress_m": 2.52,
+      "roi": [
+        461,
+        257,
+        956,
+        752
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_walk",
+          "class_id": 8,
+          "confidence": 0.51,
+          "box": [
+            677.3,
+            472.3,
+            740.9,
+            537.2
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 12.8,
+      "ped_phase": "walk",
+      "car_phase": "red",
+      "vote": "walk",
+      "walk_conf": 0.68,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 20.29,
+      "progress_m": 2.7,
+      "roi": [
+        456,
+        252,
+        956,
+        752
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_walk",
+          "class_id": 8,
+          "confidence": 0.68,
+          "box": [
+            674.2,
+            469.2,
+            738.5,
+            534.8
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 13.0,
+      "ped_phase": "walk",
+      "car_phase": "red",
+      "vote": "walk",
+      "walk_conf": 0.631,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 20.09,
+      "progress_m": 2.88,
+      "roi": [
+        450,
+        246,
+        956,
+        752
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_walk",
+          "class_id": 8,
+          "confidence": 0.631,
+          "box": [
+            671.1,
+            466.0,
+            736.2,
+            532.9
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 13.2,
+      "ped_phase": "walk",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 19.89,
+      "progress_m": 3.06,
+      "roi": [
+        444,
+        240,
+        956,
+        752
+      ],
+      "detections": []
+    },
+    {
+      "seconds": 13.4,
+      "ped_phase": "walk",
+      "car_phase": "red",
+      "vote": "walk",
+      "walk_conf": 0.553,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 19.69,
+      "progress_m": 3.24,
+      "roi": [
+        438,
+        235,
+        956,
+        753
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_walk",
+          "class_id": 8,
+          "confidence": 0.553,
+          "box": [
+            664.3,
+            459.7,
+            730.7,
+            527.3
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 13.6,
+      "ped_phase": "walk",
+      "car_phase": "red",
+      "vote": "walk",
+      "walk_conf": 0.59,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 19.49,
+      "progress_m": 3.42,
+      "roi": [
+        432,
+        229,
+        956,
+        753
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_walk",
+          "class_id": 8,
+          "confidence": 0.59,
+          "box": [
+            660.8,
+            456.3,
+            728.4,
+            525.1
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 13.8,
+      "ped_phase": "walk",
+      "car_phase": "red",
+      "vote": "walk",
+      "walk_conf": 0.724,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 19.29,
+      "progress_m": 3.6,
+      "roi": [
+        426,
+        223,
+        956,
+        753
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_walk",
+          "class_id": 8,
+          "confidence": 0.724,
+          "box": [
+            657.4,
+            453.1,
+            725.4,
+            522.8
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 14.0,
+      "ped_phase": "walk",
+      "car_phase": "red",
+      "vote": "walk",
+      "walk_conf": 0.418,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 19.09,
+      "progress_m": 3.78,
+      "roi": [
+        420,
+        216,
+        956,
+        753
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_walk",
+          "class_id": 8,
+          "confidence": 0.418,
+          "box": [
+            653.6,
+            449.6,
+            722.7,
+            520.4
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 14.2,
+      "ped_phase": "walk",
+      "car_phase": "red",
+      "vote": "walk",
+      "walk_conf": 0.613,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 18.89,
+      "progress_m": 3.96,
+      "roi": [
+        413,
+        210,
+        956,
+        753
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_walk",
+          "class_id": 8,
+          "confidence": 0.613,
+          "box": [
+            649.9,
+            446.1,
+            719.9,
+            517.5
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 14.4,
+      "ped_phase": "walk",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.376,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 18.69,
+      "progress_m": 4.14,
+      "roi": [
+        406,
+        203,
+        956,
+        753
+      ],
+      "detections": [
+        {
+          "class": "standing_puddle_gutter",
+          "class_id": 5,
+          "confidence": 0.485,
+          "box": [
+            1524.0,
+            758.9,
+            1920.3,
+            935.4
+          ]
+        },
+        {
+          "class": "ped_signal_walk",
+          "class_id": 8,
+          "confidence": 0.376,
+          "box": [
+            646.1,
+            442.5,
+            716.9,
+            514.9
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 14.6,
+      "ped_phase": "walk",
+      "car_phase": "red",
+      "vote": "walk",
+      "walk_conf": 0.576,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 18.49,
+      "progress_m": 4.32,
+      "roi": [
+        399,
+        197,
+        956,
+        753
+      ],
+      "detections": [
+        {
+          "class": "standing_puddle_gutter",
+          "class_id": 5,
+          "confidence": 0.307,
+          "box": [
+            1512.8,
+            732.5,
+            1920.3,
+            934.0
+          ]
+        },
+        {
+          "class": "ped_signal_walk",
+          "class_id": 8,
+          "confidence": 0.576,
+          "box": [
+            642.3,
+            438.5,
+            713.8,
+            512.0
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 14.8,
+      "ped_phase": "walk",
+      "car_phase": "red",
+      "vote": "walk",
+      "walk_conf": 0.571,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 18.29,
+      "progress_m": 4.5,
+      "roi": [
+        392,
+        190,
+        956,
+        753
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_walk",
+          "class_id": 8,
+          "confidence": 0.571,
+          "box": [
+            638.1,
+            434.9,
+            710.9,
+            509.1
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 15.0,
+      "ped_phase": "walk",
+      "car_phase": "red",
+      "vote": "walk",
+      "walk_conf": 0.501,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 18.09,
+      "progress_m": 4.68,
+      "roi": [
+        385,
+        183,
+        956,
+        753
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_walk",
+          "class_id": 8,
+          "confidence": 0.501,
+          "box": [
+            634.2,
+            431.0,
+            707.8,
+            506.2
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 15.2,
+      "ped_phase": "walk",
+      "car_phase": "red",
+      "vote": "walk",
+      "walk_conf": 0.657,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 17.89,
+      "progress_m": 4.86,
+      "roi": [
+        378,
+        176,
+        956,
+        753
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_walk",
+          "class_id": 8,
+          "confidence": 0.657,
+          "box": [
+            630.1,
+            427.0,
+            704.6,
+            503.2
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 15.4,
+      "ped_phase": "walk",
+      "car_phase": "red",
+      "vote": "walk",
+      "walk_conf": 0.714,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 17.69,
+      "progress_m": 5.04,
+      "roi": [
+        370,
+        168,
+        956,
+        754
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_walk",
+          "class_id": 8,
+          "confidence": 0.714,
+          "box": [
+            625.9,
+            422.8,
+            701.4,
+            500.0
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 15.6,
+      "ped_phase": "walk",
+      "car_phase": "red",
+      "vote": "walk",
+      "walk_conf": 0.602,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 17.49,
+      "progress_m": 5.22,
+      "roi": [
+        362,
+        161,
+        956,
+        754
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_walk",
+          "class_id": 8,
+          "confidence": 0.602,
+          "box": [
+            621.3,
+            418.4,
+            697.6,
+            496.7
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 15.8,
+      "ped_phase": "walk",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.285,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 17.29,
+      "progress_m": 5.4,
+      "roi": [
+        354,
+        153,
+        956,
+        754
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_walk",
+          "class_id": 8,
+          "confidence": 0.285,
+          "box": [
+            616.7,
+            414.3,
+            694.5,
+            493.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 16.0,
+      "ped_phase": "walk",
+      "car_phase": "red",
+      "vote": "walk",
+      "walk_conf": 0.572,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 17.09,
+      "progress_m": 5.58,
+      "roi": [
+        346,
+        145,
+        955,
+        754
+      ],
+      "detections": [
+        {
+          "class": "construction_barricade",
+          "class_id": 16,
+          "confidence": 0.339,
+          "box": [
+            372.3,
+            873.0,
+            674.4,
+            1080.0
+          ]
+        },
+        {
+          "class": "ped_signal_walk",
+          "class_id": 8,
+          "confidence": 0.572,
+          "box": [
+            612.1,
+            409.9,
+            690.9,
+            490.3
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 16.2,
+      "ped_phase": "walk",
+      "car_phase": "red",
+      "vote": "walk",
+      "walk_conf": 0.607,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 16.89,
+      "progress_m": 5.76,
+      "roi": [
+        338,
+        137,
+        955,
+        754
+      ],
+      "detections": [
+        {
+          "class": "construction_barricade",
+          "class_id": 16,
+          "confidence": 0.661,
+          "box": [
+            378.4,
+            875.4,
+            674.4,
+            1080.0
+          ]
+        },
+        {
+          "class": "ped_signal_walk",
+          "class_id": 8,
+          "confidence": 0.607,
+          "box": [
+            607.1,
+            405.3,
+            687.0,
+            486.8
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 16.4,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.877,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 16.69,
+      "progress_m": 5.94,
+      "roi": [
+        329,
+        128,
+        955,
+        754
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.877,
+          "box": [
+            602.5,
+            400.2,
+            683.4,
+            482.5
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 16.6,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.801,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 16.49,
+      "progress_m": 6.12,
+      "roi": [
+        320,
+        119,
+        955,
+        754
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.801,
+          "box": [
+            597.4,
+            395.2,
+            679.9,
+            478.9
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 16.8,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.793,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 16.29,
+      "progress_m": 6.3,
+      "roi": [
+        311,
+        110,
+        955,
+        755
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.793,
+          "box": [
+            592.1,
+            390.7,
+            675.8,
+            475.5
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 17.0,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.901,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 16.09,
+      "progress_m": 6.48,
+      "roi": [
+        302,
+        101,
+        955,
+        755
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.901,
+          "box": [
+            586.7,
+            385.4,
+            671.6,
+            471.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 17.2,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.91,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 15.89,
+      "progress_m": 6.66,
+      "roi": [
+        292,
+        92,
+        955,
+        755
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.91,
+          "box": [
+            581.3,
+            380.3,
+            667.1,
+            467.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 17.4,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.707,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 15.69,
+      "progress_m": 6.84,
+      "roi": [
+        282,
+        82,
+        955,
+        755
+      ],
+      "detections": [
+        {
+          "class": "construction_barricade",
+          "class_id": 16,
+          "confidence": 0.355,
+          "box": [
+            382.1,
+            887.4,
+            645.2,
+            1079.9
+          ]
+        },
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.707,
+          "box": [
+            575.7,
+            374.4,
+            662.7,
+            462.9
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 17.6,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.813,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 15.49,
+      "progress_m": 7.02,
+      "roi": [
+        272,
+        72,
+        955,
+        755
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.813,
+          "box": [
+            569.7,
+            369.3,
+            658.7,
+            459.4
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 17.8,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.888,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 15.29,
+      "progress_m": 7.2,
+      "roi": [
+        261,
+        61,
+        955,
+        755
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.888,
+          "box": [
+            563.6,
+            363.0,
+            653.8,
+            454.4
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 18.0,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.889,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 15.09,
+      "progress_m": 7.38,
+      "roi": [
+        250,
+        51,
+        955,
+        756
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.889,
+          "box": [
+            557.5,
+            357.5,
+            648.8,
+            450.4
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 18.2,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.775,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 14.89,
+      "progress_m": 7.56,
+      "roi": [
+        239,
+        40,
+        955,
+        756
+      ],
+      "detections": [
+        {
+          "class": "standing_puddle_gutter",
+          "class_id": 5,
+          "confidence": 0.335,
+          "box": [
+            1730.7,
+            783.0,
+            1919.9,
+            915.6
+          ]
+        },
+        {
+          "class": "construction_barricade",
+          "class_id": 16,
+          "confidence": 0.335,
+          "box": [
+            320.3,
+            900.3,
+            630.8,
+            1080.1
+          ]
+        },
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.775,
+          "box": [
+            551.1,
+            351.4,
+            644.0,
+            445.8
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 18.4,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.787,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 14.69,
+      "progress_m": 7.74,
+      "roi": [
+        227,
+        28,
+        955,
+        756
+      ],
+      "detections": [
+        {
+          "class": "construction_barricade",
+          "class_id": 16,
+          "confidence": 0.494,
+          "box": [
+            339.7,
+            902.5,
+            633.7,
+            1080.0
+          ]
+        },
+        {
+          "class": "standing_puddle_gutter",
+          "class_id": 5,
+          "confidence": 0.288,
+          "box": [
+            1748.7,
+            783.9,
+            1920.0,
+            885.3
+          ]
+        },
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.787,
+          "box": [
+            544.5,
+            344.5,
+            638.8,
+            440.4
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 18.6,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.742,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 14.49,
+      "progress_m": 7.92,
+      "roi": [
+        215,
+        17,
+        955,
+        756
+      ],
+      "detections": [
+        {
+          "class": "construction_barricade",
+          "class_id": 16,
+          "confidence": 0.64,
+          "box": [
+            383.8,
+            905.6,
+            639.2,
+            1079.9
+          ]
+        },
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.742,
+          "box": [
+            537.5,
+            337.9,
+            633.8,
+            435.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 18.8,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.823,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 14.29,
+      "progress_m": 8.1,
+      "roi": [
+        203,
+        4,
+        954,
+        756
+      ],
+      "detections": [
+        {
+          "class": "construction_barricade",
+          "class_id": 16,
+          "confidence": 0.468,
+          "box": [
+            365.9,
+            910.0,
+            630.3,
+            1079.7
+          ]
+        },
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.823,
+          "box": [
+            530.5,
+            331.8,
+            628.4,
+            430.9
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 19.0,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.975,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 14.09,
+      "progress_m": 8.28,
+      "roi": [
+        190,
+        0,
+        954,
+        765
+      ],
+      "detections": [
+        {
+          "class": "construction_barricade",
+          "class_id": 16,
+          "confidence": 0.703,
+          "box": [
+            361.6,
+            912.8,
+            635.1,
+            1079.8
+          ]
+        },
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.975,
+          "box": [
+            523.2,
+            324.7,
+            623.2,
+            425.8
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 19.2,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.771,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 13.89,
+      "progress_m": 8.46,
+      "roi": [
+        188,
+        0,
+        965,
+        777
+      ],
+      "detections": [
+        {
+          "class": "construction_barricade",
+          "class_id": 16,
+          "confidence": 0.881,
+          "box": [
+            349.2,
+            915.3,
+            610.4,
+            1079.8
+          ]
+        },
+        {
+          "class": "aps_pushbutton",
+          "class_id": 17,
+          "confidence": 0.491,
+          "box": [
+            525.3,
+            318.1,
+            630.7,
+            420.2
+          ]
+        },
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.771,
+          "box": [
+            526.5,
+            317.9,
+            628.0,
+            420.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 19.4,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.922,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 13.69,
+      "progress_m": 8.64,
+      "roi": [
+        174,
+        0,
+        965,
+        791
+      ],
+      "detections": [
+        {
+          "class": "construction_barricade",
+          "class_id": 16,
+          "confidence": 0.895,
+          "box": [
+            355.2,
+            918.4,
+            627.3,
+            1080.0
+          ]
+        },
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.922,
+          "box": [
+            518.7,
+            310.4,
+            622.3,
+            414.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 19.6,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.975,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 13.49,
+      "progress_m": 8.82,
+      "roi": [
+        160,
+        0,
+        965,
+        805
+      ],
+      "detections": [
+        {
+          "class": "construction_barricade",
+          "class_id": 16,
+          "confidence": 0.829,
+          "box": [
+            359.1,
+            922.0,
+            619.9,
+            1079.9
+          ]
+        },
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.975,
+          "box": [
+            511.1,
+            302.5,
+            616.6,
+            409.0
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 19.8,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.888,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 13.29,
+      "progress_m": 9.0,
+      "roi": [
+        145,
+        0,
+        965,
+        820
+      ],
+      "detections": [
+        {
+          "class": "construction_barricade",
+          "class_id": 16,
+          "confidence": 0.744,
+          "box": [
+            358.4,
+            925.3,
+            620.0,
+            1079.8
+          ]
+        },
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.888,
+          "box": [
+            502.7,
+            294.8,
+            610.1,
+            403.0
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 20.0,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.914,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 13.09,
+      "progress_m": 9.18,
+      "roi": [
+        130,
+        0,
+        965,
+        835
+      ],
+      "detections": [
+        {
+          "class": "construction_barricade",
+          "class_id": 16,
+          "confidence": 0.803,
+          "box": [
+            357.4,
+            929.1,
+            614.7,
+            1079.8
+          ]
+        },
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.914,
+          "box": [
+            494.4,
+            286.0,
+            603.6,
+            396.3
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 20.2,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.956,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 12.89,
+      "progress_m": 9.36,
+      "roi": [
+        115,
+        0,
+        965,
+        851
+      ],
+      "detections": [
+        {
+          "class": "construction_barricade",
+          "class_id": 16,
+          "confidence": 0.735,
+          "box": [
+            347.8,
+            934.1,
+            612.4,
+            1079.9
+          ]
+        },
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.956,
+          "box": [
+            485.5,
+            277.7,
+            597.3,
+            390.2
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 20.4,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.845,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 12.69,
+      "progress_m": 9.54,
+      "roi": [
+        98,
+        0,
+        965,
+        867
+      ],
+      "detections": [
+        {
+          "class": "construction_barricade",
+          "class_id": 16,
+          "confidence": 0.618,
+          "box": [
+            315.6,
+            937.7,
+            595.3,
+            1080.0
+          ]
+        },
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.845,
+          "box": [
+            476.3,
+            268.7,
+            590.1,
+            383.4
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 20.6,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.92,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 12.49,
+      "progress_m": 9.72,
+      "roi": [
+        81,
+        0,
+        965,
+        884
+      ],
+      "detections": [
+        {
+          "class": "construction_barricade",
+          "class_id": 16,
+          "confidence": 0.741,
+          "box": [
+            319.9,
+            940.7,
+            599.6,
+            1080.0
+          ]
+        },
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.92,
+          "box": [
+            466.7,
+            259.0,
+            582.7,
+            375.9
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 20.8,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.897,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 12.29,
+      "progress_m": 9.9,
+      "roi": [
+        64,
+        0,
+        966,
+        902
+      ],
+      "detections": [
+        {
+          "class": "construction_barricade",
+          "class_id": 16,
+          "confidence": 0.865,
+          "box": [
+            321.9,
+            947.2,
+            595.0,
+            1080.0
+          ]
+        },
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.897,
+          "box": [
+            456.7,
+            250.0,
+            575.7,
+            369.2
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 21.0,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.787,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 12.09,
+      "progress_m": 10.08,
+      "roi": [
+        45,
+        0,
+        966,
+        920
+      ],
+      "detections": [
+        {
+          "class": "construction_barricade",
+          "class_id": 16,
+          "confidence": 0.755,
+          "box": [
+            310.9,
+            953.2,
+            579.1,
+            1080.1
+          ]
+        },
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.787,
+          "box": [
+            446.5,
+            239.7,
+            567.5,
+            361.3
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 21.2,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.908,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 11.89,
+      "progress_m": 10.26,
+      "roi": [
+        26,
+        0,
+        966,
+        940
+      ],
+      "detections": [
+        {
+          "class": "construction_barricade",
+          "class_id": 16,
+          "confidence": 0.819,
+          "box": [
+            312.2,
+            957.3,
+            580.5,
+            1080.1
+          ]
+        },
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.908,
+          "box": [
+            435.7,
+            228.9,
+            559.4,
+            353.0
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 21.4,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.917,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 11.69,
+      "progress_m": 10.44,
+      "roi": [
+        6,
+        0,
+        966,
+        960
+      ],
+      "detections": [
+        {
+          "class": "construction_barricade",
+          "class_id": 16,
+          "confidence": 0.645,
+          "box": [
+            316.5,
+            964.7,
+            577.7,
+            1080.1
+          ]
+        },
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.917,
+          "box": [
+            424.7,
+            218.4,
+            551.5,
+            345.5
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 21.6,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.641,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 11.49,
+      "progress_m": 10.62,
+      "roi": [
+        0,
+        0,
+        981,
+        981
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.641,
+          "box": [
+            412.4,
+            206.7,
+            542.2,
+            336.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 21.8,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.926,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 11.29,
+      "progress_m": 10.8,
+      "roi": [
+        0,
+        0,
+        1002,
+        1002
+      ],
+      "detections": [
+        {
+          "class": "construction_barricade",
+          "class_id": 16,
+          "confidence": 0.325,
+          "box": [
+            306.8,
+            976.2,
+            559.5,
+            1080.0
+          ]
+        },
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.926,
+          "box": [
+            400.5,
+            194.0,
+            533.3,
+            326.4
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 22.0,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.913,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 11.09,
+      "progress_m": 10.89,
+      "roi": [
+        0,
+        0,
+        1014,
+        1014
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.913,
+          "box": [
+            393.8,
+            188.9,
+            528.1,
+            322.8
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 22.2,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.525,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 10.89,
+      "progress_m": 11.07,
+      "roi": [
+        0,
+        0,
+        1037,
+        1037
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.525,
+          "box": [
+            380.3,
+            175.3,
+            518.4,
+            312.8
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 22.4,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.959,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 10.69,
+      "progress_m": 11.25,
+      "roi": [
+        0,
+        0,
+        1062,
+        1062
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.959,
+          "box": [
+            366.6,
+            162.6,
+            507.9,
+            303.4
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 22.6,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.753,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 10.49,
+      "progress_m": 11.43,
+      "roi": [
+        0,
+        0,
+        1080,
+        1080
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.753,
+          "box": [
+            352.7,
+            148.5,
+            497.9,
+            292.1
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 22.8,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.933,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 10.29,
+      "progress_m": 11.61,
+      "roi": [
+        0,
+        0,
+        1080,
+        1080
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.933,
+          "box": [
+            337.5,
+            133.6,
+            486.0,
+            282.2
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 23.0,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.77,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 10.09,
+      "progress_m": 11.79,
+      "roi": [
+        0,
+        0,
+        1080,
+        1080
+      ],
+      "detections": [
+        {
+          "class": "surface_defect_heave",
+          "class_id": 4,
+          "confidence": 0.285,
+          "box": [
+            0.9,
+            1015.1,
+            405.4,
+            1080.0
+          ]
+        },
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.77,
+          "box": [
+            321.6,
+            117.9,
+            474.4,
+            269.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 23.2,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.953,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 9.89,
+      "progress_m": 11.97,
+      "roi": [
+        0,
+        0,
+        1080,
+        1080
+      ],
+      "detections": [
+        {
+          "class": "surface_defect_heave",
+          "class_id": 4,
+          "confidence": 0.845,
+          "box": [
+            0.1,
+            1024.4,
+            403.3,
+            1080.0
+          ]
+        },
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.953,
+          "box": [
+            304.9,
+            101.1,
+            461.4,
+            257.0
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 23.4,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.716,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 9.69,
+      "progress_m": 12.15,
+      "roi": [
+        0,
+        0,
+        1080,
+        1080
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.716,
+          "box": [
+            287.7,
+            85.3,
+            448.6,
+            243.9
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 23.6,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.651,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 9.49,
+      "progress_m": 12.33,
+      "roi": [
+        0,
+        0,
+        1080,
+        1080
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.651,
+          "box": [
+            268.5,
+            66.2,
+            434.8,
+            230.1
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 23.8,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.746,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 9.29,
+      "progress_m": 12.51,
+      "roi": [
+        0,
+        0,
+        1080,
+        1080
+      ],
+      "detections": [
+        {
+          "class": "surface_defect_heave",
+          "class_id": 4,
+          "confidence": 0.387,
+          "box": [
+            -0.8,
+            1052.8,
+            323.1,
+            1080.2
+          ]
+        },
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.746,
+          "box": [
+            249.4,
+            47.2,
+            420.6,
+            216.5
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 24.0,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.564,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 9.09,
+      "progress_m": 12.69,
+      "roi": [
+        0,
+        0,
+        1080,
+        1080
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.564,
+          "box": [
+            228.5,
+            28.1,
+            406.1,
+            202.2
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 24.2,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.25,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 8.89,
+      "progress_m": 12.87,
+      "roi": [
+        0,
+        0,
+        1080,
+        1080
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.25,
+          "box": [
+            206.2,
+            5.7,
+            389.2,
+            185.6
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 24.4,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 8.69,
+      "progress_m": 13.05,
+      "roi": [
+        0,
+        0,
+        1080,
+        1080
+      ],
+      "detections": []
+    },
+    {
+      "seconds": 24.6,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.632,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 8.49,
+      "progress_m": 13.23,
+      "roi": [
+        0,
+        0,
+        1080,
+        1080
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.632,
+          "box": [
+            156.7,
+            0.5,
+            291.2,
+            143.8
+          ],
+          "roi": true
+        },
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.548,
+          "box": [
+            155.9,
+            0.7,
+            341.6,
+            149.3
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 24.8,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.974,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 8.29,
+      "progress_m": 13.41,
+      "roi": [
+        0,
+        0,
+        1080,
+        1080
+      ],
+      "detections": [
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.974,
+          "box": [
+            129.9,
+            0.3,
+            331.1,
+            130.2
+          ],
+          "roi": true
+        },
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.267,
+          "box": [
+            130.5,
+            0.3,
+            271.8,
+            127.1
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 25.0,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "dont_walk",
+      "walk_conf": 0.0,
+      "stop_conf": 0.947,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 8.09,
+      "progress_m": 13.59,
+      "roi": [
+        0,
+        0,
+        1080,
+        1080
+      ],
+      "detections": [
+        {
+          "class": "dense_pedestrian_cluster",
+          "class_id": 19,
+          "confidence": 0.256,
+          "box": [
+            638.1,
+            1052.2,
+            1184.3,
+            1079.8
+          ]
+        },
+        {
+          "class": "ped_signal_stop",
+          "class_id": 9,
+          "confidence": 0.947,
+          "box": [
+            101.9,
+            0.1,
+            311.7,
+            111.3
+          ],
+          "roi": true
+        }
+      ]
+    },
+    {
+      "seconds": 25.2,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 7.89,
+      "progress_m": 13.77,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 25.4,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 7.69,
+      "progress_m": 13.95,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 25.6,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 7.49,
+      "progress_m": 14.13,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 25.8,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 7.29,
+      "progress_m": 14.31,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 26.0,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 7.09,
+      "progress_m": 14.49,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 26.2,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 6.89,
+      "progress_m": 14.67,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 26.4,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 6.69,
+      "progress_m": 14.85,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 26.6,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 6.49,
+      "progress_m": 15.03,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 26.8,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 6.29,
+      "progress_m": 15.21,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 27.0,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 6.09,
+      "progress_m": 15.39,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 27.2,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 5.89,
+      "progress_m": 15.57,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 27.4,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 5.69,
+      "progress_m": 15.75,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 27.6,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 5.49,
+      "progress_m": 15.93,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 27.8,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 5.29,
+      "progress_m": 16.11,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 28.0,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 5.09,
+      "progress_m": 16.29,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 28.2,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 4.89,
+      "progress_m": 16.47,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 28.4,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 4.69,
+      "progress_m": 16.65,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 28.6,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 4.49,
+      "progress_m": 16.83,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 28.8,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 4.29,
+      "progress_m": 17.01,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 29.0,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 4.09,
+      "progress_m": 17.19,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 29.2,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 3.89,
+      "progress_m": 17.37,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 29.4,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 3.69,
+      "progress_m": 17.55,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 29.6,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 3.49,
+      "progress_m": 17.73,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 29.8,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 3.29,
+      "progress_m": 17.91,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 30.0,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 3.09,
+      "progress_m": 18.09,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 30.2,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 2.89,
+      "progress_m": 18.27,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 30.4,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 2.69,
+      "progress_m": 18.45,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 30.6,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 2.49,
+      "progress_m": 18.63,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 30.8,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 2.29,
+      "progress_m": 18.81,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 31.0,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 2.09,
+      "progress_m": 18.99,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 31.2,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "crossing",
+      "streak": 3,
+      "stride": 100,
+      "angle": 0,
+      "time_left_estimate_s": 1.89,
+      "progress_m": 19.17,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 31.4,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": 1.69,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 31.6,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": 1.49,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 31.8,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": 1.29,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 32.0,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": 1.09,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 32.2,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": 0.89,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 32.4,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": 0.69,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 32.6,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": 0.49,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 32.8,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": 0.29,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 33.0,
+      "ped_phase": "clearance",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": 0.09,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 33.2,
+      "ped_phase": "dont_walk",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": -0.11,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 33.4,
+      "ped_phase": "dont_walk",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": -0.31,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 33.6,
+      "ped_phase": "dont_walk",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": -0.51,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 33.8,
+      "ped_phase": "dont_walk",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": -0.71,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 34.0,
+      "ped_phase": "dont_walk",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": -0.91,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 34.2,
+      "ped_phase": "dont_walk",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": -1.11,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 34.4,
+      "ped_phase": "dont_walk",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": -1.31,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 34.6,
+      "ped_phase": "dont_walk",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": -1.51,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 34.8,
+      "ped_phase": "dont_walk",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": -1.71,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 35.0,
+      "ped_phase": "dont_walk",
+      "car_phase": "red",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": -1.91,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 35.2,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": -2.11,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 35.4,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": -2.31,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 35.6,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": -2.51,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 35.8,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": -2.71,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 36.0,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": -2.91,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 36.2,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": -3.11,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 36.4,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": -3.31,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 36.6,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": -3.51,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 36.8,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": -3.71,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 37.0,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": -3.91,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 37.2,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": -4.11,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 37.4,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": -4.31,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 37.6,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": -4.51,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 37.8,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": -4.71,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 38.0,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": -4.91,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 38.2,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": -5.11,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 38.4,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": -5.31,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 38.6,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": -5.51,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 38.8,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": -5.71,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 39.0,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": -5.91,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 39.2,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": -6.11,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 39.4,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": -6.31,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 39.6,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": -6.51,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    },
+    {
+      "seconds": 39.8,
+      "ped_phase": "dont_walk",
+      "car_phase": "green",
+      "vote": "unknown",
+      "walk_conf": 0.0,
+      "stop_conf": 0.0,
+      "conflict_conf": 0.0,
+      "state": "arrived",
+      "streak": 3,
+      "stride": 0,
+      "angle": 0,
+      "time_left_estimate_s": -6.71,
+      "progress_m": 19.35,
+      "roi": null,
+      "detections": []
+    }
+  ],
+  "limitations": "Real OSM/SafeRoute geometry and records; MUTCD-standard (not measured) signal timing; synthetic 0.45 m signal face rendered self-lit; ROI margin tuned on this scene; TinyRenderer frames; planar motion at a production-speed 0.9 m/s (MechDog tops out at 0.42 m/s); static handler mesh; cars only on the crossed road and they yield to anyone in the crosswalk."
+}

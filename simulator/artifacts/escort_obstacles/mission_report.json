@@ -1,0 +1,180 @@
+{
+  "mission": "Guide-dog obstacle course to a Waymo, Biscayne Blvd west sidewalk, Miami",
+  "arrived": true,
+  "steps": 744,
+  "walked_m": 111.5,
+  "route_m": 113.5,
+  "max_single_step_drop_m": 0.0,
+  "video_s": 70.9,
+  "obstacles": [
+    {
+      "name": "work-zone barricade",
+      "xy": [
+        83.5,
+        98.3
+      ],
+      "tag": "FDOT work zone (real location; barrier shape illustrative)",
+      "side": "right",
+      "announced": true,
+      "dog_clearance_m": 0.65,
+      "handler_clearance_m": 0.9
+    },
+    {
+      "name": "bus stop sign",
+      "xy": [
+        83.1,
+        82.7
+      ],
+      "tag": "Bus stop (OSM, real)",
+      "side": "right",
+      "announced": true,
+      "dog_clearance_m": 0.76,
+      "handler_clearance_m": 1.01
+    },
+    {
+      "name": "work-zone barricade",
+      "xy": [
+        83.5,
+        58.9
+      ],
+      "tag": "FDOT work zone (real location; barrier shape illustrative)",
+      "side": "right",
+      "announced": true,
+      "dog_clearance_m": 0.66,
+      "handler_clearance_m": 0.91
+    },
+    {
+      "name": "e-scooter",
+      "xy": [
+        80.7,
+        42.0
+      ],
+      "tag": "E-scooter (illustrative)",
+      "side": "left",
+      "announced": true,
+      "dog_clearance_m": 1.02,
+      "handler_clearance_m": 0.77
+    }
+  ],
+  "fdot_points": [
+    {
+      "xy": [
+        94.71395994516378,
+        21.017338816192517
+      ],
+      "description": "SR 5/US-1/BISCAYNE BLVD AT VARIOUS INTERSECTIONS - TRAFFIC S IGNALS"
+    },
+    {
+      "xy": [
+        94.03953114469644,
+        58.934810728145486
+      ],
+      "description": "SR 5/US-1/BISCAYNE BLVD AT VARIOUS INTERSECTIONS - TRAFFIC S IGNALS"
+    },
+    {
+      "xy": [
+        93.81318772263822,
+        98.34473823311568
+      ],
+      "description": "SR 5/US-1/BISCAYNE BLVD AT VARIOUS INTERSECTIONS - TRAFFIC S IGNALS"
+    }
+  ],
+  "pickup": {
+    "requested": {
+      "road": "Biscayne Boulevard",
+      "xy": [
+        86.65486251710034,
+        24.737008321425858
+      ],
+      "total": 24.5,
+      "work_zones": 1,
+      "crashes": 0,
+      "lanes": 5
+    },
+    "chosen": {
+      "road": "Northeast 21st Street",
+      "xy": [
+        62.2187080848034,
+        17.52946407707025
+      ],
+      "total": 4.3,
+      "work_zones": 0,
+      "crashes": 0,
+      "floods": 0,
+      "walk_m": 107
+    },
+    "curbs_scored": 12
+  },
+  "events": [
+    {
+      "step": 70,
+      "kind": "OBSTACLE",
+      "event": "work-zone barricade ahead 3.1 m; passing on the right",
+      "speech": "Work zone barricade ahead. Going around it on the right.",
+      "dog": [
+        82.08,
+        102.43
+      ]
+    },
+    {
+      "step": 182,
+      "kind": "OBSTACLE",
+      "event": "bus stop sign ahead 3.1 m; passing on the right",
+      "speech": "Bus stop ahead. Going around it on the right.",
+      "dog": [
+        82.24,
+        85.99
+      ]
+    },
+    {
+      "step": 335,
+      "kind": "OBSTACLE",
+      "event": "work-zone barricade ahead 3.2 m; passing on the right",
+      "speech": "Work zone barricade ahead. Going around it on the right.",
+      "dog": [
+        81.87,
+        63.12
+      ]
+    },
+    {
+      "step": 455,
+      "kind": "OBSTACLE",
+      "event": "e-scooter ahead 2.8 m; passing on the left",
+      "speech": "Scooter parked on the sidewalk. Going around it on the left.",
+      "dog": [
+        82.24,
+        45.4
+      ]
+    },
+    {
+      "step": 559,
+      "kind": "INFO",
+      "event": "work zone in the intersection, off our path",
+      "speech": "Work zone out in the intersection. We stay on the sidewalk and turn right.",
+      "dog": [
+        82.25,
+        29.8
+      ]
+    },
+    {
+      "step": 665,
+      "kind": "WAYMO",
+      "event": "Waymo in view at the curb",
+      "speech": "I can see your Waymo at the curb just ahead.",
+      "dog": [
+        73.51,
+        20.3
+      ]
+    },
+    {
+      "step": 743,
+      "kind": "ARRIVED",
+      "event": "arrived; door handle on the passenger's left",
+      "speech": "We're at your Waymo. The door is on your left, handle at waist height.",
+      "dog": [
+        62.13,
+        18.57
+      ]
+    }
+  ]
+}

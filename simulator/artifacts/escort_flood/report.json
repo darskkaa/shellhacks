@@ -1,0 +1,88 @@
+{
+  "mission": "Flooded sidewalk, new path (NE 2nd Ave & NE 21st St, Miami)",
+  "arrived": true,
+  "steps": 1781,
+  "planned_m": 126.3,
+  "walked_m": 264.0,
+  "extra_m": 142.3,
+  "route_divergence_m": 76.0,
+  "min_rider_water_m": 5.34,
+  "min_dog_water_m": 5.29,
+  "max_single_step_drop_m": 0.0,
+  "roadway_steps": 0,
+  "flood_report": {
+    "address": "2100 NE 2ND AVE",
+    "issue": "DRAIN CLOGGED / CLEANING",
+    "ticket": "23-10236820"
+  },
+  "video_s": 54.0,
+  "outputs": [
+    "/home/sean/code/shellhack-blind-escort/simulator/artifacts/escort_flood/escort_flood.webm",
+    "/home/sean/code/shellhack-blind-escort/simulator/artifacts/escort_flood/escort_flood.mp4"
+  ],
+  "events": [
+    {
+      "step": 71,
+      "kind": "WATER",
+      "speech": "Standing water ahead, across the route. Checking for a way around.",
+      "dog": [
+        -93.95,
+        55.36
+      ]
+    },
+    {
+      "step": 88,
+      "kind": "REROUTE",
+      "speech": "The sidewalk ahead is flooded. Taking another way; about 140 metres longer.",
+      "dog": [
+        -93.95,
+        55.36
+      ]
+    },
+    {
+      "step": 118,
+      "kind": "TURN",
+      "speech": "Turning left. 252 metres to your Waymo.",
+      "dog": [
+        -94.62,
+        59.21
+      ]
+    },
+    {
+      "step": 1134,
+      "kind": "TURN",
+      "speech": "Turning left. 99 metres to your Waymo.",
+      "dog": [
+        -240.39,
+        52.98
+      ]
+    },
+    {
+      "step": 1267,
+      "kind": "TURN",
+      "speech": "Turning left. 79 metres to your Waymo.",
+      "dog": [
+        -245.25,
+        36.16
+      ]
+    },
+    {
+      "step": 1753,
+      "kind": "WAYMO",
+      "speech": "I can see your Waymo at the curb just ahead.",
+      "dog": [
+        -178.72,
+        20.47
+      ]
+    },
+    {
+      "step": 1780,
+      "kind": "ARRIVED",
+      "speech": "We're at your Waymo. The door is on your right, handle at waist height.",
+      "dog": [
+        -175.28,
+        18.73
+      ]
+    }
+  ]
+}

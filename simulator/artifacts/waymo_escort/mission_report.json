@@ -1,0 +1,33 @@
+{
+  "mission": "Autonomous guide-dog escort to Waymo, NE 21st St, Miami",
+  "arrived": true,
+  "steps": 701,
+  "walked_m": 105.0,
+  "osm_route_m": 106.4,
+  "max_single_step_drop_m": 0.0,
+  "pickup": "Northeast 21st Street",
+  "events": [
+    {
+      "step": 673,
+      "kind": "WAYMO",
+      "event": "Waymo in view at the curb",
+      "speech": "I can see your Waymo at the curb just ahead.",
+      "source": "onboard",
+      "dog": [
+        -172.63,
+        20.36
+      ]
+    },
+    {
+      "step": 700,
+      "kind": "ARRIVED",
+      "event": "arrived; Waymo door handle on the passenger's left",
+      "speech": "We're at your Waymo. The door is on your left, handle at waist height, curb edge just past it.",
+      "source": "onboard",
+      "dog": [
+        -176.13,
+        18.76
+      ]
+    }
+  ]
+}
