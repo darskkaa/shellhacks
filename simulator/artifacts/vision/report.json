@@ -1,0 +1,960 @@
+{
+  "completed": true,
+  "motion": "planar kinematic proxy with animated joints, not validated walking",
+  "model": "/tmp/shellhack-sim-vision/models/yolo26n.pt",
+  "model_sha256": "9b09cc8bf347f0fc8a5f7657480587f25db09b34bf33b0652110fb03a8ad4fef",
+  "firmware_sha256": "3c4d012d2f050b3621d37d408eb08bfc72aedde86459e4953d9dad7b63c3977e",
+  "labels": {
+    "0": "person",
+    "1": "bicycle",
+    "2": "car",
+    "3": "motorcycle",
+    "4": "airplane",
+    "5": "bus",
+    "6": "train",
+    "7": "truck",
+    "8": "boat",
+    "9": "traffic light",
+    "10": "fire hydrant",
+    "11": "stop sign",
+    "12": "parking meter",
+    "13": "bench",
+    "14": "bird",
+    "15": "cat",
+    "16": "dog",
+    "17": "horse",
+    "18": "sheep",
+    "19": "cow",
+    "20": "elephant",
+    "21": "bear",
+    "22": "zebra",
+    "23": "giraffe",
+    "24": "backpack",
+    "25": "umbrella",
+    "26": "handbag",
+    "27": "tie",
+    "28": "suitcase",
+    "29": "frisbee",
+    "30": "skis",
+    "31": "snowboard",
+    "32": "sports ball",
+    "33": "kite",
+    "34": "baseball bat",
+    "35": "baseball glove",
+    "36": "skateboard",
+    "37": "surfboard",
+    "38": "tennis racket",
+    "39": "bottle",
+    "40": "wine glass",
+    "41": "cup",
+    "42": "fork",
+    "43": "knife",
+    "44": "spoon",
+    "45": "bowl",
+    "46": "banana",
+    "47": "apple",
+    "48": "sandwich",
+    "49": "orange",
+    "50": "broccoli",
+    "51": "carrot",
+    "52": "hot dog",
+    "53": "pizza",
+    "54": "donut",
+    "55": "cake",
+    "56": "chair",
+    "57": "couch",
+    "58": "potted plant",
+    "59": "bed",
+    "60": "dining table",
+    "61": "toilet",
+    "62": "tv",
+    "63": "laptop",
+    "64": "mouse",
+    "65": "remote",
+    "66": "keyboard",
+    "67": "cell phone",
+    "68": "microwave",
+    "69": "oven",
+    "70": "toaster",
+    "71": "sink",
+    "72": "refrigerator",
+    "73": "book",
+    "74": "clock",
+    "75": "vase",
+    "76": "scissors",
+    "77": "teddy bear",
+    "78": "hair drier",
+    "79": "toothbrush"
+  },
+  "target": "person",
+  "confidence_threshold": 0.35,
+  "detect_only": false,
+  "reached": true,
+  "final_pose_xy_yaw": [
+    2.1600000000000263,
+    0.0,
+    0.0
+  ],
+  "scene_objects": [
+    "person",
+    "car"
+  ],
+  "trace": [
+    {
+      "frame": 0,
+      "detections": [
+        {
+          "class": "person",
+          "confidence": 0.8678813576698303,
+          "box": [
+            235.6748809814453,
+            151.67324829101562,
+            405.26104736328125,
+            321.9252624511719
+          ]
+        }
+      ],
+      "command": {
+        "stride": 60,
+        "angle": 0,
+        "reason": "approach",
+        "distance_m": 3.656
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 1,
+      "detections": [
+        {
+          "class": "person",
+          "confidence": 0.8482454419136047,
+          "box": [
+            232.65789794921875,
+            149.72451782226562,
+            406.02886962890625,
+            324.2593994140625
+          ]
+        }
+      ],
+      "command": {
+        "stride": 60,
+        "angle": 0,
+        "reason": "approach",
+        "distance_m": 3.584
+      },
+      "pose_xy_yaw": [
+        0.07200000000000004,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 2,
+      "detections": [
+        {
+          "class": "person",
+          "confidence": 0.6797894239425659,
+          "box": [
+            231.7501220703125,
+            147.27066040039062,
+            408.00439453125,
+            324.9000244140625
+          ]
+        }
+      ],
+      "command": {
+        "stride": 60,
+        "angle": 0,
+        "reason": "approach",
+        "distance_m": 3.512
+      },
+      "pose_xy_yaw": [
+        0.1440000000000001,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 3,
+      "detections": [
+        {
+          "class": "person",
+          "confidence": 0.8164132833480835,
+          "box": [
+            229.4084014892578,
+            145.7469482421875,
+            410.69415283203125,
+            326.7930908203125
+          ]
+        }
+      ],
+      "command": {
+        "stride": 60,
+        "angle": 0,
+        "reason": "approach",
+        "distance_m": 3.44
+      },
+      "pose_xy_yaw": [
+        0.21600000000000016,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 4,
+      "detections": [
+        {
+          "class": "person",
+          "confidence": 0.8463640809059143,
+          "box": [
+            228.3540496826172,
+            144.12509155273438,
+            412.25714111328125,
+            329.0203552246094
+          ]
+        }
+      ],
+      "command": {
+        "stride": 60,
+        "angle": 0,
+        "reason": "approach",
+        "distance_m": 3.368
+      },
+      "pose_xy_yaw": [
+        0.2880000000000002,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 5,
+      "detections": [
+        {
+          "class": "person",
+          "confidence": 0.8771303296089172,
+          "box": [
+            226.4527130126953,
+            141.88906860351562,
+            413.46026611328125,
+            331.0384216308594
+          ]
+        }
+      ],
+      "command": {
+        "stride": 60,
+        "angle": 0,
+        "reason": "approach",
+        "distance_m": 3.296
+      },
+      "pose_xy_yaw": [
+        0.36000000000000026,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 6,
+      "detections": [
+        {
+          "class": "person",
+          "confidence": 0.8784746527671814,
+          "box": [
+            223.59466552734375,
+            139.09439086914062,
+            415.820556640625,
+            333.2260437011719
+          ]
+        }
+      ],
+      "command": {
+        "stride": 60,
+        "angle": 0,
+        "reason": "approach",
+        "distance_m": 3.224
+      },
+      "pose_xy_yaw": [
+        0.43200000000000033,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 7,
+      "detections": [
+        {
+          "class": "person",
+          "confidence": 0.8855112791061401,
+          "box": [
+            221.8893280029297,
+            137.26974487304688,
+            418.03900146484375,
+            335.0533142089844
+          ]
+        }
+      ],
+      "command": {
+        "stride": 60,
+        "angle": 0,
+        "reason": "approach",
+        "distance_m": 3.152
+      },
+      "pose_xy_yaw": [
+        0.5040000000000002,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 8,
+      "detections": [
+        {
+          "class": "person",
+          "confidence": 0.864664614200592,
+          "box": [
+            220.39852905273438,
+            134.30340576171875,
+            419.8664245605469,
+            337.5518798828125
+          ]
+        }
+      ],
+      "command": {
+        "stride": 60,
+        "angle": 0,
+        "reason": "approach",
+        "distance_m": 3.08
+      },
+      "pose_xy_yaw": [
+        0.5759999999999976,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 9,
+      "detections": [
+        {
+          "class": "person",
+          "confidence": 0.8989405035972595,
+          "box": [
+            218.4585723876953,
+            133.14010620117188,
+            421.72930908203125,
+            339.9430847167969
+          ]
+        }
+      ],
+      "command": {
+        "stride": 60,
+        "angle": 0,
+        "reason": "approach",
+        "distance_m": 3.008
+      },
+      "pose_xy_yaw": [
+        0.647999999999995,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 10,
+      "detections": [
+        {
+          "class": "person",
+          "confidence": 0.8833585977554321,
+          "box": [
+            216.4046630859375,
+            129.66738891601562,
+            423.43548583984375,
+            341.1339111328125
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.4884081482887268,
+          "box": [
+            358.0928955078125,
+            229.22276306152344,
+            613.1204833984375,
+            307.4439697265625
+          ]
+        }
+      ],
+      "command": {
+        "stride": 60,
+        "angle": 0,
+        "reason": "approach",
+        "distance_m": 2.936
+      },
+      "pose_xy_yaw": [
+        0.7199999999999924,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 11,
+      "detections": [
+        {
+          "class": "person",
+          "confidence": 0.8980720639228821,
+          "box": [
+            212.95716857910156,
+            128.14547729492188,
+            426.10791015625,
+            344.1651306152344
+          ]
+        }
+      ],
+      "command": {
+        "stride": 60,
+        "angle": 0,
+        "reason": "approach",
+        "distance_m": 2.864
+      },
+      "pose_xy_yaw": [
+        0.7919999999999898,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 12,
+      "detections": [
+        {
+          "class": "person",
+          "confidence": 0.8996512293815613,
+          "box": [
+            211.50799560546875,
+            125.11611938476562,
+            428.14849853515625,
+            348.39544677734375
+          ]
+        }
+      ],
+      "command": {
+        "stride": 60,
+        "angle": 0,
+        "reason": "approach",
+        "distance_m": 2.792
+      },
+      "pose_xy_yaw": [
+        0.8639999999999872,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 13,
+      "detections": [
+        {
+          "class": "person",
+          "confidence": 0.8886135816574097,
+          "box": [
+            207.85850524902344,
+            121.45547485351562,
+            431.02978515625,
+            351.1725158691406
+          ]
+        }
+      ],
+      "command": {
+        "stride": 60,
+        "angle": 0,
+        "reason": "approach",
+        "distance_m": 2.72
+      },
+      "pose_xy_yaw": [
+        0.9359999999999846,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 14,
+      "detections": [
+        {
+          "class": "person",
+          "confidence": 0.9025526642799377,
+          "box": [
+            204.8321075439453,
+            118.37387084960938,
+            434.53826904296875,
+            354.029541015625
+          ]
+        }
+      ],
+      "command": {
+        "stride": 60,
+        "angle": 0,
+        "reason": "approach",
+        "distance_m": 2.648
+      },
+      "pose_xy_yaw": [
+        1.0079999999999827,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 15,
+      "detections": [
+        {
+          "class": "person",
+          "confidence": 0.8936183452606201,
+          "box": [
+            202.240234375,
+            115.59542846679688,
+            438.45758056640625,
+            357.1573181152344
+          ]
+        },
+        {
+          "class": "airplane",
+          "confidence": 0.4526682496070862,
+          "box": [
+            359.2816162109375,
+            229.33267211914062,
+            639.6984252929688,
+            313.2392883300781
+          ]
+        }
+      ],
+      "command": {
+        "stride": 60,
+        "angle": 0,
+        "reason": "approach",
+        "distance_m": 2.576
+      },
+      "pose_xy_yaw": [
+        1.0799999999999854,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 16,
+      "detections": [
+        {
+          "class": "person",
+          "confidence": 0.8854819536209106,
+          "box": [
+            199.22369384765625,
+            113.33493041992188,
+            440.410400390625,
+            360.5717468261719
+          ]
+        },
+        {
+          "class": "airplane",
+          "confidence": 0.501901388168335,
+          "box": [
+            358.70941162109375,
+            229.65869140625,
+            639.7113647460938,
+            316.9375
+          ]
+        }
+      ],
+      "command": {
+        "stride": 60,
+        "angle": 0,
+        "reason": "approach",
+        "distance_m": 2.504
+      },
+      "pose_xy_yaw": [
+        1.1519999999999881,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 17,
+      "detections": [
+        {
+          "class": "person",
+          "confidence": 0.8920540809631348,
+          "box": [
+            196.28009033203125,
+            109.15243530273438,
+            442.94921875,
+            364.8078308105469
+          ]
+        }
+      ],
+      "command": {
+        "stride": 60,
+        "angle": 0,
+        "reason": "approach",
+        "distance_m": 2.432
+      },
+      "pose_xy_yaw": [
+        1.2239999999999909,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 18,
+      "detections": [
+        {
+          "class": "person",
+          "confidence": 0.8935027718544006,
+          "box": [
+            192.94113159179688,
+            105.01165771484375,
+            448.3664855957031,
+            370.0303039550781
+          ]
+        },
+        {
+          "class": "airplane",
+          "confidence": 0.43918681144714355,
+          "box": [
+            359.943359375,
+            229.1888427734375,
+            639.5919189453125,
+            320.40216064453125
+          ]
+        }
+      ],
+      "command": {
+        "stride": 60,
+        "angle": 0,
+        "reason": "approach",
+        "distance_m": 2.363
+      },
+      "pose_xy_yaw": [
+        1.2959999999999936,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 19,
+      "detections": [
+        {
+          "class": "person",
+          "confidence": 0.8865413069725037,
+          "box": [
+            187.88644409179688,
+            101.83111572265625,
+            451.5683288574219,
+            372.8890380859375
+          ]
+        },
+        {
+          "class": "airplane",
+          "confidence": 0.5187090039253235,
+          "box": [
+            361.0821533203125,
+            229.3587646484375,
+            639.729248046875,
+            320.73516845703125
+          ]
+        }
+      ],
+      "command": {
+        "stride": 60,
+        "angle": 0,
+        "reason": "approach",
+        "distance_m": 2.291
+      },
+      "pose_xy_yaw": [
+        1.3679999999999963,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 20,
+      "detections": [
+        {
+          "class": "person",
+          "confidence": 0.898169994354248,
+          "box": [
+            184.61444091796875,
+            97.54315185546875,
+            453.98895263671875,
+            376.5040283203125
+          ]
+        }
+      ],
+      "command": {
+        "stride": 60,
+        "angle": 0,
+        "reason": "approach",
+        "distance_m": 2.219
+      },
+      "pose_xy_yaw": [
+        1.439999999999999,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 21,
+      "detections": [
+        {
+          "class": "person",
+          "confidence": 0.8940818905830383,
+          "box": [
+            180.39022827148438,
+            93.36874389648438,
+            456.8718566894531,
+            379.0924072265625
+          ]
+        }
+      ],
+      "command": {
+        "stride": 60,
+        "angle": 0,
+        "reason": "approach",
+        "distance_m": 2.144
+      },
+      "pose_xy_yaw": [
+        1.5120000000000018,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 22,
+      "detections": [
+        {
+          "class": "person",
+          "confidence": 0.8778362274169922,
+          "box": [
+            175.79058837890625,
+            88.0164794921875,
+            462.466796875,
+            382.8992919921875
+          ]
+        }
+      ],
+      "command": {
+        "stride": 60,
+        "angle": 0,
+        "reason": "approach",
+        "distance_m": 2.072
+      },
+      "pose_xy_yaw": [
+        1.5840000000000045,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 23,
+      "detections": [
+        {
+          "class": "person",
+          "confidence": 0.8504002094268799,
+          "box": [
+            172.19625854492188,
+            82.5374755859375,
+            468.8121643066406,
+            380.09893798828125
+          ]
+        }
+      ],
+      "command": {
+        "stride": 60,
+        "angle": 0,
+        "reason": "approach",
+        "distance_m": 2.0
+      },
+      "pose_xy_yaw": [
+        1.6560000000000072,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 24,
+      "detections": [
+        {
+          "class": "person",
+          "confidence": 0.8875498175621033,
+          "box": [
+            166.24932861328125,
+            76.41586303710938,
+            473.18109130859375,
+            391.2828063964844
+          ]
+        }
+      ],
+      "command": {
+        "stride": 60,
+        "angle": 0,
+        "reason": "approach",
+        "distance_m": 1.928
+      },
+      "pose_xy_yaw": [
+        1.72800000000001,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 25,
+      "detections": [
+        {
+          "class": "person",
+          "confidence": 0.8850431442260742,
+          "box": [
+            159.23704528808594,
+            70.1895751953125,
+            478.101806640625,
+            404.84368896484375
+          ]
+        }
+      ],
+      "command": {
+        "stride": 60,
+        "angle": 0,
+        "reason": "approach",
+        "distance_m": 1.86
+      },
+      "pose_xy_yaw": [
+        1.8000000000000127,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 26,
+      "detections": [
+        {
+          "class": "person",
+          "confidence": 0.8257352709770203,
+          "box": [
+            153.80392456054688,
+            64.4478759765625,
+            484.8516540527344,
+            411.97552490234375
+          ]
+        }
+      ],
+      "command": {
+        "stride": 60,
+        "angle": 0,
+        "reason": "approach",
+        "distance_m": 1.787
+      },
+      "pose_xy_yaw": [
+        1.8720000000000154,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 27,
+      "detections": [
+        {
+          "class": "person",
+          "confidence": 0.8733422756195068,
+          "box": [
+            144.32354736328125,
+            57.1282958984375,
+            490.18426513671875,
+            420.27801513671875
+          ]
+        }
+      ],
+      "command": {
+        "stride": 60,
+        "angle": 0,
+        "reason": "approach",
+        "distance_m": 1.717
+      },
+      "pose_xy_yaw": [
+        1.9440000000000182,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 28,
+      "detections": [
+        {
+          "class": "person",
+          "confidence": 0.8523035645484924,
+          "box": [
+            140.2248992919922,
+            50.22918701171875,
+            495.53228759765625,
+            427.20465087890625
+          ]
+        }
+      ],
+      "command": {
+        "stride": 60,
+        "angle": 0,
+        "reason": "approach",
+        "distance_m": 1.645
+      },
+      "pose_xy_yaw": [
+        2.016000000000021,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 29,
+      "detections": [
+        {
+          "class": "person",
+          "confidence": 0.8494649529457092,
+          "box": [
+            134.32601928710938,
+            41.728729248046875,
+            505.4830017089844,
+            431.7023620605469
+          ]
+        }
+      ],
+      "command": {
+        "stride": 60,
+        "angle": 0,
+        "reason": "approach",
+        "distance_m": 1.571
+      },
+      "pose_xy_yaw": [
+        2.0880000000000236,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 30,
+      "detections": [
+        {
+          "class": "person",
+          "confidence": 0.8631303906440735,
+          "box": [
+            124.24021911621094,
+            33.074493408203125,
+            515.572998046875,
+            410.05340576171875
+          ]
+        }
+      ],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "reached",
+        "distance_m": 1.496
+      },
+      "pose_xy_yaw": [
+        2.1600000000000263,
+        0.0,
+        0.0
+      ]
+    }
+  ]
+}

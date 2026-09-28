@@ -1,0 +1,90 @@
+{
+  "completed": true,
+  "motion": "planar kinematic proxy with animated joints, not validated walking",
+  "model": "/home/sean/code/shellhack-blind-escort/blind_escort_yolo/weights/yolo11n_blind_escort.onnx",
+  "model_sha256": "6547aee411dd9eccb6cc458bc0cc81e5c55e79157b6ad0f6f7a839e7edfe2d8c",
+  "firmware_sha256": "3c4d012d2f050b3621d37d408eb08bfc72aedde86459e4953d9dad7b63c3977e",
+  "labels": {
+    "0": "curb_ramp_ada",
+    "1": "curb_drop_off_hazard",
+    "2": "curb_step_up",
+    "3": "sidewalk_obstruction",
+    "4": "surface_defect_heave",
+    "5": "standing_puddle_gutter",
+    "6": "overhanging_hazard",
+    "7": "crosswalk_zebra",
+    "8": "ped_signal_walk",
+    "9": "ped_signal_stop",
+    "10": "conflict_vehicle_cyclist",
+    "11": "waymo_vehicle",
+    "12": "waymo_door_handle",
+    "13": "waymo_open_door",
+    "14": "staircase_steps",
+    "15": "storm_drain_grate",
+    "16": "construction_barricade",
+    "17": "aps_pushbutton",
+    "18": "trunk_luggage_compartment",
+    "19": "dense_pedestrian_cluster"
+  },
+  "target": "person",
+  "confidence_threshold": 0.35,
+  "detect_only": true,
+  "reached": false,
+  "final_pose_xy_yaw": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "scene_objects": [
+    "person",
+    "car"
+  ],
+  "trace": [
+    {
+      "frame": 0,
+      "detections": [
+        {
+          "class": "staircase_steps",
+          "confidence": 0.9819017052650452,
+          "box": [
+            0.0,
+            254.157470703125,
+            334.14202880859375,
+            319.6103515625
+          ]
+        },
+        {
+          "class": "staircase_steps",
+          "confidence": 0.9373549818992615,
+          "box": [
+            397.1768493652344,
+            256.22467041015625,
+            640.0,
+            321.24554443359375
+          ]
+        },
+        {
+          "class": "staircase_steps",
+          "confidence": 0.7267652750015259,
+          "box": [
+            495.73065185546875,
+            255.66864013671875,
+            639.9525756835938,
+            321.29931640625
+          ]
+        }
+      ],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "detect_only",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "settings_version": "0.0.8",
+  "datasets_dir": "/tmp/datasets",
+  "weights_dir": "/tmp/shellhack-sim-vision/weights",
+  "runs_dir": "/tmp/shellhack-sim-vision/runs",
+  "uuid": "b5fbd0b0d99255a120bb70202a9d6dac0ec3c0aa33071aa690dd26d8ddcba427",
+  "sync": true,
+  "api_key": "",
+  "openai_api_key": "",
+  "clearml": true,
+  "comet": true,
+  "dvc": true,
+  "mlflow": true,
+  "raytune": true,
+  "tensorboard": false,
+  "wandb": false,
+  "vscode_msg": true,
+  "openvino_msg": true
+}

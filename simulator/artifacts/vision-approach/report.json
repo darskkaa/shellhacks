@@ -1,0 +1,1304 @@
+{
+  "completed": true,
+  "motion": "planar kinematic proxy with animated joints, not validated walking",
+  "model": "/tmp/shellhack-sim-vision/models/yolo26n.pt",
+  "model_sha256": "9b09cc8bf347f0fc8a5f7657480587f25db09b34bf33b0652110fb03a8ad4fef",
+  "firmware_sha256": "3c4d012d2f050b3621d37d408eb08bfc72aedde86459e4953d9dad7b63c3977e",
+  "labels": {
+    "0": "person",
+    "1": "bicycle",
+    "2": "car",
+    "3": "motorcycle",
+    "4": "airplane",
+    "5": "bus",
+    "6": "train",
+    "7": "truck",
+    "8": "boat",
+    "9": "traffic light",
+    "10": "fire hydrant",
+    "11": "stop sign",
+    "12": "parking meter",
+    "13": "bench",
+    "14": "bird",
+    "15": "cat",
+    "16": "dog",
+    "17": "horse",
+    "18": "sheep",
+    "19": "cow",
+    "20": "elephant",
+    "21": "bear",
+    "22": "zebra",
+    "23": "giraffe",
+    "24": "backpack",
+    "25": "umbrella",
+    "26": "handbag",
+    "27": "tie",
+    "28": "suitcase",
+    "29": "frisbee",
+    "30": "skis",
+    "31": "snowboard",
+    "32": "sports ball",
+    "33": "kite",
+    "34": "baseball bat",
+    "35": "baseball glove",
+    "36": "skateboard",
+    "37": "surfboard",
+    "38": "tennis racket",
+    "39": "bottle",
+    "40": "wine glass",
+    "41": "cup",
+    "42": "fork",
+    "43": "knife",
+    "44": "spoon",
+    "45": "bowl",
+    "46": "banana",
+    "47": "apple",
+    "48": "sandwich",
+    "49": "orange",
+    "50": "broccoli",
+    "51": "carrot",
+    "52": "hot dog",
+    "53": "pizza",
+    "54": "donut",
+    "55": "cake",
+    "56": "chair",
+    "57": "couch",
+    "58": "potted plant",
+    "59": "bed",
+    "60": "dining table",
+    "61": "toilet",
+    "62": "tv",
+    "63": "laptop",
+    "64": "mouse",
+    "65": "remote",
+    "66": "keyboard",
+    "67": "cell phone",
+    "68": "microwave",
+    "69": "oven",
+    "70": "toaster",
+    "71": "sink",
+    "72": "refrigerator",
+    "73": "book",
+    "74": "clock",
+    "75": "vase",
+    "76": "scissors",
+    "77": "teddy bear",
+    "78": "hair drier",
+    "79": "toothbrush"
+  },
+  "target": "person",
+  "confidence_threshold": 0.35,
+  "detect_only": false,
+  "reached": false,
+  "final_pose_xy_yaw": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "scene_objects": [
+    "person",
+    "car"
+  ],
+  "trace": [
+    {
+      "frame": 0,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 1,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 2,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 3,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 4,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 5,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 6,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 7,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 8,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 9,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 10,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 11,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 12,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 13,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 14,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 15,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 16,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 17,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 18,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 19,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 20,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 21,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 22,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 23,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 24,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 25,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 26,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 27,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 28,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 29,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 30,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 31,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 32,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 33,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 34,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 35,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 36,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 37,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 38,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 39,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 40,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 41,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 42,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 43,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 44,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 45,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 46,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 47,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 48,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 49,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 50,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 51,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 52,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 53,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 54,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 55,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 56,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 57,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 58,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 59,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 60,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 61,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 62,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 63,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 64,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 65,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 66,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 67,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 68,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 69,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 70,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 71,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 72,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 73,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 74,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 75,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 76,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 77,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 78,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "frame": 79,
+      "detections": [],
+      "command": {
+        "stride": 0,
+        "angle": 0,
+        "reason": "target_lost",
+        "distance_m": null
+      },
+      "pose_xy_yaw": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    }
+  ]
+}
